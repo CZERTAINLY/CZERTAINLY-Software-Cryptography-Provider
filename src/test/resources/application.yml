@@ -5,15 +5,12 @@ server:
 
 spring:
   datasource:
-    url: ${JDBC_URL}
-    username: ${JDBC_USERNAME}
-    password: ${JDBC_PASSWORD}
-    driver-class-name: 'org.postgresql.Driver'
-    auto-commit: false
+    url: 'jdbc:hsqldb:mem:myDb;sql.syntax_pgs=true'
+    username: sa
+    password:
+    driver-class-name: 'org.hsqldb.jdbc.JDBCDriver'
   flyway:
-    out-of-order: true
-    table: "softcp_schema_history"
-    schemas: ${DB_SCHEMA:softcp}
+    enabled: false
   jpa:
     properties:
       hibernate.default_schema: ${DB_SCHEMA:softcp}
