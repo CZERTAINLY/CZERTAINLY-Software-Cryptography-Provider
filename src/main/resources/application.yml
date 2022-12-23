@@ -1,0 +1,29 @@
+server:
+  port: ${PORT:8080}
+  ssl:
+    enabled: false
+
+spring:
+  datasource:
+    url: ${JDBC_URL}
+    username: ${JDBC_USERNAME}
+    password: ${JDBC_PASSWORD}
+    driver-class-name: 'org.postgresql.Driver'
+    auto-commit: false
+  flyway:
+    out-of-order: true
+    table: "softcp_schema_history"
+    schemas: ${DB_SCHEMA:softcp}
+  jpa:
+    properties:
+      hibernate.default_schema: ${DB_SCHEMA:softcp}
+
+management:
+  endpoints:
+    jmx:
+      exposure:
+        exclude: '*'
+    web:
+      base-path: '/'
+      exposure:
+        include: health, info
