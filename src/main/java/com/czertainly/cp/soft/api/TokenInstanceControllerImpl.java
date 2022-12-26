@@ -10,20 +10,29 @@ import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceRequestDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceStatusDto;
+import com.czertainly.cp.soft.service.AttributeService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class TokenInstanceControllerImpl implements TokenInstanceController {
-    
+
     private TokenInstanceService tokenInstanceService;
+
+    private AttributeService attributeService;
 
     @Autowired
     public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
         this.tokenInstanceService = tokenInstanceService;
+    }
+
+    @Autowired
+    public void setAttributeService(AttributeService attributeService) {
+        this.attributeService = attributeService;
     }
 
     @Override
@@ -33,11 +42,15 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
 
     @Override
     public TokenInstanceDto getTokenInstance(String uuid) throws NotFoundException {
-        return null;
+        return tokenInstanceService.getTokenInstance(UUID.fromString(uuid));
     }
 
     @Override
     public TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException {
+        if (!attributeService.validateAttributes(
+                request.getKind(), request.getAttributes())) {
+            throw new ValidationException("Token instance attributes validation failed.");
+        }
         return null;
     }
 

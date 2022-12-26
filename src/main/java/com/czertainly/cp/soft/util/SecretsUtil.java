@@ -28,6 +28,9 @@ public class SecretsUtil {
         SecretsUtil.encryptionKey = key;
     }
 
+    private static final String algorithm = "PBEWithSHA256And256BitAES-CBC-BC";
+    private static final int iterations = 1000;
+
     /**
      * Encrypts and encodes the given secret using the PBEWithSHA256And256BitAES-CBC-BC algorithm.
      * @param secret the secret to encrypt and encode
@@ -44,10 +47,8 @@ public class SecretsUtil {
         }
 
         byte[] salt = generateRandomSalt();
-        int iterations = 1000;
 
         PBEKeySpec keySpec = new PBEKeySpec(encryptionKey.toCharArray(), salt, iterations);
-        String algorithm = "PBEWithSHA256And256BitAES-CBC-BC";
         byte[] encryptedSecret;
 
         try {
@@ -79,6 +80,47 @@ public class SecretsUtil {
 
     }
 
+    public static String decodeAndDecryptSecretString(String secret, SecretEncodingVersion secretVersion) {
+        byte[] salt;
+        int iterations;
+        byte[] encryptedSecret;
+        if (secretVersion == SecretEncodingVersion.V1) {
+            salt = decodeSaltFromSecretStringV1(secret);
+            iterations = getIterationsFromSecretStringV1(secret);
+            encryptedSecret = decodeEncryptedSecretFromSecretStringV1(secret);
+        } else {
+            throw new IllegalArgumentException("Secret version not supported");
+        }
+
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+
+        PBEKeySpec keySpec = new PBEKeySpec(encryptionKey.toCharArray(), salt, iterations);
+
+        try {
+            Cipher c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            c.init(Cipher.DECRYPT_MODE, fact.generateSecret(keySpec));
+            byte[] decryptedSecret = c.doFinal(encryptedSecret);
+            return new String(decryptedSecret);
+        } catch (NoSuchPaddingException e) {
+            throw new IllegalStateException("Padding for " + algorithm + " not found.", e);
+        } catch (IllegalBlockSizeException e) {
+            throw new IllegalStateException("Illegal block size for " + algorithm, e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Algorithm " + algorithm + " not found", e);
+        } catch (InvalidKeySpecException e) {
+            throw new IllegalStateException("Invalid specification for " + algorithm, e);
+        } catch (BadPaddingException e) {
+            throw new IllegalStateException("Bad padding for " + algorithm, e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle provider not found", e);
+        } catch (InvalidKeyException e) {
+            throw new IllegalStateException("Invalid key provided for " + algorithm, e);
+        }
+    }
+
     /**
      * Encoded the secret value into string
      * V1|secret|salt|count
@@ -102,6 +144,41 @@ public class SecretsUtil {
         }
 
         return encoded.toString();
+    }
+
+    private static byte[] decodeSaltFromSecretStringV1(String secret) {
+        if (isSecretStringV1(secret)) {
+            String[] parts = secret.split("\\|");
+            return Base64.getDecoder().decode(parts[2]);
+        } else {
+            throw new IllegalArgumentException("Secret string is not in the correct format");
+        }
+    }
+
+    private static int getIterationsFromSecretStringV1(String secret) {
+        if (isSecretStringV1(secret)) {
+            String[] parts = secret.split("\\|");
+            return Integer.parseInt(parts[3]);
+        } else {
+            throw new IllegalArgumentException("Secret string is not in the correct format");
+        }
+    }
+
+    private static byte[] decodeEncryptedSecretFromSecretStringV1(String secret) {
+        if (isSecretStringV1(secret)) {
+            String[] parts = secret.split("\\|");
+            return Base64.getDecoder().decode(parts[1]);
+        } else {
+            throw new IllegalArgumentException("Secret string is not in the correct format");
+        }
+    }
+
+    private static boolean isSecretStringV1(String secret) {
+        String[] parts = secret.split("\\|");
+        if (parts.length != 4) {
+            return false;
+        }
+        return parts[0].equals("v1");
     }
 
     /**

@@ -1,8 +1,11 @@
 package com.czertainly.cp.soft.dao.entity;
 
+import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.core.util.AttributeDefinitionUtils;
+import com.czertainly.cp.soft.util.SecretEncodingVersion;
+import com.czertainly.cp.soft.util.SecretsUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -19,6 +22,9 @@ public class TokenInstance extends UniquelyIdentified {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "code")
+    private String code;
+
     @Column(name = "data")
     private String data;
 
@@ -31,6 +37,14 @@ public class TokenInstance extends UniquelyIdentified {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCode() {
+        return SecretsUtil.decodeAndDecryptSecretString(code, SecretEncodingVersion.V1);
+    }
+
+    public void setCode(String code) {
+        this.code = SecretsUtil.encryptAndEncodeSecretString(code, SecretEncodingVersion.V1);
     }
 
     public byte[] getData() {
@@ -47,6 +61,10 @@ public class TokenInstance extends UniquelyIdentified {
 
     public void setAttributes(List<BaseAttribute> attributes) {
         this.attributes = AttributeDefinitionUtils.serialize(attributes);;
+    }
+
+    public void setRequestAttributes(List<RequestAttributeDto> attributes) {
+        this.attributes = AttributeDefinitionUtils.serializeRequestAttributes(attributes);;
     }
 
     public TokenInstanceDto mapToDto() {

@@ -16,4 +16,12 @@ public class SecretsUtilTest {
         Assertions.assertEquals(encodedSecret.substring(0, 2), SecretEncodingVersion.V1.getVersion());
     }
 
+    @Test
+    public void testEncryptDecrypt_ok() {
+        String encodedSecret = SecretsUtil.encryptAndEncodeSecretString(secret, SecretEncodingVersion.V1);
+        String decodedSecret = SecretsUtil.decodeAndDecryptSecretString(encodedSecret, SecretEncodingVersion.V1);
+
+        Assertions.assertEquals(secret, decodedSecret);
+    }
+
 }

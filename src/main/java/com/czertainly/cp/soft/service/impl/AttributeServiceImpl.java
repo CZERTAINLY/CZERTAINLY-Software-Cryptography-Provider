@@ -25,12 +25,13 @@ import java.util.*;
 public class AttributeServiceImpl implements AttributeService {
     private static final Logger logger = LoggerFactory.getLogger(AttributesController.class);
 
+    @Autowired
     private TokenInstanceService tokenInstanceService;
 
-    @Autowired
-    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
-        this.tokenInstanceService = tokenInstanceService;
-    }
+//    @Autowired
+//    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
+//        this.tokenInstanceService = tokenInstanceService;
+//    }
 
     public static final String ATTRIBUTE_INFO_INITIAL = "info_initial";
     public static final String ATTRIBUTE_INFO_INITIAL_UUID = "320c401a-9feb-402a-8f5b-0bfefcf155cc";
@@ -58,6 +59,9 @@ public class AttributeServiceImpl implements AttributeService {
     public static final String ATTRIBUTE_DATA_NEW_TOKEN_CODE_UUID = "181aae19-d2a3-40ca-b5c7-570c8dfbb3cb";
     public static final String ATTRIBUTE_DATA_NEW_TOKEN_CODE_LABEL = "New Token activation code";
     public static final String ATTRIBUTE_DATA_NEW_TOKEN_CODE_DESCRIPTION = "Activation code that will be used to activate this new Token";
+
+    public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION = "data_createTokenAction";
+    public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_UUID = "cc781ba3-d90b-4fe9-915a-e8d44e1cff86";
 
     @Override
     public List<BaseAttribute> getAttributes(String kind) {
@@ -93,11 +97,35 @@ public class AttributeServiceImpl implements AttributeService {
     private List<BaseAttribute> getAttributesForNewToken() {
         List<BaseAttribute> attrs = new ArrayList<>();
 
+        attrs.add(buildDataCreateTokenAction("new"));
         attrs.add(buildInfoNewToken());
         attrs.add(buildDataNewTokenName());
         attrs.add(buildDataNewTokenCode());
 
         return attrs;
+    }
+
+    private BaseAttribute buildDataCreateTokenAction(String action) {
+        // define Data Attribute
+        DataAttribute attribute = new DataAttribute();
+        attribute.setUuid(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_UUID);
+        attribute.setName(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION);
+        attribute.setType(AttributeType.DATA);
+        attribute.setContentType(AttributeContentType.STRING);
+        // create properties
+        DataAttributeProperties attributeProperties = new DataAttributeProperties();
+        attributeProperties.setRequired(true);
+        attributeProperties.setVisible(false);
+        attributeProperties.setList(false);
+        attributeProperties.setMultiSelect(false);
+        attributeProperties.setReadOnly(true);
+        attribute.setProperties(attributeProperties);
+        // set content
+        attribute.setContent(List.of(
+                new StringAttributeContent(action,action)
+        ));
+
+        return attribute;
     }
 
     private BaseAttribute buildInfoNewToken() {

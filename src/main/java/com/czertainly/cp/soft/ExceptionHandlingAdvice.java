@@ -89,7 +89,7 @@ public class ExceptionHandlingAdvice {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFoundException(NotFoundException ex) {
-        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), ex.getCause().toString());
+        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
         if (log.isDebugEnabled()) {
             errorMessage.setStacktrace(ExceptionUtils.getStackTrace(ex));
         }
@@ -102,7 +102,7 @@ public class ExceptionHandlingAdvice {
 
     @ExceptionHandler(AlreadyExistException.class)
     public ResponseEntity<Object> handleAlreadyExistException(AlreadyExistException ex) {
-        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), ex.getCause().toString());
+        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
         if (log.isDebugEnabled()) {
             errorMessage.setStacktrace(ExceptionUtils.getStackTrace(ex));
         }
@@ -115,7 +115,7 @@ public class ExceptionHandlingAdvice {
 
     @ExceptionHandler(NotDeletableException.class)
     public ResponseEntity<Object> handleNotDeletableException(NotDeletableException ex) {
-        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), ex.getCause().toString());
+        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
         if (log.isDebugEnabled()) {
             errorMessage.setStacktrace(ExceptionUtils.getStackTrace(ex));
         }
