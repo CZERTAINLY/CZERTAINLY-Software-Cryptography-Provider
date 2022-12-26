@@ -1,6 +1,7 @@
 package com.czertainly.cp.soft.dao.entity;
 
 import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
+import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,6 +47,18 @@ public class TokenInstance extends UniquelyIdentified {
 
     public void setAttributes(List<BaseAttribute> attributes) {
         this.attributes = AttributeDefinitionUtils.serialize(attributes);;
+    }
+
+    public TokenInstanceDto mapToDto() {
+        TokenInstanceDto dto = new TokenInstanceDto();
+        dto.setUuid(this.uuid.toString());
+        dto.setName(this.name);
+
+        if (attributes != null) {
+            dto.setAttributes(this.getAttributes());
+        }
+
+        return dto;
     }
 
     @Override
