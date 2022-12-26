@@ -11,9 +11,6 @@ spring:
     driver-class-name: 'org.hsqldb.jdbc.JDBCDriver'
   flyway:
     enabled: false
-  jpa:
-    properties:
-      hibernate.default_schema: ${DB_SCHEMA:softcp}
 
 management:
   endpoints:
