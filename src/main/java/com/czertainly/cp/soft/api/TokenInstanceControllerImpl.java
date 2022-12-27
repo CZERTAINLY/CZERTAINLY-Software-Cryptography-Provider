@@ -51,7 +51,7 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
                 request.getKind(), request.getAttributes())) {
             throw new ValidationException("Token instance attributes validation failed.");
         }
-        return null;
+        return tokenInstanceService.createTokenInstance(request);
     }
 
     @Override
