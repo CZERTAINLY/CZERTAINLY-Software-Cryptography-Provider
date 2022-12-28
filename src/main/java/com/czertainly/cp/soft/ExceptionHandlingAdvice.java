@@ -136,6 +136,19 @@ public class ExceptionHandlingAdvice {
                 .collect(Collectors.toList());
     }
 
+    @ExceptionHandler(TokenInstanceException.class)
+    public ResponseEntity<Object> handleTokenInstanceException(TokenInstanceException ex) {
+        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
+        if (log.isDebugEnabled()) {
+            errorMessage.setStacktrace(ExceptionUtils.getStackTrace(ex));
+        }
+        ApiErrorResponseDto apiErrorResponseDto = new ApiErrorResponseDto(701, HttpStatus.BAD_REQUEST, "Token instance problem", errorMessage);
+        apiErrorResponseDto.setTimestamp(Instant.now().toEpochMilli());
+        log.error(apiErrorResponseDto.getMessage() + ": " + ExceptionUtils.getStackTrace(ex));
+        return new ResponseEntity<>(
+                apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
+    }
+
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleAll(Exception ex) {

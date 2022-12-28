@@ -63,6 +63,16 @@ public class AttributeServiceImpl implements AttributeService {
     public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION = "data_createTokenAction";
     public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_UUID = "cc781ba3-d90b-4fe9-915a-e8d44e1cff86";
 
+    /////////////////////////////////////////////////
+    // Token instance activation Attributes
+    /////////////////////////////////////////////////
+
+    public static final String ATTRIBUTE_DATA_ACTIVATION_CODE = "data_tokenActivationCode";
+    public static final String ATTRIBUTE_DATA_ACTIVATION_CODE_UUID = "0d4044f0-2af0-4f10-ac09-319072eb3393";
+    public static final String ATTRIBUTE_DATA_ACTIVATION_CODE_LABEL = "Token activation code";
+    public static final String ATTRIBUTE_DATA_ACTIVATION_CODE_DESCRIPTION = "Activation code that will be used to activate this Token";
+
+
     @Override
     public List<BaseAttribute> getAttributes(String kind) {
         logger.debug("Getting the attributes for {}", kind);
@@ -93,6 +103,49 @@ public class AttributeServiceImpl implements AttributeService {
         AttributeDefinitionUtils.validateAttributes(getAttributes(kind), attributes);
         return true;
     }
+
+    @Override
+    public List<BaseAttribute> getTokenInstanceActivationAttributes(String kind) {
+        logger.debug("Getting Token instance activation attributes for {}", kind);
+
+        List<BaseAttribute> attrs = new ArrayList<>();
+
+        attrs.add(buildDataTokenActivationCode());
+
+        return attrs;
+    }
+
+    @Override
+    public boolean validateTokenInstanceActivationAttributes(String kind, List<RequestAttributeDto> attributes) {
+        if (attributes == null) {
+            return false;
+        }
+
+        AttributeDefinitionUtils.validateAttributes(getTokenInstanceActivationAttributes(kind), attributes);
+        return true;
+    }
+
+    private BaseAttribute buildDataTokenActivationCode() {
+        // define Data Attribute
+        DataAttribute attribute = new DataAttribute();
+        attribute.setUuid(ATTRIBUTE_DATA_ACTIVATION_CODE_UUID);
+        attribute.setName(ATTRIBUTE_DATA_ACTIVATION_CODE);
+        attribute.setDescription(ATTRIBUTE_DATA_ACTIVATION_CODE_DESCRIPTION);
+        attribute.setType(AttributeType.DATA);
+        attribute.setContentType(AttributeContentType.SECRET);
+        // create properties
+        DataAttributeProperties attributeProperties = new DataAttributeProperties();
+        attributeProperties.setLabel(ATTRIBUTE_DATA_ACTIVATION_CODE_LABEL);
+        attributeProperties.setRequired(true);
+        attributeProperties.setVisible(true);
+        attributeProperties.setList(false);
+        attributeProperties.setMultiSelect(false);
+        attributeProperties.setReadOnly(false);
+        attribute.setProperties(attributeProperties);
+
+        return attribute;
+    }
+
 
     private List<BaseAttribute> getAttributesForNewToken() {
         List<BaseAttribute> attrs = new ArrayList<>();

@@ -11,4 +11,8 @@ public interface AttributeService {
 
     boolean validateAttributes(String kind, List<RequestAttributeDto> attributes);
 
+    List<BaseAttribute> getTokenInstanceActivationAttributes(String kind);
+
+    boolean validateTokenInstanceActivationAttributes(String kind, List<RequestAttributeDto> attributes);
+
 }

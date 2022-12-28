@@ -1,7 +1,6 @@
 package com.czertainly.cp.soft.dao.entity;
 
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
+import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.util.SecretEncodingVersion;
@@ -40,11 +39,16 @@ public class TokenInstance extends UniquelyIdentified {
     }
 
     public String getCode() {
-        return SecretsUtil.decodeAndDecryptSecretString(code, SecretEncodingVersion.V1);
+        if (code != null) {
+            return SecretsUtil.decodeAndDecryptSecretString(code, SecretEncodingVersion.V1);
+        }
+        return null;
     }
 
     public void setCode(String code) {
-        this.code = SecretsUtil.encryptAndEncodeSecretString(code, SecretEncodingVersion.V1);
+        if (code != null) {
+            this.code = SecretsUtil.encryptAndEncodeSecretString(code, SecretEncodingVersion.V1);
+        }
     }
 
     public byte[] getData() {
@@ -55,16 +59,12 @@ public class TokenInstance extends UniquelyIdentified {
         this.data = Base64.getEncoder().encodeToString(data);
     }
 
-    public List<BaseAttribute> getAttributes() {
-        return AttributeDefinitionUtils.deserialize(attributes, BaseAttribute.class);
+    public List<MetadataAttribute> getAttributes() {
+        return AttributeDefinitionUtils.deserialize(attributes, MetadataAttribute.class);
     }
 
-    public void setAttributes(List<BaseAttribute> attributes) {
+    public void setAttributes(List<MetadataAttribute> attributes) {
         this.attributes = AttributeDefinitionUtils.serialize(attributes);;
-    }
-
-    public void setRequestAttributes(List<RequestAttributeDto> attributes) {
-        this.attributes = AttributeDefinitionUtils.serializeRequestAttributes(attributes);;
     }
 
     public TokenInstanceDto mapToDto() {
@@ -73,7 +73,7 @@ public class TokenInstance extends UniquelyIdentified {
         dto.setName(this.name);
 
         if (attributes != null) {
-            dto.setAttributes(this.getAttributes());
+            dto.setMetadata(getAttributes());
         }
 
         return dto;

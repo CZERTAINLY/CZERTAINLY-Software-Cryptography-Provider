@@ -41,12 +41,12 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
     }
 
     @Override
-    public TokenInstanceDto getTokenInstance(String uuid) throws NotFoundException {
+    public TokenInstanceDto getTokenInstance(String uuid) throws NotFoundException, TokenInstanceException {
         return tokenInstanceService.getTokenInstance(UUID.fromString(uuid));
     }
 
     @Override
-    public TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException {
+    public TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException, TokenInstanceException {
         if (!attributeService.validateAttributes(
                 request.getKind(), request.getAttributes())) {
             throw new ValidationException("Token instance attributes validation failed.");
@@ -55,18 +55,18 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
     }
 
     @Override
-    public TokenInstanceDto updateTokenInstance(String uuid, TokenInstanceRequestDto request) throws NotFoundException {
-        return null;
+    public TokenInstanceDto updateTokenInstance(String uuid, TokenInstanceRequestDto request) throws NotFoundException, TokenInstanceException {
+        throw new TokenInstanceException("Update Token instance not supported");
     }
 
     @Override
-    public void removeTokenInstance(String uuid) throws NotFoundException {
-
+    public void removeTokenInstance(String uuid) throws NotFoundException, TokenInstanceException {
+        tokenInstanceService.removeTokenInstance(UUID.fromString(uuid));
     }
 
     @Override
-    public TokenInstanceStatusDto getTokenInstanceStatus(String uuid) throws NotFoundException {
-        return null;
+    public TokenInstanceStatusDto getTokenInstanceStatus(String uuid) throws NotFoundException, TokenInstanceException {
+        return tokenInstanceService.getTokenInstanceStatus(UUID.fromString(uuid));
     }
 
     @Override
@@ -81,21 +81,24 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
 
     @Override
     public List<BaseAttribute> listTokenInstanceActivationAttributes(String uuid) throws NotFoundException {
-        return null;
+        return attributeService.getTokenInstanceActivationAttributes(uuid);
     }
 
     @Override
     public void validateTokenInstanceActivationAttributes(String uuid, List<RequestAttributeDto> attributes) throws ValidationException, NotFoundException {
-
+        attributeService.validateTokenInstanceActivationAttributes(uuid, attributes);
     }
 
     @Override
     public void activateTokenInstance(String uuid, List<RequestAttributeDto> attributes) throws ValidationException, NotFoundException, TokenInstanceException {
-
+        if (!attributeService.validateTokenInstanceActivationAttributes(uuid, attributes)) {
+            throw new ValidationException("Token instance attributes validation failed.");
+        }
+        tokenInstanceService.activateTokenInstance(UUID.fromString(uuid), attributes);
     }
 
     @Override
     public void deactivateTokenInstance(String uuid) throws NotFoundException, TokenInstanceException {
-
+        tokenInstanceService.deactivateTokenInstance(UUID.fromString(uuid));
     }
 }
