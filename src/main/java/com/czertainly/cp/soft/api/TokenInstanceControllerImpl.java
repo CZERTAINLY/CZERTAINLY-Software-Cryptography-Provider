@@ -71,12 +71,13 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
 
     @Override
     public List<BaseAttribute> listTokenProfileAttributes(String uuid) throws NotFoundException {
-        return null;
+        // there are no attributes needed for token profile
+        return List.of();
     }
 
     @Override
     public void validateTokenProfileAttributes(String uuid, List<RequestAttributeDto> attributes) throws ValidationException, NotFoundException {
-
+        // there are no attributes needed for token profile
     }
 
     @Override
