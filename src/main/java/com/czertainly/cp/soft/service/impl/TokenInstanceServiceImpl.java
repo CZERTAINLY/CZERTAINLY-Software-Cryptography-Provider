@@ -21,6 +21,7 @@ import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import com.czertainly.cp.soft.util.SecretEncodingVersion;
 import com.czertainly.cp.soft.util.SecretsUtil;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class TokenInstanceServiceImpl implements TokenInstanceService {
 
     private static final Logger logger = LoggerFactory.getLogger(TokenInstanceServiceImpl.class);
