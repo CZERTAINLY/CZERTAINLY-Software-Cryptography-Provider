@@ -1,23 +1,16 @@
 package com.czertainly.cp.soft.util;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.security.cert.CertificateException;
 
 public class KeyStoreUtil {
 
     public static byte[] createNewKeystore(String type, String code) {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-
         try {
             KeyStore ks = KeyStore.getInstance(type);
             char[] password = code.toCharArray();
@@ -40,10 +33,6 @@ public class KeyStoreUtil {
     }
 
     public static void initKeystore(byte[] data, String code) {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-
         try {
             KeyStore ks = KeyStore.getInstance("PKCS12");
             char[] password = code.toCharArray();

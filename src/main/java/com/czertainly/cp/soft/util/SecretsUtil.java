@@ -42,10 +42,6 @@ public class SecretsUtil {
             return null;
         }
 
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-
         byte[] salt = generateRandomSalt();
 
         PBEKeySpec keySpec = new PBEKeySpec(encryptionKey.toCharArray(), salt, iterations);
@@ -92,10 +88,6 @@ public class SecretsUtil {
             throw new IllegalArgumentException("Secret version not supported");
         }
 
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-
         PBEKeySpec keySpec = new PBEKeySpec(encryptionKey.toCharArray(), salt, iterations);
 
         try {
@@ -140,7 +132,7 @@ public class SecretsUtil {
         encoded.append(count);
 
         if (logger.isTraceEnabled()) {
-            logger.trace("Encoded data: " + encoded.toString());
+            logger.trace("Encoded data: " + encoded);
         }
 
         return encoded.toString();
