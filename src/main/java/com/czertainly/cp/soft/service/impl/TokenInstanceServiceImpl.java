@@ -15,6 +15,8 @@ import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceRequestDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceStatusDto;
 import com.czertainly.core.util.AttributeDefinitionUtils;
+import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
+import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.TokenInstanceRepository;
 import com.czertainly.cp.soft.service.TokenInstanceService;
@@ -66,29 +68,33 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
     }
 
     @Override
+    public TokenInstance getTokenInstanceEntity(UUID uuid) throws NotFoundException {
+        return tokenInstanceRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException(TokenInstance.class, uuid));
+    }
+
+    @Override
     public TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException, TokenInstanceException {
         final String action = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                AttributeServiceImpl.ATTRIBUTE_DATA_CREATE_TOKEN_ACTION, request.getAttributes(), StringAttributeContent.class).getData();
+                TokenInstanceAttributes.ATTRIBUTE_DATA_CREATE_TOKEN_ACTION, request.getAttributes(), StringAttributeContent.class).getData();
 
         if (action.equals("new")) {
             final String tokenName = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                    AttributeServiceImpl.ATTRIBUTE_DATA_NEW_TOKEN_NAME, request.getAttributes(), StringAttributeContent.class).getData();
+                    TokenInstanceAttributes.ATTRIBUTE_DATA_NEW_TOKEN_NAME, request.getAttributes(), StringAttributeContent.class).getData();
 
             if (tokenInstanceRepository.findByName(tokenName).isPresent()) {
                 throw new AlreadyExistException(TokenInstance.class, request.getName());
             }
 
             final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                    AttributeServiceImpl.ATTRIBUTE_DATA_NEW_TOKEN_CODE, request.getAttributes(), SecretAttributeContent.class).getData().getSecret();
+                    TokenInstanceAttributes.ATTRIBUTE_DATA_NEW_TOKEN_CODE, request.getAttributes(), SecretAttributeContent.class).getData().getSecret();
 
             byte[] tokenData = KeyStoreUtil.createNewKeystore("PKCS12", tokenCode);
 
             TokenInstance instance = new TokenInstance();
             instance.setUuid(UUID.randomUUID().toString());
             instance.setName(tokenName);
-            instance.setCode(
-                    SecretsUtil.encryptAndEncodeSecretString(tokenCode, SecretEncodingVersion.V1)
-            );
+            instance.setCode(tokenCode);
             instance.setData(tokenData);
 
             //AttributeDefinitionUtils.serializeRequestAttributes(request.getAttributes());
@@ -104,7 +110,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             return instance.mapToDto();
         } else if (action.equals("existing")) {
             final String tokenName = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                    AttributeServiceImpl.ATTRIBUTE_DATA_NEW_TOKEN_NAME, request.getAttributes(), StringAttributeContent.class).getData();
+                    TokenInstanceAttributes.ATTRIBUTE_DATA_NEW_TOKEN_NAME, request.getAttributes(), StringAttributeContent.class).getData();
 
             // TODO: change exception in method signature
 
@@ -150,7 +156,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             throw new TokenInstanceException("Token instance already activated");
         } else {
             final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                    AttributeServiceImpl.ATTRIBUTE_DATA_ACTIVATION_CODE, attributes, SecretAttributeContent.class).getData().getSecret();
+                    TokenInstanceActivationAttributes.ATTRIBUTE_DATA_ACTIVATION_CODE, attributes, SecretAttributeContent.class).getData().getSecret();
             try {
                 KeyStoreUtil.initKeystore(token.getData(), tokenCode);
             } catch (IllegalStateException e) {
@@ -158,9 +164,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
                 throw new TokenInstanceException("Cannot activate token " + token.getName() + ": " + e.getMessage());
             }
 
-            token.setCode(
-                    SecretsUtil.encryptAndEncodeSecretString(tokenCode, SecretEncodingVersion.V1)
-            );
+            token.setCode(tokenCode);
 
             tokenInstanceRepository.save(token);
         }
@@ -182,6 +186,11 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
     @Override
     public boolean containsTokens() {
         return listTokenInstances() != null;
+    }
+
+    @Override
+    public void saveTokenInstance(TokenInstance tokenInstance) {
+        tokenInstanceRepository.save(tokenInstance);
     }
 
     private MetadataAttribute buildNameMetadata(String name) {

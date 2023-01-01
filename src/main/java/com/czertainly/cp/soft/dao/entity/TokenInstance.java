@@ -48,6 +48,8 @@ public class TokenInstance extends UniquelyIdentified {
     public void setCode(String code) {
         if (code != null) {
             this.code = SecretsUtil.encryptAndEncodeSecretString(code, SecretEncodingVersion.V1);
+        } else {
+            this.code = null;
         }
     }
 
