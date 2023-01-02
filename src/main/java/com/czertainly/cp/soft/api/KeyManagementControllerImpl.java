@@ -11,7 +11,6 @@ import com.czertainly.api.model.connector.cryptography.key.DestroyKeyRequestDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
 import com.czertainly.cp.soft.service.AttributeService;
 import com.czertainly.cp.soft.service.KeyManagementService;
-import com.czertainly.cp.soft.service.TokenInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,7 +54,7 @@ public class KeyManagementControllerImpl implements KeyManagementController {
 
     @Override
     public void destroyKey(String uuid, DestroyKeyRequestDto request) throws NotFoundException, KeyManagementException {
-
+        keyManagementService.destroyKey(UUID.fromString(uuid), request);
     }
 
 }

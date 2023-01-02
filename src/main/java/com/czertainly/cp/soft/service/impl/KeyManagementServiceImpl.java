@@ -5,10 +5,12 @@ import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.connector.cryptography.key.CreateKeyRequestDto;
+import com.czertainly.api.model.connector.cryptography.key.DestroyKeyRequestDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.collection.CryptographicAlgorithm;
+import com.czertainly.cp.soft.collection.FalconDegree;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
@@ -41,6 +43,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         // load the token
         KeyStore keyStore = KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenInstance.getCode());
 
+        // TODO: check if the key with alias already exists
+
         // generate key inside the keystore
         final String algorithm = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                 KeyAttributes.ATTRIBUTE_DATA_KEY_ALGORITHM, request.getCreateKeyAttributes(), StringAttributeContent.class).getData();
@@ -68,6 +72,20 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 // add metadata
                 metadata.add(KeyAttributes.buildRsaKeySizeMetadata(keySize));
             }
+            case FALCON -> {
+                final int degree = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                        KeyAttributes.ATTRIBUTE_DATA_FALCON_DEGREE, request.getCreateKeyAttributes(), IntegerAttributeContent.class).getData();
+                FalconDegree falconDegree = FalconDegree.resolve(degree);
+
+                KeyStoreUtil.generateFalconKey(keyStore, alias, falconDegree, tokenInstance.getCode());
+
+                // add algorithm to the response that complies with the API
+                response.setCryptographicAlgorithm(com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm.FALCON);
+
+                // add metadata
+                metadata.add(KeyAttributes.buildFalconDegreeMetadata(degree));
+
+            }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
         }
 
@@ -80,6 +98,29 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         response.setKeyAttributes(metadata);
         return response;
+    }
+
+    @Override
+    public void destroyKey(UUID uuid, DestroyKeyRequestDto request) throws NotFoundException {
+        // check if the token exists
+        TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(uuid);
+
+        // load the token
+        KeyStore keyStore = KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenInstance.getCode());
+
+        // metadata must contain alias of the key to be destroyed
+        final String alias = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                KeyAttributes.ATTRIBUTE_META_KEY_ALIAS, request.getKeyAttributes(), StringAttributeContent.class).getData();
+
+        // destroy key
+        KeyStoreUtil.deleteAliasFromKeyStore(keyStore, alias);
+
+        // store key inside token
+        byte[] data = KeyStoreUtil.saveKeystore(keyStore, tokenInstance.getCode());
+        tokenInstance.setData(data);
+
+        // save token and return
+        tokenInstanceService.saveTokenInstance(tokenInstance);
     }
 
 }

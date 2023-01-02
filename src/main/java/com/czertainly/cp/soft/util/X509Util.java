@@ -1,5 +1,6 @@
 package com.czertainly.cp.soft.util;
 
+import com.czertainly.cp.soft.collection.FalconDegree;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -20,6 +21,16 @@ public class X509Util {
 
     public static X509Certificate generateRsaOrphanX509Certificate(KeyPair keyPair) {;
         return generateOrphanX509Certificate(keyPair, "SHA512WithRSAEncryption");
+    }
+
+    public static X509Certificate generateFalconOrphanX509Certificate(KeyPair keyPair, FalconDegree degree) {
+        if (degree == FalconDegree.FALCON_512) {
+            return generateOrphanX509Certificate(keyPair, "Falcon-512");
+        } else if (degree == FalconDegree.FALCON_1024) {
+            return generateOrphanX509Certificate(keyPair, "Falcon-1024");
+        } else {
+            throw new IllegalArgumentException("Unknown Falcon degree");
+        }
     }
 
     public static X509Certificate generateOrphanX509Certificate(KeyPair keyPair, String signatureAlgorithm) {;
