@@ -27,8 +27,8 @@ public class TokenInstance extends UniquelyIdentified {
     @Column(name = "data")
     private String data;
 
-    @Column(name = "attributes")
-    private String attributes;
+    @Column(name = "metadata")
+    private String metadata;
 
     public String getName() {
         return name;
@@ -61,12 +61,12 @@ public class TokenInstance extends UniquelyIdentified {
         this.data = Base64.getEncoder().encodeToString(data);
     }
 
-    public List<MetadataAttribute> getAttributes() {
-        return AttributeDefinitionUtils.deserialize(attributes, MetadataAttribute.class);
+    public List<MetadataAttribute> getMetadata() {
+        return AttributeDefinitionUtils.deserialize(metadata, MetadataAttribute.class);
     }
 
-    public void setAttributes(List<MetadataAttribute> attributes) {
-        this.attributes = AttributeDefinitionUtils.serialize(attributes);;
+    public void setMetadata(List<MetadataAttribute> metadata) {
+        this.metadata = AttributeDefinitionUtils.serialize(metadata);
     }
 
     public TokenInstanceDto mapToDto() {
@@ -74,8 +74,8 @@ public class TokenInstance extends UniquelyIdentified {
         dto.setUuid(this.uuid.toString());
         dto.setName(this.name);
 
-        if (attributes != null) {
-            dto.setMetadata(getAttributes());
+        if (metadata != null) {
+            dto.setMetadata(getMetadata());
         }
 
         return dto;

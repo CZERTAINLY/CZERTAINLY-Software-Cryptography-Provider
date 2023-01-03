@@ -2,7 +2,6 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.AlreadyExistException;
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.exception.TokenInstanceException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.AttributeType;
 import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
@@ -19,10 +18,9 @@ import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.TokenInstanceRepository;
+import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
-import com.czertainly.cp.soft.util.SecretEncodingVersion;
-import com.czertainly.cp.soft.util.SecretsUtil;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +72,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
     }
 
     @Override
-    public TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException, TokenInstanceException {
+    public TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException {
         final String action = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                 TokenInstanceAttributes.ATTRIBUTE_DATA_CREATE_TOKEN_ACTION, request.getAttributes(), StringAttributeContent.class).getData();
 
@@ -103,7 +101,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             List<MetadataAttribute> attributes = new ArrayList<>();
             attributes.add(buildNameMetadata(tokenName));
 
-            instance.setAttributes(attributes);
+            instance.setMetadata(attributes);
 
             tokenInstanceRepository.save(instance);
 

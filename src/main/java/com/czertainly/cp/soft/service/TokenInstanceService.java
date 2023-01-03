@@ -2,7 +2,6 @@ package com.czertainly.cp.soft.service;
 
 import com.czertainly.api.exception.AlreadyExistException;
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.exception.TokenInstanceException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceRequestDto;
@@ -20,15 +19,15 @@ public interface TokenInstanceService {
 
     TokenInstance getTokenInstanceEntity(UUID uuid) throws NotFoundException;
 
-    TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException, TokenInstanceException;
+    TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException;
 
     void removeTokenInstance(UUID uuid) throws NotFoundException;
 
     TokenInstanceStatusDto getTokenInstanceStatus(UUID uuid) throws NotFoundException;
 
-    void activateTokenInstance(UUID uuid, List<RequestAttributeDto> attributes) throws NotFoundException, TokenInstanceException;
+    void activateTokenInstance(UUID uuid, List<RequestAttributeDto> attributes) throws NotFoundException;
 
-    void deactivateTokenInstance(UUID uuid) throws NotFoundException, TokenInstanceException;
+    void deactivateTokenInstance(UUID uuid) throws NotFoundException;
 
     boolean containsTokens();
 

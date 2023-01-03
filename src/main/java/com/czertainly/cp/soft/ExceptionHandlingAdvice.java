@@ -3,6 +3,7 @@ package com.czertainly.cp.soft;
 import com.czertainly.api.exception.*;
 import com.czertainly.cp.soft.dto.ApiErrorResponseDto;
 import com.czertainly.cp.soft.dto.ErrorMessageDto;
+import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -149,6 +150,11 @@ public class ExceptionHandlingAdvice {
                 apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
     }
 
+    @ExceptionHandler(NotSupportedException.class)
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    public void handleTokenInstanceException(NotSupportedException ex) {
+        log.debug("HTTP 501: {}", ex.getMessage());
+    }
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleAll(Exception ex) {

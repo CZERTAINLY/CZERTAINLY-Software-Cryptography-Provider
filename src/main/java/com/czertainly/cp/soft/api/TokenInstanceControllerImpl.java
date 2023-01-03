@@ -2,7 +2,6 @@ package com.czertainly.cp.soft.api;
 
 import com.czertainly.api.exception.AlreadyExistException;
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.exception.TokenInstanceException;
 import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.interfaces.connector.cryptography.TokenInstanceController;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
@@ -10,6 +9,7 @@ import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceRequestDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceStatusDto;
+import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.czertainly.cp.soft.service.AttributeService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +41,12 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
     }
 
     @Override
-    public TokenInstanceDto getTokenInstance(String uuid) throws NotFoundException, TokenInstanceException {
+    public TokenInstanceDto getTokenInstance(String uuid) throws NotFoundException {
         return tokenInstanceService.getTokenInstance(UUID.fromString(uuid));
     }
 
     @Override
-    public TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException, TokenInstanceException {
+    public TokenInstanceDto createTokenInstance(TokenInstanceRequestDto request) throws AlreadyExistException {
         if (!attributeService.validateAttributes(
                 request.getKind(), request.getAttributes())) {
             throw new ValidationException("Token instance attributes validation failed.");
@@ -55,17 +55,17 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
     }
 
     @Override
-    public TokenInstanceDto updateTokenInstance(String uuid, TokenInstanceRequestDto request) throws NotFoundException, TokenInstanceException {
-        throw new TokenInstanceException("Update Token instance not supported");
+    public TokenInstanceDto updateTokenInstance(String uuid, TokenInstanceRequestDto request) throws NotFoundException {
+        throw new NotSupportedException("Update Token instance not supported");
     }
 
     @Override
-    public void removeTokenInstance(String uuid) throws NotFoundException, TokenInstanceException {
+    public void removeTokenInstance(String uuid) throws NotFoundException {
         tokenInstanceService.removeTokenInstance(UUID.fromString(uuid));
     }
 
     @Override
-    public TokenInstanceStatusDto getTokenInstanceStatus(String uuid) throws NotFoundException, TokenInstanceException {
+    public TokenInstanceStatusDto getTokenInstanceStatus(String uuid) throws NotFoundException {
         return tokenInstanceService.getTokenInstanceStatus(UUID.fromString(uuid));
     }
 
@@ -91,7 +91,7 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
     }
 
     @Override
-    public void activateTokenInstance(String uuid, List<RequestAttributeDto> attributes) throws ValidationException, NotFoundException, TokenInstanceException {
+    public void activateTokenInstance(String uuid, List<RequestAttributeDto> attributes) throws NotFoundException {
         if (!attributeService.validateTokenInstanceActivationAttributes(uuid, attributes)) {
             throw new ValidationException("Token instance attributes validation failed.");
         }
@@ -99,7 +99,7 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
     }
 
     @Override
-    public void deactivateTokenInstance(String uuid) throws NotFoundException, TokenInstanceException {
+    public void deactivateTokenInstance(String uuid) throws NotFoundException {
         tokenInstanceService.deactivateTokenInstance(UUID.fromString(uuid));
     }
 }

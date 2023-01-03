@@ -5,13 +5,15 @@ import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.connector.cryptography.key.CreateKeyRequestDto;
-import com.czertainly.api.model.connector.cryptography.key.DestroyKeyRequestDto;
-import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
+import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDto;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.collection.CryptographicAlgorithm;
 import com.czertainly.cp.soft.collection.FalconDegree;
+import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
+import com.czertainly.cp.soft.dao.repository.KeyDataRepository;
+import com.czertainly.cp.soft.exception.KeyManagementException;
 import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
@@ -30,20 +32,25 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     private TokenInstanceService tokenInstanceService;
 
+    private KeyDataRepository keyDataRepository;
+
     @Autowired
     public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
         this.tokenInstanceService = tokenInstanceService;
     }
 
+    @Autowired
+    public void setKeyDataRepository(KeyDataRepository keyDataRepository) {
+        this.keyDataRepository = keyDataRepository;
+    }
+
     @Override
-    public KeyDataResponseDto createKey(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
+    public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
         // check if the token exists
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(uuid);
 
         // load the token
         KeyStore keyStore = KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenInstance.getCode());
-
-        // TODO: check if the key with alias already exists
 
         // generate key inside the keystore
         final String algorithm = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
@@ -55,7 +62,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         final String alias = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                 KeyAttributes.ATTRIBUTE_DATA_KEY_ALIAS, request.getCreateKeyAttributes(), StringAttributeContent.class).getData();
 
-        KeyDataResponseDto response = new KeyDataResponseDto();
+        // check if the alias is already used in the keystore
+        keyDataRepository.findByNameAndTokenInstanceUuid(alias, uuid)
+                .orElseThrow(() -> new KeyManagementException("Alias '" + alias + "'already exists in the KeyStore " + uuid));;
+
+        KeyPairDataResponseDto response = new KeyPairDataResponseDto();
 
         List<MetadataAttribute> metadata = new ArrayList<>();
         metadata.add(KeyAttributes.buildAliasMetadata(alias));
@@ -67,7 +78,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 KeyStoreUtil.generateRsaKey(keyStore, alias, keySize, tokenInstance.getCode());
 
                 // add algorithm to the response that complies with the API
-                response.setCryptographicAlgorithm(com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm.RSA);
+                //response.setCryptographicAlgorithm(com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm.RSA);
 
                 // add metadata
                 metadata.add(KeyAttributes.buildRsaKeySizeMetadata(keySize));
@@ -80,7 +91,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 KeyStoreUtil.generateFalconKey(keyStore, alias, falconDegree, tokenInstance.getCode());
 
                 // add algorithm to the response that complies with the API
-                response.setCryptographicAlgorithm(com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm.FALCON);
+                //response.setCryptographicAlgorithm(com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm.FALCON);
 
                 // add metadata
                 metadata.add(KeyAttributes.buildFalconDegreeMetadata(degree));
@@ -96,12 +107,19 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         // save token and return
         tokenInstanceService.saveTokenInstance(tokenInstance);
 
-        response.setKeyAttributes(metadata);
+        // TODO
+        //response.setPrivateKey();
+        //response.getPublicKey();
+
         return response;
     }
 
     @Override
-    public void destroyKey(UUID uuid, DestroyKeyRequestDto request) throws NotFoundException {
+    public void destroyKey(UUID uuid, UUID keyUuid) throws NotFoundException {
+
+        KeyData key = keyDataRepository.findByUuid(keyUuid)
+                .orElseThrow(() -> new NotFoundException(KeyData.class, keyUuid));
+
         // check if the token exists
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(uuid);
 
@@ -110,17 +128,20 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         // metadata must contain alias of the key to be destroyed
         final String alias = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                KeyAttributes.ATTRIBUTE_META_KEY_ALIAS, request.getKeyAttributes(), StringAttributeContent.class).getData();
+                KeyAttributes.ATTRIBUTE_META_KEY_ALIAS, key.getMetadata(), StringAttributeContent.class).getData();
 
-        // destroy key
+        // destroy key, it should exists when it is found in the database
         KeyStoreUtil.deleteAliasFromKeyStore(keyStore, alias);
 
-        // store key inside token
+        // store updated token
         byte[] data = KeyStoreUtil.saveKeystore(keyStore, tokenInstance.getCode());
         tokenInstance.setData(data);
 
         // save token and return
         tokenInstanceService.saveTokenInstance(tokenInstance);
+
+        // delete key from the database
+        keyDataRepository.delete(key);
     }
 
 }
