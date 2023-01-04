@@ -4,7 +4,10 @@ import com.czertainly.api.model.common.attribute.v2.*;
 import com.czertainly.api.model.common.attribute.v2.callback.AttributeCallback;
 import com.czertainly.api.model.common.attribute.v2.callback.AttributeCallbackMapping;
 import com.czertainly.api.model.common.attribute.v2.callback.AttributeValueTarget;
+import com.czertainly.api.model.common.attribute.v2.constraint.AttributeConstraintType;
+import com.czertainly.api.model.common.attribute.v2.constraint.RegexpAttributeConstraint;
 import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
+import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.TextAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
@@ -43,21 +46,36 @@ public class TokenInstanceAttributes {
     public static final String ATTRIBUTE_DATA_NEW_TOKEN_NAME_LABEL = "New Token name";
     public static final String ATTRIBUTE_DATA_NEW_TOKEN_NAME_DESCRIPTION = "Provide name for the new Token that will be created";
 
-    public static final String ATTRIBUTE_DATA_NEW_TOKEN_CODE = "data_newTokenCode";
-    public static final String ATTRIBUTE_DATA_NEW_TOKEN_CODE_UUID = "181aae19-d2a3-40ca-b5c7-570c8dfbb3cb";
-    public static final String ATTRIBUTE_DATA_NEW_TOKEN_CODE_LABEL = "New Token activation code";
-    public static final String ATTRIBUTE_DATA_NEW_TOKEN_CODE_DESCRIPTION = "Activation code that will be used to activate this new Token";
+    public static final String ATTRIBUTE_DATA_TOKEN_CODE = "data_tokenCode";
+    public static final String ATTRIBUTE_DATA_TOKEN_CODE_UUID = "181aae19-d2a3-40ca-b5c7-570c8dfbb3cb";
+    public static final String ATTRIBUTE_DATA_TOKEN_CODE_LABEL = "Token activation code";
+    public static final String ATTRIBUTE_DATA_TOKEN_CODE_DESCRIPTION = "Activation code that will be used to activate this Token";
+
+    public static final String ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN = "data_existingToken";
+    public static final String ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN_UUID = "a12bb85a-93a9-4c05-9d7d-5b253298bbaf";
+    public static final String ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN_LABEL = "Select Existing Token";
+    public static final String ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN_DESCRIPTION = "Select one of the existing Tokens to be loaded";
 
     public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION = "data_createTokenAction";
     public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_UUID = "cc781ba3-d90b-4fe9-915a-e8d44e1cff86";
 
-    public static List<BaseAttribute> buildAttributesForNewToken() {
+    public static List<BaseAttribute> getNewTokenAttributes() {
         List<BaseAttribute> attrs = new ArrayList<>();
 
         attrs.add(buildDataCreateTokenAction("new"));
         attrs.add(buildInfoNewToken());
         attrs.add(buildDataNewTokenName());
-        attrs.add(buildDataNewTokenCode());
+        attrs.add(buildDataTokenCode());
+
+        return attrs;
+    }
+
+    public static List<BaseAttribute> getExistingTokenAttributes(List<BaseAttributeContent> tokens) {
+        List<BaseAttribute> attrs = new ArrayList<>();
+
+        attrs.add(buildDataCreateTokenAction("existing"));
+        attrs.add(buildDataSelectExistingToken(tokens));
+        attrs.add(buildDataTokenCode());
 
         return attrs;
     }
@@ -123,21 +141,29 @@ public class TokenInstanceAttributes {
         attributeProperties.setList(false);
         attributeProperties.setMultiSelect(false);
         attribute.setProperties(attributeProperties);
+        // create restrictions
+        RegexpAttributeConstraint regexpAttributeConstraint = new RegexpAttributeConstraint();
+        regexpAttributeConstraint.setDescription("The name must begin with a letter and use only alphanumeric " +
+                "characters and underscores. The name cannot end with an underscore or have two consecutive underscores.");
+        regexpAttributeConstraint.setErrorMessage("Invalid name for the Token");
+        regexpAttributeConstraint.setType(AttributeConstraintType.REGEXP);
+        regexpAttributeConstraint.setData("^[a-zA-Z](?:_?[a-zA-Z0-9]+)*$");
+        attribute.setConstraints(List.of(regexpAttributeConstraint));
 
         return attribute;
     }
 
-    public static BaseAttribute buildDataNewTokenCode() {
+    public static BaseAttribute buildDataTokenCode() {
         // define Data Attribute
         DataAttribute attribute = new DataAttribute();
-        attribute.setUuid(ATTRIBUTE_DATA_NEW_TOKEN_CODE_UUID);
-        attribute.setName(ATTRIBUTE_DATA_NEW_TOKEN_CODE);
-        attribute.setDescription(ATTRIBUTE_DATA_NEW_TOKEN_CODE_DESCRIPTION);
+        attribute.setUuid(ATTRIBUTE_DATA_TOKEN_CODE_UUID);
+        attribute.setName(ATTRIBUTE_DATA_TOKEN_CODE);
+        attribute.setDescription(ATTRIBUTE_DATA_TOKEN_CODE_DESCRIPTION);
         attribute.setType(AttributeType.DATA);
         attribute.setContentType(AttributeContentType.SECRET);
         // create properties
         DataAttributeProperties attributeProperties = new DataAttributeProperties();
-        attributeProperties.setLabel(ATTRIBUTE_DATA_NEW_TOKEN_CODE_LABEL);
+        attributeProperties.setLabel(ATTRIBUTE_DATA_TOKEN_CODE_LABEL);
         attributeProperties.setRequired(true);
         attributeProperties.setVisible(true);
         attributeProperties.setList(false);
@@ -195,6 +221,28 @@ public class TokenInstanceAttributes {
         return attribute;
     }
 
+    public static BaseAttribute buildDataSelectExistingToken(List<BaseAttributeContent> tokens) {
+        // define Data Attribute
+        DataAttribute attribute = new DataAttribute();
+        attribute.setUuid(ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN_UUID);
+        attribute.setName(ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN);
+        attribute.setDescription(ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN_LABEL);
+        attribute.setType(AttributeType.DATA);
+        attribute.setContentType(AttributeContentType.STRING);
+        // create properties
+        DataAttributeProperties attributeProperties = new DataAttributeProperties();
+        attributeProperties.setLabel(ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN_DESCRIPTION);
+        attributeProperties.setRequired(true);
+        attributeProperties.setVisible(true);
+        attributeProperties.setList(true);
+        attributeProperties.setMultiSelect(false);
+        attribute.setProperties(attributeProperties);
+        // set content
+        attribute.setContent(tokens);
+
+        return attribute;
+    }
+
     public static BaseAttribute buildGroupBasedOnSelect() {
         // define Group Attribute
         GroupAttribute attribute = new GroupAttribute();
@@ -207,7 +255,7 @@ public class TokenInstanceAttributes {
         mappings.add(new AttributeCallbackMapping(ATTRIBUTE_DATA_OPTIONS + ".reference", "option", AttributeValueTarget.PATH_VARIABLE));
         // create attribute callback
         AttributeCallback attributeCallback = new AttributeCallback();
-        attributeCallback.setCallbackContext("/v1/cryptographyProvider/{option}/attributes");
+        attributeCallback.setCallbackContext("/v1/cryptographyProvider/token/{option}/attributes");
         attributeCallback.setCallbackMethod("GET");
         attributeCallback.setMappings(mappings);
         // set attribute callback

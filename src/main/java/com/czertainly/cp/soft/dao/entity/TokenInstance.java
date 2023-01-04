@@ -8,9 +8,11 @@ import com.czertainly.cp.soft.util.SecretsUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.sql.Timestamp;
 import java.util.Base64;
 import java.util.List;
 
@@ -29,6 +31,10 @@ public class TokenInstance extends UniquelyIdentified {
 
     @Column(name = "metadata")
     private String metadata;
+
+    @Column(name = "timestamp")
+    @Version
+    private Timestamp timestamp;
 
     public String getName() {
         return name;

@@ -1,5 +1,6 @@
 package com.czertainly.cp.soft.util;
 
+import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.FalconDegree;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 
 public class KeyStoreUtil {
 
@@ -84,6 +86,15 @@ public class KeyStoreUtil {
             throw new IllegalStateException("Cannot instantiate KeyStore", e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Invalid algorithm for KeyStore ", e);
+        }
+    }
+
+    public static SpkiKeyValue spkiKeyValueFromKeyStore(KeyStore keyStore, String alias) {
+        try {
+            X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
+            return new SpkiKeyValue(Base64.getEncoder().encodeToString(certificate.getPublicKey().getEncoded()));
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot get public key with alias '"+alias+"' from KeyStore", e);
         }
     }
 

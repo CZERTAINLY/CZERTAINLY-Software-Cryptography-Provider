@@ -44,7 +44,7 @@ public class KeyManagementControllerImpl implements KeyManagementController {
     }
 
     @Override
-    public SecretKeyDataResponseDto createSecretKey(String uuid, CreateKeyRequestDto request) throws NotFoundException {
+    public KeyDataResponseDto createSecretKey(String uuid, CreateKeyRequestDto request) throws NotFoundException {
         throw new NotSupportedException("Secret keys are not supported.");
     }
 
@@ -65,12 +65,12 @@ public class KeyManagementControllerImpl implements KeyManagementController {
 
     @Override
     public List<KeyDataResponseDto> listKeys(String uuid) throws NotFoundException {
-        throw new NotSupportedException("Not implemented.");
+        return keyManagementService.listKeys(UUID.fromString(uuid));
     }
 
     @Override
     public KeyDataResponseDto getKey(String uuid, String keyUuid) throws NotFoundException {
-        throw new NotSupportedException("Not implemented.");
+        return keyManagementService.getKey(UUID.fromString(uuid), UUID.fromString(keyUuid));
     }
 
     @Override

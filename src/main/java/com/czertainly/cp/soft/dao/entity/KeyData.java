@@ -4,7 +4,10 @@ import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
 import com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm;
 import com.czertainly.api.model.connector.cryptography.enums.KeyFormat;
 import com.czertainly.api.model.connector.cryptography.enums.KeyType;
+import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
+import com.czertainly.api.model.connector.cryptography.key.value.*;
 import com.czertainly.core.util.AttributeDefinitionUtils;
+import com.czertainly.cp.soft.util.KeyUtil;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -18,6 +21,9 @@ public class KeyData extends UniquelyIdentified {
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "association")
+    private String association;
 
     @Column(name = "type")
     private KeyType type;
@@ -52,6 +58,14 @@ public class KeyData extends UniquelyIdentified {
         this.name = name;
     }
 
+    public String getAssociation() {
+        return association;
+    }
+
+    public void setAssociation(String association) {
+        this.association = association;
+    }
+
     public KeyType getType() {
         return type;
     }
@@ -76,12 +90,25 @@ public class KeyData extends UniquelyIdentified {
         this.format = format;
     }
 
-    public String getValue() {
-        return value;
+    public KeyValue getValue() {
+        switch (format) {
+            case RAW:
+                return KeyUtil.deserializeKeyValue(value, RawKeyValue.class);
+            case SPKI:
+                return KeyUtil.deserializeKeyValue(value, SpkiKeyValue.class);
+            case PRKI:
+                return KeyUtil.deserializeKeyValue(value, PrkiKeyValue.class);
+            case EPRKI:
+                return KeyUtil.deserializeKeyValue(value, EprkiKeyValue.class);
+            case CUSTOM:
+                return KeyUtil.deserializeKeyValue(value, CustomKeyValue.class);
+            default:
+                throw new IllegalArgumentException("Unsupported key format: " + format);
+        }
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setValue(KeyValue value) {
+        this.value = KeyUtil.serializeKeyValue(value);
     }
 
     public int getLength() {
@@ -116,6 +143,30 @@ public class KeyData extends UniquelyIdentified {
 
     public void setTokenInstanceUuid(UUID tokenInstanceUuid) {
         this.tokenInstanceUuid = tokenInstanceUuid;
+    }
+
+    public com.czertainly.api.model.connector.cryptography.key.KeyData toKeyData() {
+        com.czertainly.api.model.connector.cryptography.key.KeyData keyData = new com.czertainly.api.model.connector.cryptography.key.KeyData();
+        keyData.setType(getType());
+        keyData.setAlgorithm(getAlgorithm());
+        keyData.setFormat(getFormat());
+        keyData.setValue(getValue());
+        keyData.setLength(getLength());
+        keyData.setMetadata(getMetadata());
+
+        return keyData;
+    }
+
+    public KeyDataResponseDto toKeyDataResponseDto() {
+        com.czertainly.api.model.connector.cryptography.key.KeyData keyData = toKeyData();
+
+        KeyDataResponseDto keyDataResponseDto = new KeyDataResponseDto();
+        keyDataResponseDto.setUuid(getUuid().toString());
+        keyDataResponseDto.setName(getName());
+        keyDataResponseDto.setAssociation(getAssociation());
+        keyDataResponseDto.setKeyData(keyData);
+
+        return keyDataResponseDto;
     }
 
     @Override

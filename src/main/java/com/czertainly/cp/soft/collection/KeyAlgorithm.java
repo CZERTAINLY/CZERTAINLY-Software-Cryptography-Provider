@@ -7,14 +7,14 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum CryptographicAlgorithm {
+public enum KeyAlgorithm {
     RSA(1, "RSA", "Rivest–Shamir–Adleman"),
     ECDSA(2, "ECDSA", "Elliptic Curve Digital Signature Algorithm"),
     FALCON(3, "FALCON", "Fast Fourier lattice-based compact signatures over NTRU"),
     DILITHIUM(4, "CRYSTALS-Dilithium", "Post-quantum lattice-based signature scheme"),
     SPHINCSPLUS(5, "SPHINCS+", "Post-quantum stateless hash-based signature scheme");
 
-    private static final CryptographicAlgorithm[] VALUES;
+    private static final KeyAlgorithm[] VALUES;
 
     static {
         VALUES = values();
@@ -24,7 +24,7 @@ public enum CryptographicAlgorithm {
     private final String name;
     private final String description;
 
-    CryptographicAlgorithm(int id, String name, String description) {
+    KeyAlgorithm(int id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -56,8 +56,8 @@ public enum CryptographicAlgorithm {
      * @return the enum constant with the specified id
      * @throws IllegalArgumentException if this enum has no constant for the specified id
      */
-    public static CryptographicAlgorithm valueOf(int id) {
-        CryptographicAlgorithm alg = resolve(id);
+    public static KeyAlgorithm valueOf(int id) {
+        KeyAlgorithm alg = resolve(id);
         if (alg == null) {
             throw new IllegalArgumentException("No matching constant for [" + id + "]");
         }
@@ -70,9 +70,9 @@ public enum CryptographicAlgorithm {
      * @return the corresponding {@code CryptographicAlgorithm}, or {@code null} if not found
      */
     @Nullable
-    public static CryptographicAlgorithm resolve(int id) {
+    public static KeyAlgorithm resolve(int id) {
         // Use cached VALUES instead of values() to prevent array allocation.
-        for (CryptographicAlgorithm alg : VALUES) {
+        for (KeyAlgorithm alg : VALUES) {
             if (alg.id == id) {
                 return alg;
             }

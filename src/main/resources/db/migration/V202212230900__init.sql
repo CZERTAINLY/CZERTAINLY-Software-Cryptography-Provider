@@ -6,13 +6,15 @@ create table token_instance
     -- base64 encoded pkcs12 keystore data
     data text not null,
     metadata text,
+    timestamp timestamp not null,
     primary key (uuid)
 );
 
 create table key_data
 (
     uuid uuid not null,
-    name varchar(255),
+    name varchar(255) not null,
+    association varchar(255),
     type varchar(255) not null,
     algorithm varchar(255) not null,
     format varchar(255) not null,

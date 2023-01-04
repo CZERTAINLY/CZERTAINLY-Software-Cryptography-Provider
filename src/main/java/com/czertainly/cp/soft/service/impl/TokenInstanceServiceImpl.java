@@ -85,7 +85,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             }
 
             final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                    TokenInstanceAttributes.ATTRIBUTE_DATA_NEW_TOKEN_CODE, request.getAttributes(), SecretAttributeContent.class).getData().getSecret();
+                    TokenInstanceAttributes.ATTRIBUTE_DATA_TOKEN_CODE, request.getAttributes(), SecretAttributeContent.class).getData().getSecret();
 
             byte[] tokenData = KeyStoreUtil.createNewKeystore("PKCS12", tokenCode);
 
@@ -94,9 +94,6 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             instance.setName(tokenName);
             instance.setCode(tokenCode);
             instance.setData(tokenData);
-
-            //AttributeDefinitionUtils.serializeRequestAttributes(request.getAttributes());
-            //instance.setRequestAttributes(request.getAttributes());
 
             List<MetadataAttribute> attributes = new ArrayList<>();
             attributes.add(buildNameMetadata(tokenName));
@@ -108,13 +105,22 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             return instance.mapToDto();
         } else if (action.equals("existing")) {
             final String tokenName = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                    TokenInstanceAttributes.ATTRIBUTE_DATA_NEW_TOKEN_NAME, request.getAttributes(), StringAttributeContent.class).getData();
+                    TokenInstanceAttributes.ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN, request.getAttributes(), StringAttributeContent.class).getData();
 
-            // TODO: change exception in method signature
+            TokenInstance tokenInstance = tokenInstanceRepository.findByName(tokenName)
+                    .orElseThrow(() -> new TokenInstanceException("Token " + tokenName + " not found"));
 
-            return tokenInstanceRepository.findByName(tokenName)
-                    .orElseThrow(() -> new TokenInstanceException("Token " + tokenName + " not found"))
-                    .mapToDto();
+            // try to activate token using provided code
+            final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                    TokenInstanceAttributes.ATTRIBUTE_DATA_TOKEN_CODE, request.getAttributes(), SecretAttributeContent.class).getData().getSecret();
+            try {
+                KeyStoreUtil.initKeystore(tokenInstance.getData(), tokenCode);
+            } catch (IllegalStateException e) {
+                logger.debug("Token activation failed", e);
+                throw new TokenInstanceException("Cannot activate token " + tokenInstance.getName() + ": " + e.getMessage());
+            }
+
+            return tokenInstance.mapToDto();
         } else {
             throw new TokenInstanceException("Unknown operation to create Token: " + action);
         }

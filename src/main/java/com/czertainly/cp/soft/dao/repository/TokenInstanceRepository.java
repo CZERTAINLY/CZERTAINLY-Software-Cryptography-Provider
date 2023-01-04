@@ -12,9 +12,10 @@ import java.util.UUID;
 @Repository
 public interface TokenInstanceRepository extends JpaRepository<TokenInstance, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Lock(LockModeType.OPTIMISTIC)
     Optional<TokenInstance> findByName(String name);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Lock(LockModeType.OPTIMISTIC)
     Optional<TokenInstance> findByUuid(UUID uuid);
+
 }

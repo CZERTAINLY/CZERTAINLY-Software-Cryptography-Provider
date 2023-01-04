@@ -4,6 +4,7 @@ import com.czertainly.api.exception.*;
 import com.czertainly.cp.soft.dto.ApiErrorResponseDto;
 import com.czertainly.cp.soft.dto.ErrorMessageDto;
 import com.czertainly.cp.soft.exception.NotSupportedException;
+import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;

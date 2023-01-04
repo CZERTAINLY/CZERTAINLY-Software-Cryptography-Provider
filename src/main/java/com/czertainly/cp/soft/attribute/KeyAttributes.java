@@ -9,7 +9,7 @@ import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeCont
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
 import com.czertainly.api.model.common.attribute.v2.properties.MetadataAttributeProperties;
-import com.czertainly.cp.soft.collection.CryptographicAlgorithm;
+import com.czertainly.cp.soft.collection.KeyAlgorithm;
 import com.czertainly.cp.soft.collection.FalconDegree;
 import com.czertainly.cp.soft.collection.RSAKeySize;
 
@@ -110,7 +110,7 @@ public class KeyAttributes {
         attributeProperties.setReadOnly(false);
         attribute.setProperties(attributeProperties);
         // set content
-        attribute.setContent(CryptographicAlgorithm.asStringAttributeContentList());
+        attribute.setContent(KeyAlgorithm.asStringAttributeContentList());
 
         return attribute;
     }

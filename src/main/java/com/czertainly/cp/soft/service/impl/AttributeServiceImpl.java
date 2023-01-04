@@ -36,7 +36,7 @@ public class AttributeServiceImpl implements AttributeService {
 
         // when we do not have Tokens, return attributes to create new
         if (tokenInstanceService.listTokenInstances() == null) {
-            return TokenInstanceAttributes.buildAttributesForNewToken();
+            return TokenInstanceAttributes.getNewTokenAttributes();
         } else {
             List<BaseAttribute> attrs = new ArrayList<>();
 
