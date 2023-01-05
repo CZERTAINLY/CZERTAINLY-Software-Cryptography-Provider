@@ -2,6 +2,7 @@ package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.FalconDegree;
+import com.czertainly.cp.soft.dao.entity.KeyData;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 
 import java.io.ByteArrayInputStream;
@@ -156,6 +157,28 @@ public class KeyStoreUtil {
             keyStore.deleteEntry(alias);
         } catch (KeyStoreException e) {
             throw new IllegalStateException("Cannot remove alias '" + alias + "'", e);
+        }
+    }
+
+    public static PrivateKey getPrivateKey(KeyData key) {
+        KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
+        try {
+            return (PrivateKey) keyStore.getKey(key.getName(), key.getTokenInstance().getCode().toCharArray());
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot load Token '"+key.getTokenInstance().getName()+"'", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Algorithm '"+key.getAlgorithm()+"' cannot be used", e);
+        } catch (UnrecoverableKeyException e) {
+            throw new IllegalStateException("Cannot load private key '"+key.getName()+"' from Token '"+key.getTokenInstance().getName()+"'", e);
+        }
+    }
+
+    public static X509Certificate getCertificate(KeyData key) {
+        KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
+        try {
+            return (X509Certificate) keyStore.getCertificate(key.getName());
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot load Token '"+key.getTokenInstance().getName()+"'", e);
         }
     }
 

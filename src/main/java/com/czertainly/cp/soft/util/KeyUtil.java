@@ -1,14 +1,8 @@
 package com.czertainly.cp.soft.util;
 
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.api.model.connector.cryptography.key.value.KeyValue;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.List;
-import java.util.UUID;
 
 public class KeyUtil {
 

@@ -4,7 +4,6 @@ import com.czertainly.api.model.common.attribute.v2.*;
 import com.czertainly.api.model.common.attribute.v2.callback.AttributeCallback;
 import com.czertainly.api.model.common.attribute.v2.callback.AttributeCallbackMapping;
 import com.czertainly.api.model.common.attribute.v2.callback.AttributeValueTarget;
-import com.czertainly.api.model.common.attribute.v2.constraint.AttributeConstraintType;
 import com.czertainly.api.model.common.attribute.v2.constraint.RegexpAttributeConstraint;
 import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
 import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
@@ -146,7 +145,6 @@ public class TokenInstanceAttributes {
         regexpAttributeConstraint.setDescription("The name must begin with a letter and use only alphanumeric " +
                 "characters and underscores. The name cannot end with an underscore or have two consecutive underscores.");
         regexpAttributeConstraint.setErrorMessage("Invalid name for the Token");
-        regexpAttributeConstraint.setType(AttributeConstraintType.REGEXP);
         regexpAttributeConstraint.setData("^[a-zA-Z](?:_?[a-zA-Z0-9]+)*$");
         attribute.setConstraints(List.of(regexpAttributeConstraint));
 

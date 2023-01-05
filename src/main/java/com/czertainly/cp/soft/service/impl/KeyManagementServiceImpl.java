@@ -13,7 +13,9 @@ import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDt
 import com.czertainly.api.model.connector.cryptography.key.value.CustomKeyValue;
 import com.czertainly.api.model.connector.cryptography.key.value.KeyValue;
 import com.czertainly.core.util.AttributeDefinitionUtils;
+import com.czertainly.cp.soft.attribute.FalconKeyAttributes;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
+import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import com.czertainly.cp.soft.collection.KeyAlgorithm;
 import com.czertainly.cp.soft.collection.FalconDegree;
 import com.czertainly.cp.soft.dao.entity.KeyData;
@@ -88,7 +90,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         switch (cryptographicAlgorithm) {
             case RSA -> {
                 final int keySize = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        KeyAttributes.ATTRIBUTE_DATA_RSA_KEY_SIZE, request.getCreateKeyAttributes(), IntegerAttributeContent.class).getData();
+                        RsaKeyAttributes.ATTRIBUTE_DATA_RSA_KEY_SIZE, request.getCreateKeyAttributes(), IntegerAttributeContent.class).getData();
                 KeyStoreUtil.generateRsaKey(keyStore, alias, keySize, tokenInstance.getCode());
 
                 // create public key
@@ -108,13 +110,13 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
             case FALCON -> {
                 final int degree = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        KeyAttributes.ATTRIBUTE_DATA_FALCON_DEGREE, request.getCreateKeyAttributes(), IntegerAttributeContent.class).getData();
+                        FalconKeyAttributes.ATTRIBUTE_DATA_FALCON_DEGREE, request.getCreateKeyAttributes(), IntegerAttributeContent.class).getData();
                 FalconDegree falconDegree = FalconDegree.resolve(degree);
 
                 KeyStoreUtil.generateFalconKey(keyStore, alias, falconDegree, tokenInstance.getCode());
 
                 // add metadata
-                metadata.add(KeyAttributes.buildFalconDegreeMetadata(degree));
+                metadata.add(FalconKeyAttributes.buildFalconDegreeMetadata(degree));
 
                 // prepare public key
                 publicKey = createAndSaveKeyData(

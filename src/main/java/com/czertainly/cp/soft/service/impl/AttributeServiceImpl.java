@@ -6,9 +6,12 @@ import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.*;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
+import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
+import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.czertainly.cp.soft.service.AttributeService;
+import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +24,19 @@ import java.util.*;
 public class AttributeServiceImpl implements AttributeService {
     private static final Logger logger = LoggerFactory.getLogger(AttributesController.class);
 
-    @Autowired
     private TokenInstanceService tokenInstanceService;
 
-//    @Autowired
-//    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
-//        this.tokenInstanceService = tokenInstanceService;
-//    }
+    private KeyManagementService keyManagementService;
 
+    @Autowired
+    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
+        this.tokenInstanceService = tokenInstanceService;
+    }
+
+    @Autowired
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        this.keyManagementService = keyManagementService;
+    }
 
     @Override
     public List<BaseAttribute> getAttributes(String kind) {
@@ -104,6 +112,35 @@ public class AttributeServiceImpl implements AttributeService {
         tokenInstanceService.getTokenInstance(UUID.fromString(uuid));
 
         AttributeDefinitionUtils.validateAttributes(getCreateKeyAttributes(uuid), attributes);
+        return true;
+    }
+
+    @Override
+    public List<BaseAttribute> listSignatureAttributes(UUID uuid, UUID keyUuid) throws NotFoundException {
+        // we need to list based on the key algorithm
+        switch (keyManagementService.getKey(uuid, keyUuid).getKeyData().getAlgorithm()) {
+            case RSA -> {
+                return RsaKeyAttributes.getRsaSignatureAttributes();
+            }
+            case FALCON -> {
+                return List.of();
+            }
+            default -> throw new NotSupportedException("Cryptographic algorithm not supported");
+        }
+    }
+
+    @Override
+    public boolean validateSignatureAttributes(UUID uuid, UUID keyUuid, List<RequestAttributeDto> attributes) throws NotFoundException {
+        if (attributes == null) {
+            return false;
+        }
+
+        switch (keyManagementService.getKey(uuid, keyUuid).getKeyData().getAlgorithm()) {
+            case RSA -> AttributeDefinitionUtils.validateAttributes(RsaKeyAttributes.getRsaKeySpecAttributes(), attributes);
+            case FALCON -> {}
+            default -> throw new NotSupportedException("Cryptographic algorithm not supported");
+        }
+
         return true;
     }
 

@@ -1,11 +1,11 @@
 package com.czertainly.cp.soft.api;
 
-import com.czertainly.api.model.common.NameAndUuidDto;
 import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
-import com.czertainly.cp.soft.attribute.KeyAttributes;
+import com.czertainly.cp.soft.attribute.FalconKeyAttributes;
+import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.collection.KeyAlgorithm;
 import com.czertainly.cp.soft.exception.NotSupportedException;
@@ -40,10 +40,10 @@ public class CallbackController {
 
         switch (algorithm) {
             case RSA -> {
-                return KeyAttributes.getRsaKeySpecAttributes();
+                return RsaKeyAttributes.getRsaKeySpecAttributes();
             }
             case FALCON -> {
-                return KeyAttributes.getFalconKeySpecAttributes();
+                return FalconKeyAttributes.getFalconKeySpecAttributes();
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }
