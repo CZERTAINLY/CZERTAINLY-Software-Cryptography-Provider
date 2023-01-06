@@ -13,9 +13,11 @@ import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDt
 import com.czertainly.api.model.connector.cryptography.key.value.CustomKeyValue;
 import com.czertainly.api.model.connector.cryptography.key.value.KeyValue;
 import com.czertainly.core.util.AttributeDefinitionUtils;
+import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.FalconKeyAttributes;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
+import com.czertainly.cp.soft.collection.EcdsaCurveName;
 import com.czertainly.cp.soft.collection.KeyAlgorithm;
 import com.czertainly.cp.soft.collection.FalconDegree;
 import com.czertainly.cp.soft.dao.entity.KeyData;
@@ -74,7 +76,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 KeyAttributes.ATTRIBUTE_DATA_KEY_ALIAS, request.getCreateKeyAttributes(), StringAttributeContent.class).getData();
 
         // check if the alias is already used in the keystore
-        if (keyDataRepository.findByNameAndTokenInstanceUuid(alias, uuid).isPresent()) {
+        if (!keyDataRepository.findByNameAndTokenInstanceUuid(alias, uuid).isEmpty()) {
             throw new KeyManagementException("Key with alias '" + alias + "' already exists.");
         }
 
@@ -107,6 +109,32 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.RSA,
                         KeyFormat.CUSTOM, customKeyValue, keySize, metadata, tokenInstance.getUuid());
+            }
+            case ECDSA -> {
+                final EcdsaCurveName curveName = EcdsaCurveName.valueOf(
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                                EcdsaKeyAttributes.ATTRIBUTE_DATA_ECDSA_CURVE, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                .getReference()
+                );
+
+                KeyStoreUtil.generateEcdsaKey(keyStore, alias, curveName, tokenInstance.getCode());
+
+                // create public key
+                publicKey = createAndSaveKeyData(
+                        alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.ECDSA, KeyFormat.SPKI,
+                        KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
+                        curveName.getSize(), metadata, tokenInstance.getUuid());
+
+                // create private key
+                CustomKeyValue customKeyValue = new CustomKeyValue();
+                HashMap<String, String> customKeyValues = new HashMap<>();
+                customKeyValues.put("curve.name", curveName.name());
+                customKeyValues.put("curve.description", curveName.getDescription());
+                customKeyValue.setValues(customKeyValues);
+
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.ECDSA,
+                        KeyFormat.CUSTOM, customKeyValue, curveName.getSize(), metadata, tokenInstance.getUuid());
+
             }
             case FALCON -> {
                 final int degree = AttributeDefinitionUtils.getSingleItemAttributeContentValue(

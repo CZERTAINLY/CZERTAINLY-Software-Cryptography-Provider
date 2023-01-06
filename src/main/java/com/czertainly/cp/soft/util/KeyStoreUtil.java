@@ -1,8 +1,10 @@
 package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
+import com.czertainly.cp.soft.collection.EcdsaCurveName;
 import com.czertainly.cp.soft.collection.FalconDegree;
 import com.czertainly.cp.soft.dao.entity.KeyData;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 
 import java.io.ByteArrayInputStream;
@@ -11,6 +13,8 @@ import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
 import java.util.Base64;
 
 public class KeyStoreUtil {
@@ -115,6 +119,27 @@ public class KeyStoreUtil {
             throw new IllegalStateException("RSA algorithm not found", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("Provider not found", e);
+        }
+    }
+
+    public static void generateEcdsaKey(KeyStore keyStore, String alias, EcdsaCurveName curveName, String password) {
+        try {
+            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+            kpg.initialize(new ECGenParameterSpec(curveName.name()));
+            final KeyPair kp = kpg.generateKeyPair();
+
+            final X509Certificate cert = X509Util.generateEcdsaOrphanX509Certificate(kp);
+            final X509Certificate[] chain = new X509Certificate[]{cert};
+
+            keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot generate RSA key", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("RSA algorithm not found", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("Provider not found", e);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new IllegalStateException("Invalid curve name `"+curveName.getName()+"`", e);
         }
     }
 

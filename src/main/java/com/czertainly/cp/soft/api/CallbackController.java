@@ -4,6 +4,7 @@ import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
+import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.FalconKeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
@@ -41,6 +42,9 @@ public class CallbackController {
         switch (algorithm) {
             case RSA -> {
                 return RsaKeyAttributes.getRsaKeySpecAttributes();
+            }
+            case ECDSA -> {
+                return EcdsaKeyAttributes.getEcdsaKeySpecAttributes();
             }
             case FALCON -> {
                 return FalconKeyAttributes.getFalconKeySpecAttributes();

@@ -3,6 +3,7 @@ package com.czertainly.cp.soft.util;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.core.util.AttributeDefinitionUtils;
+import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import com.czertainly.cp.soft.collection.DigestAlgorithm;
 import com.czertainly.cp.soft.collection.RsaSignatureScheme;
@@ -36,6 +37,17 @@ public class SignatureUtil {
                 if (scheme == RsaSignatureScheme.PSS) {
                     signatureAlgorithm += "ANDMGF1";
                 }
+
+                return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
+            }
+            case ECDSA -> {
+                final DigestAlgorithm digest = DigestAlgorithm.valueOf(
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                                EcdsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContent.class)
+                                .getReference()
+                );
+
+                signatureAlgorithm = digest.getProviderName() + "WITHECDSA";
 
                 return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
             }

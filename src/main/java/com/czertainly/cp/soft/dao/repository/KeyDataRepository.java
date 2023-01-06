@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface KeyDataRepository extends JpaRepository<KeyData, Long> {
 
-    Optional<KeyData> findByNameAndTokenInstanceUuid(String name, UUID tokenInstanceUuid);
+    List<KeyData> findByNameAndTokenInstanceUuid(String name, UUID tokenInstanceUuid);
 
     Optional<KeyData> findByUuid(UUID uuid);
 

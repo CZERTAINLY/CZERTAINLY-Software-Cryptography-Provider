@@ -23,6 +23,10 @@ public class X509Util {
         return generateOrphanX509Certificate(keyPair, "SHA512WithRSAEncryption");
     }
 
+    public static X509Certificate generateEcdsaOrphanX509Certificate(KeyPair keyPair) {;
+        return generateOrphanX509Certificate(keyPair, "SHA512WithECDSA");
+    }
+
     public static X509Certificate generateFalconOrphanX509Certificate(KeyPair keyPair, FalconDegree degree) {
         if (degree == FalconDegree.FALCON_512) {
             return generateOrphanX509Certificate(keyPair, "Falcon-512");

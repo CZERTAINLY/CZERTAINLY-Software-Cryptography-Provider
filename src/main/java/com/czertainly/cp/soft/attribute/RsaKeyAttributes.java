@@ -6,7 +6,7 @@ import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeCont
 import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
 import com.czertainly.api.model.common.attribute.v2.properties.MetadataAttributeProperties;
 import com.czertainly.cp.soft.collection.DigestAlgorithm;
-import com.czertainly.cp.soft.collection.RSAKeySize;
+import com.czertainly.cp.soft.collection.RsaKeySize;
 import com.czertainly.cp.soft.collection.RsaSignatureScheme;
 
 import java.util.List;
@@ -63,7 +63,7 @@ public class RsaKeyAttributes {
         attributeProperties.setReadOnly(false);
         attribute.setProperties(attributeProperties);
         // set content
-        attribute.setContent(RSAKeySize.asIntegerAttributeContentList());
+        attribute.setContent(RsaKeySize.asIntegerAttributeContentList());
 
         return attribute;
     }
