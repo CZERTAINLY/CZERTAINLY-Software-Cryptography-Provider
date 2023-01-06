@@ -122,7 +122,7 @@ public class AttributeServiceImpl implements AttributeService {
             case ECDSA -> {
                 return EcdsaKeyAttributes.getEcdsaSignatureAttributes();
             }
-            case FALCON -> {
+            case FALCON, DILITHIUM, SPHINCSPLUS -> {
                 return List.of();
             }
             default -> throw new NotSupportedException("Cryptographic algorithm not supported");
@@ -138,7 +138,7 @@ public class AttributeServiceImpl implements AttributeService {
         switch (keyManagementService.getKey(uuid, keyUuid).getKeyData().getAlgorithm()) {
             case RSA -> AttributeDefinitionUtils.validateAttributes(RsaKeyAttributes.getRsaKeySpecAttributes(), attributes);
             case ECDSA -> AttributeDefinitionUtils.validateAttributes(EcdsaKeyAttributes.getEcdsaKeySpecAttributes(), attributes);
-            case FALCON -> {}
+            case FALCON, DILITHIUM, SPHINCSPLUS -> {}
             default -> throw new NotSupportedException("Cryptographic algorithm not supported");
         }
 

@@ -64,6 +64,9 @@ public class SignatureUtil {
             case DILITHIUM -> {
                 return getInstanceSignature("DILITHIUM", BouncyCastlePQCProvider.PROVIDER_NAME);
             }
+            case SPHINCSPLUS -> {
+                return getInstanceSignature("SPHINCSPlus", BouncyCastlePQCProvider.PROVIDER_NAME);
+            }
             default -> throw new NotSupportedException("Cryptographic algorithm not supported");
         }
     }

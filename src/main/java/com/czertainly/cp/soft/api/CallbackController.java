@@ -49,6 +49,9 @@ public class CallbackController {
             case DILITHIUM -> {
                 return DilithiumKeyAttributes.getDilithiumKeySpecAttributes();
             }
+            case SPHINCSPLUS -> {
+                return SphincsPlusKeyAttributes.getSphincsPLusKeySpecAttributes();
+            }
             default -> throw new NotSupportedException("Algorithm not supported");
         }
 

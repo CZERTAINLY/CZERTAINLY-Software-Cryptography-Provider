@@ -1,15 +1,14 @@
 package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
-import com.czertainly.cp.soft.collection.DilithiumLevel;
-import com.czertainly.cp.soft.collection.EcdsaCurveName;
-import com.czertainly.cp.soft.collection.FalconDegree;
+import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pqc.jcajce.interfaces.DilithiumPrivateKey;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.SPHINCSPlusParameterSpec;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -209,9 +208,6 @@ public class KeyStoreUtil {
             final X509Certificate cert = X509Util.generateOrphanX509Certificate(kp, algorithm, BouncyCastlePQCProvider.PROVIDER_NAME);
             final X509Certificate[] chain = new X509Certificate[]{cert};
 
-            DilithiumPrivateKey d = (DilithiumPrivateKey) kp.getPrivate();
-            d.getPublicKey().getEncoded();
-
             keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Dilithium algorithm not found", e);
@@ -221,6 +217,35 @@ public class KeyStoreUtil {
             throw new IllegalStateException("Invalid Dilithium algorithm parameters", e);
         } catch (KeyStoreException e) {
             throw new IllegalStateException("Cannot generate Dilithium key", e);
+        }
+    }
+
+    public static void generateSphincsPlusKey(KeyStore keyStore, String alias, SphincsPlusHash hash, SphincsPlusParameterSet paramSet, boolean robust, String password) {
+        try {
+            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("SPHINCSPlus", BouncyCastlePQCProvider.PROVIDER_NAME);
+
+            String algorithm = hash.getProviderName() + "-" + paramSet.getParamSet();
+            if (robust) {
+                algorithm += "-robust";
+            } else {
+                algorithm += "-simple";
+            }
+
+            kpg.initialize(SPHINCSPlusParameterSpec.fromName(algorithm));
+
+            final KeyPair kp = kpg.generateKeyPair();
+            final X509Certificate cert = X509Util.generateOrphanX509Certificate(kp, "SPHINCSPlus", BouncyCastlePQCProvider.PROVIDER_NAME);
+            final X509Certificate[] chain = new X509Certificate[]{cert};
+
+            keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SPHINCS+ algorithm not found", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("Provider not found", e);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new IllegalStateException("Invalid SPHINCS+ algorithm parameters", e);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot generate SPHINCS+ key", e);
         }
     }
 

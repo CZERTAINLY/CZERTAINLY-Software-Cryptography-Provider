@@ -15,10 +15,7 @@ import com.czertainly.api.model.connector.cryptography.key.value.CustomKeyValue;
 import com.czertainly.api.model.connector.cryptography.key.value.KeyValue;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.*;
-import com.czertainly.cp.soft.collection.DilithiumLevel;
-import com.czertainly.cp.soft.collection.EcdsaCurveName;
-import com.czertainly.cp.soft.collection.KeyAlgorithm;
-import com.czertainly.cp.soft.collection.FalconDegree;
+import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.KeyDataRepository;
@@ -193,6 +190,45 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 // prepare private key
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.DILITHIUM,
                         KeyFormat.CUSTOM, customKeyValue, level.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+            }
+            case SPHINCSPLUS -> {
+                final SphincsPlusHash hash = SphincsPlusHash.valueOf(
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                                SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_HASH, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                .getReference()
+                );
+
+                final SphincsPlusParameterSet paramSet = SphincsPlusParameterSet.valueOf(
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                                SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_PARAMETER_SET, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                .getReference()
+                );
+
+                final boolean robust = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                        SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_ROBUST, request.getCreateKeyAttributes(), BooleanAttributeContent.class)
+                        .getData();
+
+                KeyStoreUtil.generateSphincsPlusKey(keyStore, alias, hash, paramSet, robust, tokenInstance.getCode());
+
+                // add metadata
+
+                // prepare public key
+                publicKey = createAndSaveKeyData(
+                        alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.SPHINCSPLUS, KeyFormat.SPKI,
+                        //KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
+                        KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
+                        paramSet.getPublicKeySize(), metadata, tokenInstance.getUuid());
+
+                CustomKeyValue customKeyValue = new CustomKeyValue();
+                HashMap<String, String> customKeyValues = new HashMap<>();
+                customKeyValues.put("hash", hash.getHashName());
+                customKeyValues.put("parameterSet", paramSet.getParamSet());
+                customKeyValues.put("instantiation", robust ? "robust" : "simple");
+                customKeyValue.setValues(customKeyValues);
+
+                // prepare private key
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.SPHINCSPLUS,
+                        KeyFormat.CUSTOM, customKeyValue, paramSet.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
         }
