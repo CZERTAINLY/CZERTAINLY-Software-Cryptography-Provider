@@ -4,10 +4,7 @@ import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
-import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
-import com.czertainly.cp.soft.attribute.FalconKeyAttributes;
-import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
-import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
+import com.czertainly.cp.soft.attribute.*;
 import com.czertainly.cp.soft.collection.KeyAlgorithm;
 import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.czertainly.cp.soft.service.TokenInstanceService;
@@ -48,6 +45,9 @@ public class CallbackController {
             }
             case FALCON -> {
                 return FalconKeyAttributes.getFalconKeySpecAttributes();
+            }
+            case DILITHIUM -> {
+                return DilithiumKeyAttributes.getDilithiumKeySpecAttributes();
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }

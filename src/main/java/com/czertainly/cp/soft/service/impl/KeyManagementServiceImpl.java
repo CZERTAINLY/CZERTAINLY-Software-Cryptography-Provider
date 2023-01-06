@@ -2,6 +2,7 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
+import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm;
@@ -13,10 +14,8 @@ import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDt
 import com.czertainly.api.model.connector.cryptography.key.value.CustomKeyValue;
 import com.czertainly.api.model.connector.cryptography.key.value.KeyValue;
 import com.czertainly.core.util.AttributeDefinitionUtils;
-import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
-import com.czertainly.cp.soft.attribute.FalconKeyAttributes;
-import com.czertainly.cp.soft.attribute.KeyAttributes;
-import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
+import com.czertainly.cp.soft.attribute.*;
+import com.czertainly.cp.soft.collection.DilithiumLevel;
 import com.czertainly.cp.soft.collection.EcdsaCurveName;
 import com.czertainly.cp.soft.collection.KeyAlgorithm;
 import com.czertainly.cp.soft.collection.FalconDegree;
@@ -123,7 +122,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 publicKey = createAndSaveKeyData(
                         alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.ECDSA, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
-                        curveName.getSize(), metadata, tokenInstance.getUuid());
+                        curveName.getSize()*2, metadata, tokenInstance.getUuid());
 
                 // create private key
                 CustomKeyValue customKeyValue = new CustomKeyValue();
@@ -147,10 +146,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 metadata.add(FalconKeyAttributes.buildFalconDegreeMetadata(degree));
 
                 // prepare public key
+                assert falconDegree != null;
                 publicKey = createAndSaveKeyData(
                         alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.FALCON, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
-                        degree, metadata, tokenInstance.getUuid());
+                        falconDegree.getPublicKeySize(), metadata, tokenInstance.getUuid());
 
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
@@ -159,7 +159,40 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // prepare private key
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.FALCON,
-                        KeyFormat.CUSTOM, customKeyValue, degree, metadata, tokenInstance.getUuid());
+                        KeyFormat.CUSTOM, customKeyValue, falconDegree.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+            }
+            case DILITHIUM -> {
+                final DilithiumLevel level = DilithiumLevel.valueOf(
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                                DilithiumKeyAttributes.ATTRIBUTE_DATA_DILITIHIUM_LEVEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
+                                .getData()
+                );
+
+                final boolean useAes = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                        DilithiumKeyAttributes.ATTRIBUTE_DATA_DILITIHIUM_USE_AES, request.getCreateKeyAttributes(), BooleanAttributeContent.class)
+                        .getData();
+
+                KeyStoreUtil.generateDilithiumKey(keyStore, alias, level, useAes, tokenInstance.getCode());
+
+                // add metadata
+
+                // prepare public key
+                publicKey = createAndSaveKeyData(
+                        alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.DILITHIUM, KeyFormat.SPKI,
+                        KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
+                        level.getPublicKeySize(), metadata, tokenInstance.getUuid());
+
+                CustomKeyValue customKeyValue = new CustomKeyValue();
+                HashMap<String, String> customKeyValues = new HashMap<>();
+                customKeyValues.put("level", Integer.toString(level.getNistLevel()));
+                if (useAes) {
+                    customKeyValues.put("usingAes", "true");
+                }
+                customKeyValue.setValues(customKeyValues);
+
+                // prepare private key
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.DILITHIUM,
+                        KeyFormat.CUSTOM, customKeyValue, level.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
         }

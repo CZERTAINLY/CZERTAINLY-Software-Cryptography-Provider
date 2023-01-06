@@ -1,10 +1,14 @@
 package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
+import com.czertainly.cp.soft.collection.DilithiumLevel;
 import com.czertainly.cp.soft.collection.EcdsaCurveName;
 import com.czertainly.cp.soft.collection.FalconDegree;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.pqc.jcajce.interfaces.DilithiumPrivateKey;
+import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 
 import java.io.ByteArrayInputStream;
@@ -103,6 +107,19 @@ public class KeyStoreUtil {
         }
     }
 
+    public static SpkiKeyValue spkiKeyValueFromPrivateKey(KeyStore keyStore, String alias, String password) {
+        try {
+            DilithiumPrivateKey privateKey = (DilithiumPrivateKey) keyStore.getKey(alias, password.toCharArray());
+            return new SpkiKeyValue(Base64.getEncoder().encodeToString(privateKey.getPublicKey().getEncoded()));
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot open KeyStore", e);
+        } catch (UnrecoverableKeyException e) {
+            throw new IllegalStateException("Cannot get private key with alias '"+alias+"' from KeyStore", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Invalid algorithm", e);
+        }
+    }
+
     public static void generateRsaKey(KeyStore keyStore, String alias, int keySize, String password) {
         try {
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
@@ -133,9 +150,9 @@ public class KeyStoreUtil {
 
             keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot generate RSA key", e);
+            throw new IllegalStateException("Cannot generate ECDSA key", e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("RSA algorithm not found", e);
+            throw new IllegalStateException("ECDSA algorithm not found", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("Provider not found", e);
         } catch (InvalidAlgorithmParameterException e) {
@@ -167,13 +184,43 @@ public class KeyStoreUtil {
 
             keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("RSA algorithm not found", e);
+            throw new IllegalStateException("Falcon algorithm not found", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("Provider not found", e);
         } catch (InvalidAlgorithmParameterException e) {
             throw new IllegalStateException("Invalid Falcon algorithm parameters", e);
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot generate RSA key", e);
+            throw new IllegalStateException("Cannot generate Falcon key", e);
+        }
+    }
+
+    public static void generateDilithiumKey(KeyStore keyStore, String alias, DilithiumLevel level, boolean useAes, String password) {
+        try {
+            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("Dilithium", BouncyCastlePQCProvider.PROVIDER_NAME);
+
+            String algorithm = "dilithium" + level.getNistLevel();
+            if (useAes) {
+                algorithm += "-aes";
+            }
+
+            kpg.initialize(DilithiumParameterSpec.fromName(algorithm));
+
+            final KeyPair kp = kpg.generateKeyPair();
+            final X509Certificate cert = X509Util.generateOrphanX509Certificate(kp, algorithm, BouncyCastlePQCProvider.PROVIDER_NAME);
+            final X509Certificate[] chain = new X509Certificate[]{cert};
+
+            DilithiumPrivateKey d = (DilithiumPrivateKey) kp.getPrivate();
+            d.getPublicKey().getEncoded();
+
+            keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Dilithium algorithm not found", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("Provider not found", e);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new IllegalStateException("Invalid Dilithium algorithm parameters", e);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot generate Dilithium key", e);
         }
     }
 

@@ -7,28 +7,29 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum FalconDegree {
-    FALCON_512(512, 7176, 10088),
-    FALCON_1024(1024, 14344, 18440);
+public enum DilithiumLevel {
+    DILITHIUM_2(2, 10496, 20224),
+    DILITHIUM_3(3, 15616, 32000),
+    DILITHIUM_5(5, 20736, 38912);
 
-    private static final FalconDegree[] VALUES;
+    private static final DilithiumLevel[] VALUES;
 
     static {
         VALUES = values();
     }
 
-    private final int degree;
+    private final int nistLevel;
     private final int publicKeySize;
     private final int privateKeySize;
 
-    FalconDegree(int degree, int publicKeySize, int privateKeySize) {
-        this.degree = degree;
+    DilithiumLevel(int nistLevel, int publicKeySize, int privateKeySize) {
+        this.nistLevel = nistLevel;
         this.publicKeySize = publicKeySize;
         this.privateKeySize = privateKeySize;
     }
 
-    public int getDegree() {
-        return degree;
+    public int getNistLevel() {
+        return nistLevel;
     }
 
     public int getPublicKeySize() {
@@ -41,22 +42,22 @@ public enum FalconDegree {
 
     @Override
     public String toString() {
-        return this.degree + " " + name();
+        return name();
     }
 
-    public static FalconDegree valueOf(int degree) {
-        FalconDegree d = resolve(degree);
+    public static DilithiumLevel valueOf(int nistLevel) {
+        DilithiumLevel d = resolve(nistLevel);
         if (d == null) {
-            throw new IllegalArgumentException("No matching constant for [" + degree + "]");
+            throw new IllegalArgumentException("No matching constant for [" + nistLevel + "]");
         }
         return d;
     }
 
     @Nullable
-    public static FalconDegree resolve(int degree) {
+    public static DilithiumLevel resolve(int nistLevel) {
         // Use cached VALUES instead of values() to prevent array allocation.
-        for (FalconDegree d : VALUES) {
-            if (d.degree == degree) {
+        for (DilithiumLevel d : VALUES) {
+            if (d.nistLevel == nistLevel) {
                 return d;
             }
         }
@@ -65,7 +66,7 @@ public enum FalconDegree {
 
     public static List<BaseAttributeContent> asIntegerAttributeContentList() {
         return List.of(values()).stream()
-                .map(degree -> new IntegerAttributeContent(degree.name(), degree.getDegree()))
+                .map(d -> new IntegerAttributeContent(d.name(), d.getNistLevel()))
                 .collect(Collectors.toList());
     }
 }
