@@ -3,10 +3,11 @@ package com.czertainly.cp.soft.service.impl;
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.interfaces.connector.AttributesController;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.*;
+import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.core.util.AttributeDefinitionUtils;
-import com.czertainly.cp.soft.attribute.*;
-import com.czertainly.cp.soft.exception.NotSupportedException;
+import com.czertainly.cp.soft.attribute.KeyAttributes;
+import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
+import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.service.AttributeService;
 import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
@@ -15,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AttributeServiceImpl implements AttributeService {
@@ -109,39 +112,6 @@ public class AttributeServiceImpl implements AttributeService {
         tokenInstanceService.getTokenInstance(UUID.fromString(uuid));
 
         AttributeDefinitionUtils.validateAttributes(getCreateKeyAttributes(uuid), attributes);
-        return true;
-    }
-
-    @Override
-    public List<BaseAttribute> listSignatureAttributes(UUID uuid, UUID keyUuid) throws NotFoundException {
-        // we need to list based on the key algorithm
-        switch (keyManagementService.getKey(uuid, keyUuid).getKeyData().getAlgorithm()) {
-            case RSA -> {
-                return RsaKeyAttributes.getRsaSignatureAttributes();
-            }
-            case ECDSA -> {
-                return EcdsaKeyAttributes.getEcdsaSignatureAttributes();
-            }
-            case FALCON, DILITHIUM, SPHINCSPLUS -> {
-                return List.of();
-            }
-            default -> throw new NotSupportedException("Cryptographic algorithm not supported");
-        }
-    }
-
-    @Override
-    public boolean validateSignatureAttributes(UUID uuid, UUID keyUuid, List<RequestAttributeDto> attributes) throws NotFoundException {
-        if (attributes == null) {
-            return false;
-        }
-
-        switch (keyManagementService.getKey(uuid, keyUuid).getKeyData().getAlgorithm()) {
-            case RSA -> AttributeDefinitionUtils.validateAttributes(RsaKeyAttributes.getRsaKeySpecAttributes(), attributes);
-            case ECDSA -> AttributeDefinitionUtils.validateAttributes(EcdsaKeyAttributes.getEcdsaKeySpecAttributes(), attributes);
-            case FALCON, DILITHIUM, SPHINCSPLUS -> {}
-            default -> throw new NotSupportedException("Cryptographic algorithm not supported");
-        }
-
         return true;
     }
 

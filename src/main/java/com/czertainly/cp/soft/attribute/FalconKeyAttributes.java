@@ -1,6 +1,9 @@
 package com.czertainly.cp.soft.attribute;
 
-import com.czertainly.api.model.common.attribute.v2.*;
+import com.czertainly.api.model.common.attribute.v2.AttributeType;
+import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
+import com.czertainly.api.model.common.attribute.v2.DataAttribute;
+import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
 import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;

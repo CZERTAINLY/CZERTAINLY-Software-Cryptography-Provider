@@ -2,11 +2,11 @@ package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
+import com.czertainly.api.model.common.collection.DigestAlgorithm;
+import com.czertainly.api.model.common.collection.RsaSignatureScheme;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
-import com.czertainly.cp.soft.collection.DigestAlgorithm;
-import com.czertainly.cp.soft.collection.RsaSignatureScheme;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.NotSupportedException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

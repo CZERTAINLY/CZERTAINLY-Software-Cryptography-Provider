@@ -33,16 +33,6 @@ public class CryptographicOperationsControllerImpl implements CryptographicOpera
     }
 
     @Override
-    public List<BaseAttribute> listCipherAttributes(String uuid, String keyUuid) throws NotFoundException {
-        throw new NotSupportedException("Cipher not supported.");
-    }
-
-    @Override
-    public void validateCipherAttributes(String uuid, String keyUuid, List<RequestAttributeDto> attributes) throws NotFoundException, ValidationException {
-        throw new NotSupportedException("Cipher not supported.");
-    }
-
-    @Override
     public EncryptDataResponseDto encryptData(String uuid, String keyUuid, CipherDataRequestDto request) throws NotFoundException {
         throw new NotSupportedException("Cipher not supported.");
     }
@@ -50,16 +40,6 @@ public class CryptographicOperationsControllerImpl implements CryptographicOpera
     @Override
     public DecryptDataResponseDto decryptData(String uuid, String keyUuid, CipherDataRequestDto request) throws NotFoundException {
         throw new NotSupportedException("Cipher not supported.");
-    }
-
-    @Override
-    public List<BaseAttribute> listSignatureAttributes(String uuid, String keyUuid) throws NotFoundException {
-        return attributeService.listSignatureAttributes(UUID.fromString(uuid), UUID.fromString(keyUuid));
-    }
-
-    @Override
-    public void validateSignatureAttributes(String uuid, String keyUuid, List<RequestAttributeDto> attributes) throws NotFoundException, ValidationException {
-        attributeService.validateSignatureAttributes(UUID.fromString(uuid), UUID.fromString(keyUuid), attributes);
     }
 
     @Override

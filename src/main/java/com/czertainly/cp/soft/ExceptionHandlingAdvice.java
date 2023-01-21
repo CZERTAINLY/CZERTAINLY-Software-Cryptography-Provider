@@ -140,7 +140,7 @@ public class ExceptionHandlingAdvice {
 
     @ExceptionHandler(TokenInstanceException.class)
     public ResponseEntity<Object> handleTokenInstanceException(TokenInstanceException ex) {
-        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
+            ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
         if (log.isDebugEnabled()) {
             errorMessage.setStacktrace(ExceptionUtils.getStackTrace(ex));
         }
@@ -153,8 +153,13 @@ public class ExceptionHandlingAdvice {
 
     @ExceptionHandler(NotSupportedException.class)
     @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-    public void handleTokenInstanceException(NotSupportedException ex) {
+    public ResponseEntity<Object> handleTokenInstanceException(NotSupportedException ex) {
         log.debug("HTTP 501: {}", ex.getMessage());
+        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
+        ApiErrorResponseDto apiErrorResponseDto = new ApiErrorResponseDto(501, HttpStatus.NOT_IMPLEMENTED, "", errorMessage);
+        apiErrorResponseDto.setTimestamp(Instant.now().toEpochMilli());
+        return new ResponseEntity<>(
+                apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
     }
 
     @ExceptionHandler({ Exception.class })
