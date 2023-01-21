@@ -3,9 +3,11 @@ package com.czertainly.cp.soft.service.impl;
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.interfaces.connector.AttributesController;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.*;
+import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.core.util.AttributeDefinitionUtils;
-import com.czertainly.cp.soft.attribute.*;
+import com.czertainly.cp.soft.attribute.KeyAttributes;
+import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
+import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.service.AttributeService;
 import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
@@ -14,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AttributeServiceImpl implements AttributeService {
