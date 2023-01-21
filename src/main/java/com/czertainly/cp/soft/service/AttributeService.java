@@ -21,8 +21,4 @@ public interface AttributeService {
 
     boolean validateCreateKeyAttributes(String uuid, List<RequestAttributeDto> attributes) throws NotFoundException;
 
-    List<BaseAttribute> listSignatureAttributes(UUID uuid, UUID keyUuid) throws NotFoundException;
-
-    boolean validateSignatureAttributes(UUID uuid, UUID keyUuid, List<RequestAttributeDto> attributes) throws NotFoundException;
-
 }
