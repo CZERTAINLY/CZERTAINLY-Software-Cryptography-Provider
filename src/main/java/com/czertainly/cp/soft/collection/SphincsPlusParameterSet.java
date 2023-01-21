@@ -1,9 +1,7 @@
 package com.czertainly.cp.soft.collection;
 
 import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
-import org.springframework.lang.Nullable;
 
 import java.util.List;
 import java.util.stream.Collectors;

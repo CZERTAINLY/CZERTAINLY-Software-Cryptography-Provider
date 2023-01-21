@@ -5,7 +5,6 @@ import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface AttributeService {
 
