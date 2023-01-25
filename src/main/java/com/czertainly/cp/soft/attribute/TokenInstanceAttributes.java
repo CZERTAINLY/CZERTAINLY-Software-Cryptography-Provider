@@ -96,7 +96,7 @@ public class TokenInstanceAttributes {
         attribute.setProperties(attributeProperties);
         // set content
         attribute.setContent(List.of(
-                new StringAttributeContent(action,action)
+                new StringAttributeContent(action, action)
         ));
 
         return attribute;
@@ -212,8 +212,8 @@ public class TokenInstanceAttributes {
         attribute.setProperties(attributeProperties);
         // set content
         attribute.setContent(List.of(
-                new StringAttributeContent("new","Create new Token"),
-                new StringAttributeContent("existing","Select existing Token")
+                new StringAttributeContent("new", "Create new Token"),
+                new StringAttributeContent("existing", "Select existing Token")
         ));
 
         return attribute;
@@ -253,7 +253,7 @@ public class TokenInstanceAttributes {
         mappings.add(new AttributeCallbackMapping(ATTRIBUTE_DATA_OPTIONS + ".reference", "option", AttributeValueTarget.PATH_VARIABLE));
         // create attribute callback
         AttributeCallback attributeCallback = new AttributeCallback();
-        attributeCallback.setCallbackContext("/v1/cryptographyProvider/token/{option}/attributes");
+        attributeCallback.setCallbackContext("/v1/cryptographyProvider/callbacks/token/{option}/attributes");
         attributeCallback.setCallbackMethod("GET");
         attributeCallback.setMappings(mappings);
         // set attribute callback
