@@ -25,6 +25,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -45,6 +46,8 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
         this.tokenInstanceRepository = tokenInstanceRepository;
     }
 
+    @Value("${token.deleteOnRemove}")
+    private boolean deleteOnRemove;
 
     @Override
     public List<TokenInstanceDto> listTokenInstances() {
@@ -130,8 +133,13 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
     public void removeTokenInstance(UUID uuid) throws NotFoundException {
         TokenInstance token =  tokenInstanceRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException(TokenInstance.class, uuid));
-        logger.debug("Removing token instance: {}", token);
-        tokenInstanceRepository.delete(token);
+
+        if (deleteOnRemove) {
+            logger.debug("Removing token instance from database: {}", token);
+            tokenInstanceRepository.delete(token);
+        } else {
+            logger.debug("Delete is disabled, keeping the token instance {} in database", token);
+        }
     }
 
     @Override
