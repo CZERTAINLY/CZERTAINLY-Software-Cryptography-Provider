@@ -25,3 +25,6 @@ management:
 secrets:
   encryption:
     key: ${ENCRYPTION_KEY:tU)}u&N~B{sqQh{imRDl}
+
+token:
+  deleteOnRemove: ${TOKEN_DELETE_ON_REMOVE:false}
