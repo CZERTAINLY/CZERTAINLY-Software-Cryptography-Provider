@@ -5,7 +5,7 @@ COPY pom.xml /home/app
 COPY settings.xml /root/.m2/settings.xml
 ARG SERVER_USERNAME
 ARG SERVER_PASSWORD
-RUN mvn -f /home/app/pom.xml clean package -DskipTests=true
+RUN mvn -f /home/app/pom.xml clean package
 COPY docker /home/app/docker
 
 # Package stage
