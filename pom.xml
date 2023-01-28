@@ -137,19 +137,6 @@
             <version>2.7.1</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>io.zonky.test</groupId>
-            <artifactId>embedded-database-spring-test</artifactId>
-            <version>2.2.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb.flyway-test-extensions</groupId>
-            <artifactId>flyway-spring-test</artifactId>
-            <version>7.0.0</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>

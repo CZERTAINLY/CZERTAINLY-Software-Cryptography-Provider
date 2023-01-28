@@ -10,14 +10,7 @@ spring:
     password:
     driver-class-name: 'org.hsqldb.jdbc.JDBCDriver'
   flyway:
-    enabled: true
-
-zonky:
-  test:
-    database:
-      postgres:
-        docker:
-          image: "postgres:15-alpine"
+    enabled: false
 
 management:
   endpoints:
