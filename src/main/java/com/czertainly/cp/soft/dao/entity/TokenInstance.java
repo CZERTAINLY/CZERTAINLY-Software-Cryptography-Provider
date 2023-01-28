@@ -26,10 +26,10 @@ public class TokenInstance extends UniquelyIdentified {
     @Column(name = "code")
     private String code;
 
-    @Column(name = "data", length = Integer.MAX_VALUE)
+    @Column(name = "data")
     private String data;
 
-    @Column(name = "metadata", length = Integer.MAX_VALUE)
+    @Column(name = "metadata")
     private String metadata;
 
     @Column(name = "timestamp")

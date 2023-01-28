@@ -10,6 +10,8 @@ import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceRequestDto;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.service.TokenInstanceService;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
+import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import java.util.List;
 import java.util.UUID;
 
 @SpringBootTest
+@FlywayTest
+@AutoConfigureEmbeddedDatabase
 public class TokenInstanceServiceImplTest {
 
     private TokenInstanceService tokenInstanceService;
