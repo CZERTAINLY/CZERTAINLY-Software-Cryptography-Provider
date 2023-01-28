@@ -10,7 +10,7 @@ Software Cryptography Provider `Connector` is the implementation of the followin
 
 Software Cryptography Provider implements cryptographic key management function based on the software keystore managed data. Therefore, it is not recommended to use this provider for the production environment, where you require higher protection of the cryptographic keys. The Software Cryptography Provider is intended for the development and testing purposes.
 
-It is compatible with the `Cryptography Ptovider` interface. This entity provider utilizes the SSH authorized connection with the servers and provider the location configuration of the keystores with access to generate and manipulate the content.
+It is compatible with the `Cryptography Provider` interface. This entity provider utilizes the SSH authorized connection with the servers and provider the location configuration of the keystores with access to generate and manipulate the content.
 
 Software Cryptography Provider `Connector` allows you to perform the following operations:
 - Manage Token instances
