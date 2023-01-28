@@ -9,7 +9,6 @@ import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.service.AttributeService;
-import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,16 +25,9 @@ public class AttributeServiceImpl implements AttributeService {
 
     private TokenInstanceService tokenInstanceService;
 
-    private KeyManagementService keyManagementService;
-
     @Autowired
     public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
         this.tokenInstanceService = tokenInstanceService;
-    }
-
-    @Autowired
-    public void setKeyManagementService(KeyManagementService keyManagementService) {
-        this.keyManagementService = keyManagementService;
     }
 
     @Override

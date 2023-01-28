@@ -67,7 +67,7 @@ public class CallbackController {
 
         switch (option) {
             case "new" -> {
-                return TokenInstanceAttributes.getNewTokenAttributes();
+                return TokenInstanceAttributes.getNewTokenAttributesWithoutInfo();
             }
             case "existing" -> {
                 return TokenInstanceAttributes.getExistingTokenAttributes(tokenInstancesToStringContentList(tokenInstanceService.listTokenInstances()));
@@ -80,7 +80,7 @@ public class CallbackController {
     private List<BaseAttributeContent> tokenInstancesToStringContentList(List<TokenInstanceDto> tokenInstanceDtos) {
         return tokenInstanceDtos.stream()
                 .map(tokenInstanceDto -> {
-                    return new StringAttributeContent(tokenInstanceDto.getUuid(), tokenInstanceDto.getName());
+                    return new StringAttributeContent(tokenInstanceDto.getName(), tokenInstanceDto.getUuid());
                 })
                 .collect(Collectors.toList());
     }
