@@ -75,7 +75,7 @@ public class TokenInstanceServiceImplTest {
 
         // check if token instance is still in database
         // it will throw NotFoundException if token instance is not in database
-        Assertions.assertDoesNotThrow(tokenInstanceService.getTokenInstanceStatus(UUID.fromString(token.getUuid())););
+        Assertions.assertDoesNotThrow(() -> tokenInstanceService.getTokenInstanceStatus(UUID.fromString(token.getUuid())));
     }
 
 }
