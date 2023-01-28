@@ -107,11 +107,14 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
 
             return instance.mapToDto();
         } else if (action.equals("existing")) {
-            final String tokenName = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+            final String tokenUuid = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                     TokenInstanceAttributes.ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN, request.getAttributes(), StringAttributeContent.class).getData();
 
-            TokenInstance tokenInstance = tokenInstanceRepository.findByName(tokenName)
-                    .orElseThrow(() -> new TokenInstanceException("Token " + tokenName + " not found"));
+            final String tokenName = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                    TokenInstanceAttributes.ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN, request.getAttributes(), StringAttributeContent.class).getReference();
+
+            TokenInstance tokenInstance = tokenInstanceRepository.findByUuid(UUID.fromString(tokenUuid))
+                    .orElseThrow(() -> new TokenInstanceException("Token " + tokenName + "(" + tokenUuid + ") not found"));
 
             // try to activate token using provided code
             final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
