@@ -57,12 +57,24 @@ public class TokenInstanceAttributes {
 
     public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION = "data_createTokenAction";
     public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_UUID = "cc781ba3-d90b-4fe9-915a-e8d44e1cff86";
+    public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_LABEL = "Token Action";
+    public static final String ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_DESCRIPTION = "Select action to be performed on the Token";
 
     public static List<BaseAttribute> getNewTokenAttributes() {
         List<BaseAttribute> attrs = new ArrayList<>();
 
         attrs.add(buildDataCreateTokenAction("new"));
         attrs.add(buildInfoNewToken());
+        attrs.add(buildDataNewTokenName());
+        attrs.add(buildDataTokenCode());
+
+        return attrs;
+    }
+
+    public static List<BaseAttribute> getNewTokenAttributesWithoutInfo() {
+        List<BaseAttribute> attrs = new ArrayList<>();
+
+        attrs.add(buildDataCreateTokenAction("new"));
         attrs.add(buildDataNewTokenName());
         attrs.add(buildDataTokenCode());
 
@@ -84,10 +96,12 @@ public class TokenInstanceAttributes {
         DataAttribute attribute = new DataAttribute();
         attribute.setUuid(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_UUID);
         attribute.setName(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION);
+        attribute.setDescription(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_DESCRIPTION);
         attribute.setType(AttributeType.DATA);
         attribute.setContentType(AttributeContentType.STRING);
         // create properties
         DataAttributeProperties attributeProperties = new DataAttributeProperties();
+        attributeProperties.setLabel(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_LABEL);
         attributeProperties.setRequired(true);
         attributeProperties.setVisible(false);
         attributeProperties.setList(false);
@@ -212,8 +226,8 @@ public class TokenInstanceAttributes {
         attribute.setProperties(attributeProperties);
         // set content
         attribute.setContent(List.of(
-                new StringAttributeContent("new", "Create new Token"),
-                new StringAttributeContent("existing", "Select existing Token")
+                new StringAttributeContent("Create new Token", "new"),
+                new StringAttributeContent("Select existing Token", "existing")
         ));
 
         return attribute;
@@ -250,7 +264,7 @@ public class TokenInstanceAttributes {
         attribute.setDescription(ATTRIBUTE_GROUP_LOAD_TOKEN_LABEL);
         // prepare mappings for callback
         Set<AttributeCallbackMapping> mappings = new HashSet<>();
-        mappings.add(new AttributeCallbackMapping(ATTRIBUTE_DATA_OPTIONS + ".reference", "option", AttributeValueTarget.PATH_VARIABLE));
+        mappings.add(new AttributeCallbackMapping(ATTRIBUTE_DATA_OPTIONS + ".data", "option", AttributeValueTarget.PATH_VARIABLE));
         // create attribute callback
         AttributeCallback attributeCallback = new AttributeCallback();
         attributeCallback.setCallbackContext("/v1/cryptographyProvider/callbacks/token/{option}/attributes");
