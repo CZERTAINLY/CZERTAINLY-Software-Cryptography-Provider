@@ -35,7 +35,7 @@ public class EcdsaKeyAttributes {
         attribute.setName(ATTRIBUTE_DATA_ECDSA_CURVE);
         attribute.setDescription(ATTRIBUTE_DATA_ECDSA_CURVE_DESCRIPTION);
         attribute.setType(AttributeType.DATA);
-        attribute.setContentType(AttributeContentType.INTEGER);
+        attribute.setContentType(AttributeContentType.STRING);
         // create properties
         DataAttributeProperties attributeProperties = new DataAttributeProperties();
         attributeProperties.setLabel(ATTRIBUTE_DATA_ECDSA_CURVE_LABEL);

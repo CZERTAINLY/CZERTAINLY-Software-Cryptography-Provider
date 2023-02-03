@@ -82,7 +82,7 @@ public enum KeyAlgorithm {
 
     public static List<BaseAttributeContent> asStringAttributeContentList() {
         return List.of(values()).stream()
-                .map(alg -> new StringAttributeContent(alg.name(), alg.getName()))
+                .map(alg -> new StringAttributeContent(alg.name(), alg.name()))
                 .collect(Collectors.toList());
     }
 }
