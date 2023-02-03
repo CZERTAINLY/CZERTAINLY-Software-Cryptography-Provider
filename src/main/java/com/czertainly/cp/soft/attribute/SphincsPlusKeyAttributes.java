@@ -94,7 +94,7 @@ public class SphincsPlusKeyAttributes {
         // create properties
         DataAttributeProperties attributeProperties = new DataAttributeProperties();
         attributeProperties.setLabel(ATTRIBUTE_DATA_SPHINCS_ROBUST_LABEL);
-        attributeProperties.setRequired(true);
+        attributeProperties.setRequired(false);
         attributeProperties.setVisible(true);
         attributeProperties.setList(false);
         attributeProperties.setMultiSelect(false);

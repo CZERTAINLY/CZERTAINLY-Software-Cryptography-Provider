@@ -21,7 +21,7 @@ public class DilithiumKeyAttributes {
     public static final String ATTRIBUTE_DATA_DILITIHIUM_USE_AES = "data_dilitihiumUseAes";
     public static final String ATTRIBUTE_DATA_DILITIHIUM_USE_AES_UUID = "275f094b-f903-4afd-9528-43f017d81e04";
     public static final String ATTRIBUTE_DATA_DILITIHIUM_USE_AES_LABEL = "Use AES-256 for expansion";
-    public static final String ATTRIBUTE_DATA_DILITIHIUM_USE_AES_DESCRIPTION = "Use AES-256 in counter mode instead of SHAKE to expand the matrix and the masking vectors, and to sample the secret polynomials";
+    public static final String ATTRIBUTE_DATA_DILITIHIUM_USE_AES_DESCRIPTION = "Use AES-256 in counter mode instead of SHAKE to expand the matrix and the masking vectors, and to sample the secret polynomials. Default Value is false";
 
     public static List<BaseAttribute> getDilithiumKeySpecAttributes() {
         return List.of(
@@ -64,7 +64,7 @@ public class DilithiumKeyAttributes {
         // create properties
         DataAttributeProperties attributeProperties = new DataAttributeProperties();
         attributeProperties.setLabel(ATTRIBUTE_DATA_DILITIHIUM_USE_AES_LABEL);
-        attributeProperties.setRequired(true);
+        attributeProperties.setRequired(false);
         attributeProperties.setVisible(true);
         attributeProperties.setList(false);
         attributeProperties.setMultiSelect(false);
