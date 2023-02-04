@@ -53,3 +53,4 @@ Software Cryptography Provider `Connector` is provided as a Docker container. Us
 | `DB_SCHEMA`              | Database schema to use                                              | ![](https://img.shields.io/badge/-NO-red.svg)      | `softcp`      |
 | `PORT`                   | Port where the service is exposed                                   | ![](https://img.shields.io/badge/-NO-red.svg)      | `8080`        |
 | `TOKEN_DELETE_ON_REMOVE` | If the token should be deleted or kept in the database when removed | ![](https://img.shields.io/badge/-NO-red.svg)      | `false`       |
+| `JAVA_OPTS`              | Customize Java system properties for running application            | ![NO](https://img.shields.io/badge/-NO-red.svg)    | `N/A`         |
