@@ -1,0 +1,30 @@
+server:
+  port: ${PORT:8080}
+  ssl:
+    enabled: false
+
+spring:
+  datasource:
+    url: 'jdbc:hsqldb:mem:myDb;sql.syntax_pgs=true'
+    username: sa
+    password:
+    driver-class-name: 'org.hsqldb.jdbc.JDBCDriver'
+  flyway:
+    enabled: false
+
+management:
+  endpoints:
+    jmx:
+      exposure:
+        exclude: '*'
+    web:
+      base-path: '/'
+      exposure:
+        include: health, info
+
+secrets:
+  encryption:
+    key: ${ENCRYPTION_KEY:tU)}u&N~B{sqQh{imRDl}
+
+token:
+  deleteOnRemove: ${TOKEN_DELETE_ON_REMOVE:false}
