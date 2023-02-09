@@ -10,7 +10,7 @@ Software Cryptography Provider `Connector` is the implementation of the followin
 
 Software Cryptography Provider implements cryptographic key management function based on the software keystore managed data. Therefore, it is not recommended to use this provider for the production environment, where you require higher protection of the cryptographic keys. The Software Cryptography Provider is intended for the development and testing purposes.
 
-It is compatible with the `Cryptography Provider` interface. This entity provider utilizes the SSH authorized connection with the servers and provider the location configuration of the keystores with access to generate and manipulate the content.
+It is compatible with the `Cryptography Provider` interface. This entity provider utilizes the SSH authorized connection with the servers and provider the location configuration of the keystore with access to generate and manipulate the content.
 
 Software Cryptography Provider `Connector` allows you to perform the following operations:
 - Manage Token instances
@@ -43,7 +43,7 @@ For more information, please refer to the [CZERTAINLY documentation](https://doc
 
 ## Docker container
 
-Software Cryptography Provider `Connector` is provided as a Docker container. Use the `docker pull harbor.3key.company/czertainly/czertainly-software-cryptography-provider:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
+Software Cryptography Provider `Connector` is provided as a Docker container. Use the `3keycompany/czertainly-software-cryptography-provider:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
 
 | Variable                 | Description                                                         | Required                                           | Default value |
 |--------------------------|---------------------------------------------------------------------|----------------------------------------------------|---------------|
@@ -53,4 +53,4 @@ Software Cryptography Provider `Connector` is provided as a Docker container. Us
 | `DB_SCHEMA`              | Database schema to use                                              | ![](https://img.shields.io/badge/-NO-red.svg)      | `softcp`      |
 | `PORT`                   | Port where the service is exposed                                   | ![](https://img.shields.io/badge/-NO-red.svg)      | `8080`        |
 | `TOKEN_DELETE_ON_REMOVE` | If the token should be deleted or kept in the database when removed | ![](https://img.shields.io/badge/-NO-red.svg)      | `false`       |
-| `JAVA_OPTS`              | Customize Java system properties for running application            | ![NO](https://img.shields.io/badge/-NO-red.svg)    | `N/A`         |
+| `JAVA_OPTS`              | Customize Java system properties for running application            | ![](https://img.shields.io/badge/-NO-red.svg)      | `N/A`         |
