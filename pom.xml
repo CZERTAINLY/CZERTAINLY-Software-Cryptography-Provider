@@ -12,7 +12,7 @@
 
     <groupId>com.czertainly</groupId>
     <artifactId>software-cryptography-provider</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>CZERTAINLY-Software-Cryptography-Provider</name>
 
     <properties>
