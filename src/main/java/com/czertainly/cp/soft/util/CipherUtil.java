@@ -5,12 +5,12 @@ import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
+import com.czertainly.api.model.common.collection.DigestAlgorithm;
 import com.czertainly.api.model.connector.cryptography.operations.CipherDataRequestDto;
 import com.czertainly.api.model.connector.cryptography.operations.DecryptDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.EncryptDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.data.CipherRequestData;
 import com.czertainly.api.model.connector.cryptography.operations.data.CipherResponseData;
-import com.czertainly.api.model.core.cryptography.key.OaepHash;
 import com.czertainly.api.model.core.cryptography.key.RsaPadding;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.RsaCipherAttributes;
@@ -54,7 +54,7 @@ public class CipherUtil {
             transformation = framePkcs1Scheme();
         } else if (padding.equals(RsaPadding.OAEP)) {
             try {
-                OaepHash hash = OaepHash.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_HASH_NAME, attributes, StringAttributeContent.class).getData());
+                DigestAlgorithm hash = DigestAlgorithm.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_HASH_NAME, attributes, StringAttributeContent.class).getData());
                 boolean useMgf = AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_USE_MGF_NAME, attributes, BooleanAttributeContent.class).getData();
                 transformation = frameOaepTransformation(hash, useMgf);
             } catch (Exception e) {
@@ -70,8 +70,8 @@ public class CipherUtil {
         return "RSA/NONE/PKCS1Padding";
     }
 
-    private static String frameOaepTransformation(OaepHash hash, boolean useMgf){
-        return "RSA/NONE/OAEPWith" + hash.getCode() + (useMgf ? "AndMGF1Padding": "Padding");
+    private static String frameOaepTransformation(DigestAlgorithm hash, boolean useMgf){
+        return "RSA/NONE/OAEPWith" + hash.getProviderName() + (useMgf ? "AndMGF1Padding": "Padding");
     }
 
     private static DecryptDataResponseDto decryptData(CipherDataRequestDto request, KeyData key, String transformation) {
