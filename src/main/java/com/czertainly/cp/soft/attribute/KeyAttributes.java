@@ -8,11 +8,13 @@ import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
 import com.czertainly.api.model.common.attribute.v2.properties.MetadataAttributeProperties;
-import com.czertainly.cp.soft.collection.KeyAlgorithm;
+import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class KeyAttributes {
 
@@ -83,7 +85,11 @@ public class KeyAttributes {
         attributeProperties.setReadOnly(false);
         attribute.setProperties(attributeProperties);
         // set content
-        attribute.setContent(KeyAlgorithm.asStringAttributeContentList());
+        attribute.setContent(
+                Stream.of(KeyAlgorithm.values())
+                        .map(item -> new StringAttributeContent(item.getLabel(), item.getCode()))
+                        .collect(Collectors.toList())
+        );
 
         return attribute;
     }

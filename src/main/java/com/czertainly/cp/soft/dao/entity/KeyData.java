@@ -1,9 +1,9 @@
 package com.czertainly.cp.soft.dao.entity;
 
 import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
-import com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm;
-import com.czertainly.api.model.connector.cryptography.enums.KeyFormat;
-import com.czertainly.api.model.connector.cryptography.enums.KeyType;
+import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
+import com.czertainly.api.model.common.enums.cryptography.KeyFormat;
+import com.czertainly.api.model.common.enums.cryptography.KeyType;
 import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.key.value.*;
 import com.czertainly.core.util.AttributeDefinitionUtils;
@@ -29,7 +29,7 @@ public class KeyData extends UniquelyIdentified {
     private KeyType type;
 
     @Column(name = "algorithm")
-    private CryptographicAlgorithm algorithm;
+    private KeyAlgorithm algorithm;
 
     @Column(name = "format")
     private KeyFormat format;
@@ -74,11 +74,11 @@ public class KeyData extends UniquelyIdentified {
         this.type = type;
     }
 
-    public CryptographicAlgorithm getAlgorithm() {
+    public KeyAlgorithm getAlgorithm() {
         return algorithm;
     }
 
-    public void setAlgorithm(CryptographicAlgorithm algorithm) {
+    public void setAlgorithm(KeyAlgorithm algorithm) {
         this.algorithm = algorithm;
     }
 
