@@ -5,9 +5,9 @@ import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
-import com.czertainly.api.model.connector.cryptography.enums.CryptographicAlgorithm;
-import com.czertainly.api.model.connector.cryptography.enums.KeyFormat;
-import com.czertainly.api.model.connector.cryptography.enums.KeyType;
+import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
+import com.czertainly.api.model.common.enums.cryptography.KeyFormat;
+import com.czertainly.api.model.common.enums.cryptography.KeyType;
 import com.czertainly.api.model.connector.cryptography.key.CreateKeyRequestDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDto;
@@ -93,7 +93,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // create public key
                 publicKey = createAndSaveKeyData(
-                        alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.RSA, KeyFormat.SPKI,
+                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.RSA, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
                         keySize, metadata, tokenInstance.getUuid());
 
@@ -103,7 +103,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 customKeyValues.put("location", "managed by external token");
                 customKeyValue.setValues(customKeyValues);
 
-                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.RSA,
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.RSA,
                         KeyFormat.CUSTOM, customKeyValue, keySize, metadata, tokenInstance.getUuid());
             }
             case ECDSA -> {
@@ -117,7 +117,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // create public key
                 publicKey = createAndSaveKeyData(
-                        alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.ECDSA, KeyFormat.SPKI,
+                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.ECDSA, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
                         curveName.getSize()*2, metadata, tokenInstance.getUuid());
 
@@ -128,7 +128,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 customKeyValues.put("curve.description", curveName.getDescription());
                 customKeyValue.setValues(customKeyValues);
 
-                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.ECDSA,
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.ECDSA,
                         KeyFormat.CUSTOM, customKeyValue, curveName.getSize(), metadata, tokenInstance.getUuid());
 
             }
@@ -145,7 +145,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 // prepare public key
                 assert falconDegree != null;
                 publicKey = createAndSaveKeyData(
-                        alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.FALCON, KeyFormat.SPKI,
+                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.FALCON, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
                         falconDegree.getPublicKeySize(), metadata, tokenInstance.getUuid());
 
@@ -155,7 +155,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 customKeyValue.setValues(customKeyValues);
 
                 // prepare private key
-                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.FALCON,
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.FALCON,
                         KeyFormat.CUSTOM, customKeyValue, falconDegree.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
             case DILITHIUM -> {
@@ -175,7 +175,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // prepare public key
                 publicKey = createAndSaveKeyData(
-                        alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.DILITHIUM, KeyFormat.SPKI,
+                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.DILITHIUM, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
                         level.getPublicKeySize(), metadata, tokenInstance.getUuid());
 
@@ -188,7 +188,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 customKeyValue.setValues(customKeyValues);
 
                 // prepare private key
-                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.DILITHIUM,
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.DILITHIUM,
                         KeyFormat.CUSTOM, customKeyValue, level.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
             case SPHINCSPLUS -> {
@@ -214,7 +214,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // prepare public key
                 publicKey = createAndSaveKeyData(
-                        alias, association, KeyType.PUBLIC_KEY, CryptographicAlgorithm.SPHINCSPLUS, KeyFormat.SPKI,
+                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.SPHINCSPLUS, KeyFormat.SPKI,
                         //KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
                         paramSet.getPublicKeySize(), metadata, tokenInstance.getUuid());
@@ -227,7 +227,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 customKeyValue.setValues(customKeyValues);
 
                 // prepare private key
-                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, CryptographicAlgorithm.SPHINCSPLUS,
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.SPHINCSPLUS,
                         KeyFormat.CUSTOM, customKeyValue, paramSet.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
@@ -306,7 +306,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     private KeyData createAndSaveKeyData(
             String alias, String association, KeyType type,
-            CryptographicAlgorithm algorithm,
+            KeyAlgorithm algorithm,
             KeyFormat format,
             KeyValue value,
             int length,

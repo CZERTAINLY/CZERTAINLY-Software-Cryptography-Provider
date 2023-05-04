@@ -1,6 +1,6 @@
 package com.czertainly.cp.soft.dao.converter;
 
-import com.czertainly.api.model.connector.cryptography.enums.KeyType;
+import com.czertainly.api.model.common.enums.cryptography.KeyType;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
@@ -12,7 +12,7 @@ public class KeyTypeConverter implements AttributeConverter<KeyType, String> {
         if (keyType == null) {
             return null;
         }
-        return keyType.name();
+        return keyType.getCode();
     }
 
     @Override
@@ -20,7 +20,7 @@ public class KeyTypeConverter implements AttributeConverter<KeyType, String> {
         if (keyType == null) {
             return null;
         }
-        return KeyType.valueOf(keyType);
+        return KeyType.findByCode(keyType);
     }
 
 }

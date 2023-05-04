@@ -1,7 +1,7 @@
 package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.model.connector.cryptography.enums.KeyType;
+import com.czertainly.api.model.common.enums.cryptography.KeyType;
 import com.czertainly.api.model.connector.cryptography.operations.*;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureRequestData;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureResponseData;

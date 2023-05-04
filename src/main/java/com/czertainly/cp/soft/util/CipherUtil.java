@@ -5,13 +5,13 @@ import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
-import com.czertainly.api.model.common.collection.DigestAlgorithm;
+import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
 import com.czertainly.api.model.connector.cryptography.operations.CipherDataRequestDto;
 import com.czertainly.api.model.connector.cryptography.operations.DecryptDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.EncryptDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.data.CipherRequestData;
 import com.czertainly.api.model.connector.cryptography.operations.data.CipherResponseData;
-import com.czertainly.api.model.core.cryptography.key.RsaPadding;
+import com.czertainly.api.model.common.enums.cryptography.RsaEncryptionScheme;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.RsaCipherAttributes;
 import com.czertainly.cp.soft.dao.entity.KeyData;
@@ -30,8 +30,8 @@ public class CipherUtil {
         switch (key.getAlgorithm()) {
             case RSA -> {
                 List<RequestAttributeDto> attributes = request.getCipherAttributes();
-                RsaPadding padding = RsaPadding.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_PADDING_NAME, attributes, StringAttributeContent.class).getData());
-                return decryptData(request, key, getCipherTransformation(padding, request.getCipherAttributes()));
+                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContent.class).getData());
+                return decryptData(request, key, getCipherTransformation(rsaEncryptionScheme, request.getCipherAttributes()));
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }
@@ -41,18 +41,18 @@ public class CipherUtil {
         switch (key.getAlgorithm()) {
             case RSA -> {
                 List<RequestAttributeDto> attributes = request.getCipherAttributes();
-                RsaPadding padding = RsaPadding.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_PADDING_NAME, attributes, StringAttributeContent.class).getData());
-                return encryptData(request, key, getCipherTransformation(padding, request.getCipherAttributes()));
+                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContent.class).getData());
+                return encryptData(request, key, getCipherTransformation(rsaEncryptionScheme, request.getCipherAttributes()));
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }
     }
 
-    private static String getCipherTransformation(RsaPadding padding, List<RequestAttributeDto> attributes) {
+    private static String getCipherTransformation(RsaEncryptionScheme rsaEncryptionScheme, List<RequestAttributeDto> attributes) {
         String transformation;
-        if(padding.equals(RsaPadding.PKCS1_v1_5)) {
+        if(rsaEncryptionScheme.equals(RsaEncryptionScheme.PKCS1_v1_5)) {
             transformation = framePkcs1Scheme();
-        } else if (padding.equals(RsaPadding.OAEP)) {
+        } else if (rsaEncryptionScheme.equals(RsaEncryptionScheme.OAEP)) {
             try {
                 DigestAlgorithm hash = DigestAlgorithm.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_HASH_NAME, attributes, StringAttributeContent.class).getData());
                 boolean useMgf = AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_USE_MGF_NAME, attributes, BooleanAttributeContent.class).getData();

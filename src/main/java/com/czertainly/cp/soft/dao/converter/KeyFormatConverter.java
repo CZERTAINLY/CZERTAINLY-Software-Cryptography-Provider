@@ -1,6 +1,6 @@
 package com.czertainly.cp.soft.dao.converter;
 
-import com.czertainly.api.model.connector.cryptography.enums.KeyFormat;
+import com.czertainly.api.model.common.enums.cryptography.KeyFormat;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
@@ -12,7 +12,7 @@ public class KeyFormatConverter implements AttributeConverter<KeyFormat, String>
         if (keyFormat == null) {
             return null;
         }
-        return keyFormat.name();
+        return keyFormat.getCode();
     }
 
     @Override
@@ -20,7 +20,7 @@ public class KeyFormatConverter implements AttributeConverter<KeyFormat, String>
         if (keyFormat == null) {
             return null;
         }
-        return KeyFormat.valueOf(keyFormat);
+        return KeyFormat.findByCode(keyFormat);
     }
 
 }
