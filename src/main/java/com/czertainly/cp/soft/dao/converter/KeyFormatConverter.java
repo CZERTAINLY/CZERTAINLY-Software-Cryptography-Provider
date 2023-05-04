@@ -12,7 +12,7 @@ public class KeyFormatConverter implements AttributeConverter<KeyFormat, String>
         if (keyFormat == null) {
             return null;
         }
-        return keyFormat.getCode();
+        return keyFormat.name();
     }
 
     @Override
@@ -20,7 +20,7 @@ public class KeyFormatConverter implements AttributeConverter<KeyFormat, String>
         if (keyFormat == null) {
             return null;
         }
-        return KeyFormat.findByCode(keyFormat);
+        return KeyFormat.valueOf(keyFormat);
     }
 
 }

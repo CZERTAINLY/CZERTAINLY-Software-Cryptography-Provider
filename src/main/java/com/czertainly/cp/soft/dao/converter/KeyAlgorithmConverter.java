@@ -12,7 +12,7 @@ public class KeyAlgorithmConverter implements AttributeConverter<KeyAlgorithm, S
         if (keyAlgorithm == null) {
             return null;
         }
-        return keyAlgorithm.getCode();
+        return keyAlgorithm.name();
     }
 
     @Override
@@ -20,7 +20,7 @@ public class KeyAlgorithmConverter implements AttributeConverter<KeyAlgorithm, S
         if (keyAlgorithm == null) {
             return null;
         }
-        return KeyAlgorithm.findByCode(keyAlgorithm);
+        return KeyAlgorithm.valueOf(keyAlgorithm);
     }
 
 }
