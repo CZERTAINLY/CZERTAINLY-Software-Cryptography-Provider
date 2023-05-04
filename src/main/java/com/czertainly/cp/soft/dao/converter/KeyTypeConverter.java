@@ -12,7 +12,7 @@ public class KeyTypeConverter implements AttributeConverter<KeyType, String> {
         if (keyType == null) {
             return null;
         }
-        return keyType.getCode();
+        return keyType.name();
     }
 
     @Override
@@ -20,7 +20,7 @@ public class KeyTypeConverter implements AttributeConverter<KeyType, String> {
         if (keyType == null) {
             return null;
         }
-        return KeyType.findByCode(keyType);
+        return KeyType.valueOf(keyType);
     }
 
 }
