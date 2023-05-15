@@ -65,7 +65,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         final String algorithm = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                 KeyAttributes.ATTRIBUTE_DATA_KEY_ALGORITHM, request.getCreateKeyAttributes(), StringAttributeContent.class).getData();
 
-        KeyAlgorithm cryptographicAlgorithm = KeyAlgorithm.valueOf(algorithm);
+        KeyAlgorithm cryptographicAlgorithm = KeyAlgorithm.findByCode(algorithm);
 
         // alias should be always present for every key
         final String alias = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
