@@ -1,7 +1,7 @@
 package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.model.connector.cryptography.enums.KeyType;
+import com.czertainly.api.model.common.enums.cryptography.KeyType;
 import com.czertainly.api.model.connector.cryptography.operations.*;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureRequestData;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureResponseData;
@@ -10,6 +10,7 @@ import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.CryptographicOperationException;
 import com.czertainly.cp.soft.service.CryptographicOperationsService;
 import com.czertainly.cp.soft.service.KeyManagementService;
+import com.czertainly.cp.soft.util.CipherUtil;
 import com.czertainly.cp.soft.util.SecureRandomUtil;
 import com.czertainly.cp.soft.util.SignatureUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -125,5 +126,17 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
         RandomDataResponseDto response = new RandomDataResponseDto();
         response.setData(bytes);
         return response;
+    }
+
+    @Override
+    public DecryptDataResponseDto decryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
+        KeyData key = keyManagementService.getKeyEntity(uuid, keyUuid);
+        return CipherUtil.decrypt(request, key);
+    }
+
+    @Override
+    public EncryptDataResponseDto encryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
+        KeyData key = keyManagementService.getKeyEntity(uuid, keyUuid);
+        return CipherUtil.encrypt(request, key);
     }
 }

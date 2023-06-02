@@ -2,8 +2,8 @@ package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
-import com.czertainly.api.model.common.collection.DigestAlgorithm;
-import com.czertainly.api.model.common.collection.RsaSignatureScheme;
+import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
+import com.czertainly.api.model.common.enums.cryptography.RsaSignatureScheme;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
@@ -22,15 +22,15 @@ public class SignatureUtil {
 
         switch (key.getAlgorithm()) {
             case RSA -> {
-                final RsaSignatureScheme scheme = RsaSignatureScheme.valueOf(
+                final RsaSignatureScheme scheme = RsaSignatureScheme.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                                 RsaKeyAttributes.ATTRIBUTE_DATA_RSA_SIG_SCHEME, signatureAttributes, StringAttributeContent.class)
-                                .getReference()
+                                .getData()
                 );
-                final DigestAlgorithm digest = DigestAlgorithm.valueOf(
+                final DigestAlgorithm digest = DigestAlgorithm.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                                 RsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContent.class)
-                                .getReference()
+                                .getData()
                 );
 
                 signatureAlgorithm = digest.getProviderName() + "WITHRSA";
@@ -41,10 +41,10 @@ public class SignatureUtil {
                 return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
             }
             case ECDSA -> {
-                final DigestAlgorithm digest = DigestAlgorithm.valueOf(
+                final DigestAlgorithm digest = DigestAlgorithm.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                                 EcdsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContent.class)
-                                .getReference()
+                                .getData()
                 );
 
                 signatureAlgorithm = digest.getProviderName() + "WITHECDSA";

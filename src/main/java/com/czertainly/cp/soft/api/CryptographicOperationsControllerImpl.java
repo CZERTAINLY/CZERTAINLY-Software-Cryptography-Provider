@@ -34,12 +34,12 @@ public class CryptographicOperationsControllerImpl implements CryptographicOpera
 
     @Override
     public EncryptDataResponseDto encryptData(String uuid, String keyUuid, CipherDataRequestDto request) throws NotFoundException {
-        throw new NotSupportedException("Cipher not supported.");
+        return cryptographicOperationsService.encryptData(UUID.fromString(uuid), UUID.fromString(keyUuid), request);
     }
 
     @Override
     public DecryptDataResponseDto decryptData(String uuid, String keyUuid, CipherDataRequestDto request) throws NotFoundException {
-        throw new NotSupportedException("Cipher not supported.");
+        return cryptographicOperationsService.decryptData(UUID.fromString(uuid), UUID.fromString(keyUuid), request);
     }
 
     @Override

@@ -13,4 +13,7 @@ public interface CryptographicOperationsService {
 
     RandomDataResponseDto randomData(String uuid, RandomDataRequestDto request);
 
+    DecryptDataResponseDto decryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException;
+
+    EncryptDataResponseDto encryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException;
 }

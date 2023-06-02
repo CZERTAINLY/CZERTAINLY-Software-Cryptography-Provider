@@ -1,6 +1,6 @@
 package com.czertainly.cp.soft.dao.converter;
 
-import com.czertainly.api.model.connector.cryptography.enums.KeyType;
+import com.czertainly.api.model.common.enums.cryptography.KeyType;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
