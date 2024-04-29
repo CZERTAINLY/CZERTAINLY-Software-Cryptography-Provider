@@ -106,7 +106,7 @@ public class TokenInstanceAttributes {
         attributeProperties.setVisible(false);
         attributeProperties.setList(false);
         attributeProperties.setMultiSelect(false);
-        attributeProperties.setReadOnly(true);
+        attributeProperties.setReadOnly(false);
         attribute.setProperties(attributeProperties);
         // set content
         attribute.setContent(List.of(
