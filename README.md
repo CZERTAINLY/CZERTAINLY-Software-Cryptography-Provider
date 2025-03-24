@@ -1,6 +1,6 @@
 # CZERTAINLY Software Cryptography Provider
 
-> This repository is part of the commercial open-source project CZERTAINLY. You can find more information about the project at [CZERTAINLY](https://github.com/3KeyCompany/CZERTAINLY) repository, including the contribution guide.
+> This repository is part of the commercial open-source project CZERTAINLY. You can find more information about the project at [CZERTAINLY](https://github.com/CZERTAINLY/CZERTAINLY) repository, including the contribution guide.
 
 Software Cryptography Provider `Connector` is the implementation of the following `Function Groups` and `Kinds`:
 
@@ -37,13 +37,13 @@ Software Cryptography Provider `Connector` supports the following asymmetric alg
 
 ## Interfaces
 
-Software Cryptography Provider implements `Cryptography Provider` interfaces. To learn more about the interfaces and end points, refer to the [CZERTAINLY Interfaces](https://github.com/3KeyCompany/CZERTAINLY-Interfaces).
+Software Cryptography Provider implements `Cryptography Provider` interfaces. To learn more about the interfaces and end points, refer to the [CZERTAINLY Interfaces](https://github.com/CZERTAINLY/CZERTAINLY-Interfaces).
 
 For more information, please refer to the [CZERTAINLY documentation](https://docs.czertainly.com).
 
 ## Docker container
 
-Software Cryptography Provider `Connector` is provided as a Docker container. Use the `3keycompany/czertainly-software-cryptography-provider:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
+Software Cryptography Provider `Connector` is provided as a Docker container. Use the `docker.io/czertainly/czertainly-software-cryptography-provider:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
 
 | Variable                 | Description                                                         | Required                                           | Default value |
 |--------------------------|---------------------------------------------------------------------|----------------------------------------------------|---------------|

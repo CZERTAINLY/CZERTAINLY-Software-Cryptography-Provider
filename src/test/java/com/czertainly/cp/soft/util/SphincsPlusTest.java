@@ -16,7 +16,7 @@ public class SphincsPlusTest {
 
         KeyPair kp = kpg.generateKeyPair();
 
-        kpg.initialize(SPHINCSPlusParameterSpec.sha2_128f_simple);
+        kpg.initialize(SPHINCSPlusParameterSpec.sha2_128f);
 
         KeyPair kpRes = kpg.generateKeyPair();
 
