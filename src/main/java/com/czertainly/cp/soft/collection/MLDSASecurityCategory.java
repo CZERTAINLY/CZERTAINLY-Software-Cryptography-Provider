@@ -7,29 +7,31 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum DilithiumLevel {
-    DILITHIUM_2(2, 10496, 20224),
-    DILITHIUM_3(3, 15616, 32000),
-    DILITHIUM_5(5, 20736, 38912);
+public enum MLDSASecurityCategory {
+    MLDSA_44(2, 1312, 2560, "44"),
+    MLDSA_65(3, 1952, 4032, "65"),
+    MLDSA_87(5, 2592, 4896, "87");
 
-    private static final DilithiumLevel[] VALUES;
+    private static final MLDSASecurityCategory[] VALUES;
 
     static {
         VALUES = values();
     }
 
-    private final int nistLevel;
+    private final int nistSecurityCategory;
     private final int publicKeySize;
     private final int privateKeySize;
+    private final String parameterSet;
 
-    DilithiumLevel(int nistLevel, int publicKeySize, int privateKeySize) {
-        this.nistLevel = nistLevel;
+    MLDSASecurityCategory(int nistLevel, int publicKeySize, int privateKeySize, String parameterSet) {
+        this.nistSecurityCategory = nistLevel;
         this.publicKeySize = publicKeySize;
         this.privateKeySize = privateKeySize;
+        this.parameterSet = parameterSet;
     }
 
-    public int getNistLevel() {
-        return nistLevel;
+    public int getNistSecurityCategory() {
+        return nistSecurityCategory;
     }
 
     public int getPublicKeySize() {
@@ -40,13 +42,15 @@ public enum DilithiumLevel {
         return privateKeySize;
     }
 
+    public String getParameterSet() {return parameterSet;}
+
     @Override
     public String toString() {
         return name();
     }
 
-    public static DilithiumLevel valueOf(int nistLevel) {
-        DilithiumLevel d = resolve(nistLevel);
+    public static MLDSASecurityCategory valueOf(int nistLevel) {
+        MLDSASecurityCategory d = resolve(nistLevel);
         if (d == null) {
             throw new IllegalArgumentException("No matching constant for [" + nistLevel + "]");
         }
@@ -54,10 +58,10 @@ public enum DilithiumLevel {
     }
 
     @Nullable
-    public static DilithiumLevel resolve(int nistLevel) {
+    public static MLDSASecurityCategory resolve(int nistLevel) {
         // Use cached VALUES instead of values() to prevent array allocation.
-        for (DilithiumLevel d : VALUES) {
-            if (d.nistLevel == nistLevel) {
+        for (MLDSASecurityCategory d : VALUES) {
+            if (d.nistSecurityCategory == nistLevel) {
                 return d;
             }
         }
@@ -66,7 +70,7 @@ public enum DilithiumLevel {
 
     public static List<BaseAttributeContent> asIntegerAttributeContentList() {
         return List.of(values()).stream()
-                .map(d -> new IntegerAttributeContent(d.name(), d.getNistLevel()))
+                .map(d -> new IntegerAttributeContent(d.name(), d.getNistSecurityCategory()))
                 .collect(Collectors.toList());
     }
 }

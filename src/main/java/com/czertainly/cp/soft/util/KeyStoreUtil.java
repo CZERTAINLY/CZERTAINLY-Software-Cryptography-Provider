@@ -3,10 +3,11 @@ package com.czertainly.cp.soft.util;
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
+import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
+import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pqc.jcajce.interfaces.DilithiumPrivateKey;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
-import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.bouncycastle.pqc.jcajce.spec.SPHINCSPlusParameterSpec;
 
@@ -107,7 +108,7 @@ public class KeyStoreUtil {
 
     public static SpkiKeyValue spkiKeyValueFromPrivateKey(KeyStore keyStore, String alias, String password) {
         try {
-            DilithiumPrivateKey privateKey = (DilithiumPrivateKey) keyStore.getKey(alias, password.toCharArray());
+            MLDSAPrivateKey privateKey = (MLDSAPrivateKey) keyStore.getKey(alias, password.toCharArray());
             return new SpkiKeyValue(Base64.getEncoder().encodeToString(privateKey.getPublicKey().getEncoded()));
         } catch (KeyStoreException e) {
             throw new IllegalStateException("Cannot open KeyStore", e);
@@ -192,19 +193,16 @@ public class KeyStoreUtil {
         }
     }
 
-    public static void generateDilithiumKey(KeyStore keyStore, String alias, DilithiumLevel level, boolean useAes, String password) {
+    public static void generateMLDSAKey(KeyStore keyStore, String alias, MLDSASecurityCategory level, String password) {
         try {
-            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("Dilithium", BouncyCastlePQCProvider.PROVIDER_NAME);
+            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("ML-DSA", BouncyCastleProvider.PROVIDER_NAME);
 
-            String algorithm = "dilithium" + level.getNistLevel();
-            if (useAes) {
-                algorithm += "-aes";
-            }
+            String algorithm = "ML-DSA-" + level.getParameterSet();
 
-            kpg.initialize(DilithiumParameterSpec.fromName(algorithm));
+            kpg.initialize(MLDSAParameterSpec.fromName(algorithm));
 
             final KeyPair kp = kpg.generateKeyPair();
-            final X509Certificate cert = X509Util.generateOrphanX509Certificate(kp, algorithm, BouncyCastlePQCProvider.PROVIDER_NAME);
+            final X509Certificate cert = X509Util.generateOrphanX509Certificate(kp, algorithm, BouncyCastleProvider.PROVIDER_NAME);
             final X509Certificate[] chain = new X509Certificate[]{cert};
 
             keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);

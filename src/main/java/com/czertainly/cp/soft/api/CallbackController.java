@@ -46,10 +46,10 @@ public class CallbackController {
             case FALCON -> {
                 return FalconKeyAttributes.getFalconKeySpecAttributes();
             }
-            case DILITHIUM -> {
-                return DilithiumKeyAttributes.getDilithiumKeySpecAttributes();
+            case MLDSA -> {
+                return MLDSAKeyAttributes.getMldsaKeySpecAttributes();
             }
-            case SPHINCSPLUS -> {
+            case SLHDSA -> {
                 return SphincsPlusKeyAttributes.getSphincsPLusKeySpecAttributes();
             }
             default -> throw new NotSupportedException("Algorithm not supported");
