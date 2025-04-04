@@ -2,7 +2,6 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
@@ -185,23 +184,24 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                         KeyFormat.CUSTOM, customKeyValue, level.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
             case SLHDSA -> {
-                final SphincsPlusHash hash = SphincsPlusHash.valueOf(
+                final SlhDSAHash hash = SlhDSAHash.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_HASH, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                SlhDsaKeyAttributes.ATTRIBUTE_DATA_SLHDSA_HASH, request.getCreateKeyAttributes(), StringAttributeContent.class)
                                 .getReference()
                 );
 
-                final SphincsPlusParameterSet paramSet = SphincsPlusParameterSet.valueOf(
+                final SlhDsaSecurityCategory slhDsaSecurityCategory = SlhDsaSecurityCategory.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_PARAMETER_SET, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                SlhDsaKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY, request.getCreateKeyAttributes(), StringAttributeContent.class)
                                 .getReference()
                 );
 
-                final boolean robust = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_ROBUST, request.getCreateKeyAttributes(), BooleanAttributeContent.class)
-                        .getData();
+                final SlhDsaTradeoff tradeoff = SlhDsaTradeoff.valueOf(AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                        SlhDsaKeyAttributes.ATTRIBUTE_DATA_SLHDSA_TRADEOFF, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                        .getReference()
+                );
 
-                KeyStoreUtil.generateSphincsPlusKey(keyStore, alias, hash, paramSet, robust, tokenInstance.getCode());
+                KeyStoreUtil.generateSlhDsaKey(keyStore, alias, hash, slhDsaSecurityCategory, tradeoff, tokenInstance.getCode());
 
                 // add metadata
 
@@ -210,18 +210,18 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                         alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.SLHDSA, KeyFormat.SPKI,
                         //KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
-                        paramSet.getPublicKeySize(), metadata, tokenInstance.getUuid());
+                        slhDsaSecurityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
 
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
+                customKeyValues.put("securityCategory", slhDsaSecurityCategory.getNistSecurityCategory());
                 customKeyValues.put("hash", hash.getHashName());
-                customKeyValues.put("parameterSet", paramSet.getParamSet());
-                customKeyValues.put("instantiation", robust ? "robust" : "simple");
+                customKeyValues.put("tradeoff", tradeoff.name());
                 customKeyValue.setValues(customKeyValues);
 
                 // prepare private key
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.SLHDSA,
-                        KeyFormat.CUSTOM, customKeyValue, paramSet.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+                        KeyFormat.CUSTOM, customKeyValue, slhDsaSecurityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
         }

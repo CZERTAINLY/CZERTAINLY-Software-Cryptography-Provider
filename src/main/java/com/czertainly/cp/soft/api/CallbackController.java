@@ -50,7 +50,7 @@ public class CallbackController {
                 return MLDSAKeyAttributes.getMldsaKeySpecAttributes();
             }
             case SLHDSA -> {
-                return SphincsPlusKeyAttributes.getSphincsPLusKeySpecAttributes();
+                return SlhDsaKeyAttributes.getSlhDsaKeySpecAttributes();
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }

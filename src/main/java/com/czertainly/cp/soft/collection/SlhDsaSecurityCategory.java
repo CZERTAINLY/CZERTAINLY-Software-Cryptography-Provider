@@ -6,32 +6,31 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum SphincsPlusParameterSet {
-    S_128("128s", 256, 512),
-    F_128("128f", 256, 512),
-    S_192("192s", 384, 768),
-    F_192("192f", 384, 768),
-    S_256("256s", 512, 1024),
-    F_256("256f", 512, 1024);
+public enum SlhDsaSecurityCategory {
+    CATEGORY_1("1", 256, 512),
+    CATEGORY_3("3", 384, 768),
+    CATEGORY_5("5", 512, 1024)
+    ;
 
-    private static final SphincsPlusParameterSet[] VALUES;
+    private static final SlhDsaSecurityCategory[] VALUES;
 
     static {
         VALUES = values();
     }
 
-    private final String paramSet;
+    private final String nistSecurityCategory;
     private final int publicKeySize;
     private final int privateKeySize;
 
-    SphincsPlusParameterSet(String paramSet, int publicKeySize, int privateKeySize) {
-        this.paramSet = paramSet;
+    SlhDsaSecurityCategory(String nistSecurityCategory, int publicKeySize, int privateKeySize) {
+        this.nistSecurityCategory = nistSecurityCategory;
         this.publicKeySize = publicKeySize;
         this.privateKeySize = privateKeySize;
+
     }
 
-    public String getParamSet() {
-        return paramSet;
+    public String getNistSecurityCategory() {
+        return nistSecurityCategory;
     }
 
     public int getPublicKeySize() {
@@ -44,12 +43,12 @@ public enum SphincsPlusParameterSet {
 
     @Override
     public String toString() {
-        return name();
+        return nistSecurityCategory;
     }
 
     public static List<BaseAttributeContent> asStringAttributeContentList() {
         return List.of(values()).stream()
-                .map(d -> new StringAttributeContent(d.name(), d.getParamSet()))
+                .map(d -> new StringAttributeContent(d.name(), d.getNistSecurityCategory()))
                 .collect(Collectors.toList());
     }
 }

@@ -5,8 +5,8 @@ import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
+import org.bouncycastle.jcajce.spec.SLHDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.pqc.jcajce.interfaces.DilithiumPrivateKey;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.bouncycastle.pqc.jcajce.spec.SPHINCSPlusParameterSpec;
@@ -207,43 +207,61 @@ public class KeyStoreUtil {
 
             keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Dilithium algorithm not found", e);
+            throw new IllegalStateException("ML-DSA algorithm not found", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("Provider not found", e);
         } catch (InvalidAlgorithmParameterException e) {
-            throw new IllegalStateException("Invalid Dilithium algorithm parameters", e);
+            throw new IllegalStateException("Invalid ML-DSA algorithm parameters", e);
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot generate Dilithium key", e);
+            throw new IllegalStateException("Cannot generate ML-DSA key", e);
         }
     }
 
-    public static void generateSphincsPlusKey(KeyStore keyStore, String alias, SphincsPlusHash hash, SphincsPlusParameterSet paramSet, boolean robust, String password) {
+    public static void generateSlhDsaKey(KeyStore keyStore, String alias, SlhDSAHash hash, SlhDsaSecurityCategory securityCategory, SlhDsaTradeoff tradeoff, String password) {
         try {
-            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("SPHINCSPlus", BouncyCastlePQCProvider.PROVIDER_NAME);
+            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
 
-            String algorithm = hash.getProviderName() + "-" + paramSet.getParamSet();
-            if (robust) {
-                algorithm += "-robust";
-            } else {
-                algorithm += "-simple";
-            }
+            String algorithm = buildSlhDsaParameterSpec(hash, securityCategory, tradeoff);
 
-            kpg.initialize(SPHINCSPlusParameterSpec.fromName(algorithm));
+            kpg.initialize(SLHDSAParameterSpec.fromName(algorithm));
 
             final KeyPair kp = kpg.generateKeyPair();
-            final X509Certificate cert = X509Util.generateOrphanX509Certificate(kp, "SPHINCSPlus", BouncyCastlePQCProvider.PROVIDER_NAME);
+            final X509Certificate cert = X509Util.generateOrphanX509Certificate(kp, "SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
             final X509Certificate[] chain = new X509Certificate[]{cert};
 
             keyStore.setKeyEntry(alias, kp.getPrivate(), password.toCharArray(), chain);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SPHINCS+ algorithm not found", e);
+            throw new IllegalStateException("SLH-DSA algorithm not found", e);
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("Provider not found", e);
         } catch (InvalidAlgorithmParameterException e) {
-            throw new IllegalStateException("Invalid SPHINCS+ algorithm parameters", e);
+            throw new IllegalStateException("Invalid SLH-DSA algorithm parameters", e);
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot generate SPHINCS+ key", e);
+            throw new IllegalStateException("Cannot generate SLH-DSA key", e);
         }
+    }
+
+    private static String buildSlhDsaParameterSpec(SlhDSAHash hash, SlhDsaSecurityCategory securityCategory, SlhDsaTradeoff tradeoff) {
+        String algorithm = "SLH-DSA-";
+        if (hash == SlhDSAHash.SHA2) {
+            algorithm += "SHA2-";
+        } else {
+            algorithm += "SHAKE-";
+        }
+        if (securityCategory == SlhDsaSecurityCategory.CATEGORY_1) {
+            algorithm += "128";
+        } else if (securityCategory == SlhDsaSecurityCategory.CATEGORY_3) {
+            algorithm += "192";
+        } else {
+            algorithm += "256";
+        }
+
+        if (tradeoff == SlhDsaTradeoff.SHORT) {
+            algorithm += "s";
+        } else {
+            algorithm += "f";
+        }
+        return algorithm;
     }
 
     public static void deleteAliasFromKeyStore(KeyStore keyStore, String alias) {

@@ -6,12 +6,12 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum SphincsPlusHash {
+public enum SlhDSAHash {
     SHA2("SHA2", "sha2"),
-    SHAKE256("SHAKE256", "shake"),
-    HARAKA("Haraka", "haraka");
+    SHAKE256("SHAKE256", "shake")
+    ;
 
-    private static final SphincsPlusHash[] VALUES;
+    private static final SlhDSAHash[] VALUES;
 
     static {
         VALUES = values();
@@ -20,7 +20,7 @@ public enum SphincsPlusHash {
     private final String hashName;
     private final String providerName;
 
-    SphincsPlusHash(String hashName, String providerName) {
+    SlhDSAHash(String hashName, String providerName) {
         this.hashName = hashName;
         this.providerName = providerName;
     }

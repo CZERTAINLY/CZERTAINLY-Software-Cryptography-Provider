@@ -16,6 +16,8 @@ public class MLDSAKeyAttributes {
     public static final String ATTRIBUTE_DATA_MLDSA_LEVEL_LABEL = "NIST Security Category";
     public static final String ATTRIBUTE_DATA_MLDSA_LEVEL_DESCRIPTION = "Security strength according NIST definition";
 
+    public static final String ATTRIBUTE_DATA_USE_PREHASH = "data_mldsaPrehash";
+
     public static List<BaseAttribute> getMldsaKeySpecAttributes() {
         return List.of(
                 buildDataMLDSASecurityCategory()

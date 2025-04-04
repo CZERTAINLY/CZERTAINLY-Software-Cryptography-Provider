@@ -1,11 +1,13 @@
 package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
+import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
 import com.czertainly.api.model.common.enums.cryptography.RsaSignatureScheme;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
+import com.czertainly.cp.soft.attribute.MLDSAKeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.NotSupportedException;
@@ -62,10 +64,18 @@ public class SignatureUtil {
                 */
             }
             case MLDSA -> {
-                return getInstanceSignature("ml-dsa", BouncyCastleProvider.PROVIDER_NAME);
+                signatureAlgorithm = "";
+                boolean usePrehash = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                                MLDSAKeyAttributes.ATTRIBUTE_DATA_USE_PREHASH, signatureAttributes, BooleanAttributeContent.class)
+                        .getData()
+                ;
+                if (usePrehash) signatureAlgorithm += "HASH-";
+                signatureAlgorithm += "ML-DSA";
+
+                return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
             }
             case SLHDSA -> {
-                return getInstanceSignature("SPHINCSPlus", BouncyCastlePQCProvider.PROVIDER_NAME);
+                return getInstanceSignature("SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
             }
             default -> throw new NotSupportedException("Cryptographic algorithm not supported");
         }
