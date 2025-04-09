@@ -5,11 +5,10 @@ import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
+import org.bouncycastle.jcajce.spec.MLKEMParameterSpec;
 import org.bouncycastle.jcajce.spec.SLHDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
-import org.bouncycastle.pqc.jcajce.spec.SPHINCSPlusParameterSpec;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,6 +20,15 @@ import java.security.spec.ECGenParameterSpec;
 import java.util.Base64;
 
 public class KeyStoreUtil {
+
+    public static final String CERTIFICATE_EXCEPTION_FOR_KEY_STORE = "Certificate exception for KeyStore";
+    public static final String INVALID_KEY_STORE = "Invalid KeyStore ";
+    public static final String CANNOT_CREATE_NEW_KEY_STORE = "Cannot create new KeyStore";
+    public static final String INVALID_ALGORITHM_FOR_KEY_STORE = "Invalid algorithm for KeyStore ";
+    public static final String PROVIDER_NOT_FOUND = "Provider not found";
+
+    private KeyStoreUtil() {
+    }
 
     public static byte[] createNewKeystore(String type, String code) {
         try {
@@ -34,13 +42,13 @@ public class KeyStoreUtil {
 
             return baos.toByteArray();
         } catch (CertificateException e) {
-            throw new IllegalStateException("Certificate exception for KeyStore", e);
+            throw new IllegalStateException(CERTIFICATE_EXCEPTION_FOR_KEY_STORE, e);
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Invalid KeyStore ", e);
+            throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot create new KeyStore", e);
+            throw new IllegalStateException(CANNOT_CREATE_NEW_KEY_STORE, e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Invalid algorithm for KeyStore ", e);
+            throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
         }
     }
 
@@ -53,13 +61,13 @@ public class KeyStoreUtil {
 
             return baos.toByteArray();
         } catch (CertificateException e) {
-            throw new IllegalStateException("Certificate exception for KeyStore", e);
+            throw new IllegalStateException(CERTIFICATE_EXCEPTION_FOR_KEY_STORE, e);
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Invalid KeyStore ", e);
+            throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot create new KeyStore", e);
+            throw new IllegalStateException(CANNOT_CREATE_NEW_KEY_STORE, e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Invalid algorithm for KeyStore ", e);
+            throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
         }
     }
 
@@ -69,13 +77,13 @@ public class KeyStoreUtil {
             char[] password = code.toCharArray();
             ks.load(new ByteArrayInputStream(data), password);
         } catch (CertificateException e) {
-            throw new IllegalStateException("Certificate exception for KeyStore", e);
+            throw new IllegalStateException(CERTIFICATE_EXCEPTION_FOR_KEY_STORE, e);
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Invalid KeyStore ", e);
+            throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot instantiate KeyStore", e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Invalid algorithm for KeyStore ", e);
+            throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
         }
     }
 
@@ -87,13 +95,13 @@ public class KeyStoreUtil {
             ks.load(new ByteArrayInputStream(data), password);
             return ks;
         } catch (CertificateException e) {
-            throw new IllegalStateException("Certificate exception for KeyStore", e);
+            throw new IllegalStateException(CERTIFICATE_EXCEPTION_FOR_KEY_STORE, e);
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Invalid KeyStore ", e);
+            throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot instantiate KeyStore", e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Invalid algorithm for KeyStore ", e);
+            throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
         }
     }
 
@@ -134,7 +142,7 @@ public class KeyStoreUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("RSA algorithm not found", e);
         } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("Provider not found", e);
+            throw new IllegalStateException(PROVIDER_NOT_FOUND, e);
         }
     }
 
@@ -153,7 +161,7 @@ public class KeyStoreUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("ECDSA algorithm not found", e);
         } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("Provider not found", e);
+            throw new IllegalStateException(PROVIDER_NOT_FOUND, e);
         } catch (InvalidAlgorithmParameterException e) {
             throw new IllegalStateException("Invalid curve name `"+curveName.getName()+"`", e);
         }
@@ -163,12 +171,10 @@ public class KeyStoreUtil {
         try {
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("Falcon", "BCPQC");
 
-            if (degree == FalconDegree.FALCON_512) {
-                kpg.initialize(FalconParameterSpec.falcon_512);
-            } else if (degree == FalconDegree.FALCON_1024) {
-                kpg.initialize(FalconParameterSpec.falcon_1024);
-            } else {
-                throw new IllegalStateException("Invalid Falcon degree");
+            switch (degree) {
+                case FALCON_512 -> kpg.initialize(FalconParameterSpec.falcon_512);
+                case FALCON_1024 -> kpg.initialize(FalconParameterSpec.falcon_1024);
+                default ->  throw new IllegalStateException("Invalid Falcon degree");
             }
 
             final KeyPair kp = kpg.generateKeyPair();
@@ -185,7 +191,7 @@ public class KeyStoreUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Falcon algorithm not found", e);
         } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("Provider not found", e);
+            throw new IllegalStateException(PROVIDER_NOT_FOUND, e);
         } catch (InvalidAlgorithmParameterException e) {
             throw new IllegalStateException("Invalid Falcon algorithm parameters", e);
         } catch (KeyStoreException e) {
@@ -209,7 +215,7 @@ public class KeyStoreUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("ML-DSA algorithm not found", e);
         } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("Provider not found", e);
+            throw new IllegalStateException(PROVIDER_NOT_FOUND, e);
         } catch (InvalidAlgorithmParameterException e) {
             throw new IllegalStateException("Invalid ML-DSA algorithm parameters", e);
         } catch (KeyStoreException e) {
@@ -217,11 +223,11 @@ public class KeyStoreUtil {
         }
     }
 
-    public static void generateSlhDsaKey(KeyStore keyStore, String alias, SlhDSAHash hash, SlhDsaSecurityCategory securityCategory, SlhDsaTradeoff tradeoff, String password) {
+    public static void generateSlhDsaKey(KeyStore keyStore, String alias, SlhDSAHash hash, SLHDSASecurityCategory securityCategory, SLHDSATradeoff tradeoff, String password) {
         try {
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
 
-            String algorithm = buildSlhDsaParameterSpec(hash, securityCategory, tradeoff);
+            String algorithm = "SLH-DSA-%s-%s%s".formatted(hash.getHashName(), securityCategory.getSecurityParameterLength(), tradeoff.getParameterName());
 
             kpg.initialize(SLHDSAParameterSpec.fromName(algorithm));
 
@@ -233,7 +239,7 @@ public class KeyStoreUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SLH-DSA algorithm not found", e);
         } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("Provider not found", e);
+            throw new IllegalStateException(PROVIDER_NOT_FOUND, e);
         } catch (InvalidAlgorithmParameterException e) {
             throw new IllegalStateException("Invalid SLH-DSA algorithm parameters", e);
         } catch (KeyStoreException e) {
@@ -241,27 +247,29 @@ public class KeyStoreUtil {
         }
     }
 
-    private static String buildSlhDsaParameterSpec(SlhDSAHash hash, SlhDsaSecurityCategory securityCategory, SlhDsaTradeoff tradeoff) {
-        String algorithm = "SLH-DSA-";
-        if (hash == SlhDSAHash.SHA2) {
-            algorithm += "SHA2-";
-        } else {
-            algorithm += "SHAKE-";
-        }
-        if (securityCategory == SlhDsaSecurityCategory.CATEGORY_1) {
-            algorithm += "128";
-        } else if (securityCategory == SlhDsaSecurityCategory.CATEGORY_3) {
-            algorithm += "192";
-        } else {
-            algorithm += "256";
+    public static void generateMLKEMKey(KeyStore keyStore, String alias, MLKEMSecurityCategory securityCategory, String password) {
+        try {
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ML-KEM", BouncyCastleProvider.PROVIDER_NAME);
+            keyPairGenerator.initialize(MLKEMParameterSpec.fromName(securityCategory.getParameterSet()));
+
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            final X509Certificate cert = X509Util.generateOrphanX509Certificate(keyPair, "SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
+            final X509Certificate[] chain = new X509Certificate[]{cert};
+
+            keyStore.setKeyEntry(alias, keyPair.getPrivate(), password.toCharArray(), chain);
+
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("ML-KEM algorithm not found", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException(PROVIDER_NOT_FOUND, e);
+
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new IllegalStateException("Invalid ML-KEM algorithm parameters", e);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot generate ML-KEM key", e);
         }
 
-        if (tradeoff == SlhDsaTradeoff.SHORT) {
-            algorithm += "s";
-        } else {
-            algorithm += "f";
-        }
-        return algorithm;
     }
 
     public static void deleteAliasFromKeyStore(KeyStore keyStore, String alias) {

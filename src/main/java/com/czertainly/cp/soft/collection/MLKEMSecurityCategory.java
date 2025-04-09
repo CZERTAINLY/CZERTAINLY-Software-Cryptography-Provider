@@ -7,12 +7,14 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum MLDSASecurityCategory {
-    MLDSA_44(2, 10496, 20480, "44"),
-    MLDSA_65(3, 15616, 32256, "65"),
-    MLDSA_87(5, 20736, 39168, "87");
+public enum MLKEMSecurityCategory {
 
-    private static final MLDSASecurityCategory[] VALUES;
+    CATEGORY_1(1, 6400, 13056, "ML-KEM-512"),
+    CATEGORY_3(3, 9472, 19200, "ML-KEM-768"),
+    CATEGORY_5(5, 12544, 253444, "ML-KEM-1024")
+    ;
+
+    private static final MLKEMSecurityCategory[] VALUES;
 
     static {
         VALUES = values();
@@ -23,7 +25,7 @@ public enum MLDSASecurityCategory {
     private final int privateKeySize;
     private final String parameterSet;
 
-    MLDSASecurityCategory(int nistLevel, int publicKeySize, int privateKeySize, String parameterSet) {
+    MLKEMSecurityCategory(int nistLevel, int publicKeySize, int privateKeySize, String parameterSet) {
         this.nistSecurityCategory = nistLevel;
         this.publicKeySize = publicKeySize;
         this.privateKeySize = privateKeySize;
@@ -49,8 +51,8 @@ public enum MLDSASecurityCategory {
         return name();
     }
 
-    public static MLDSASecurityCategory valueOf(int nistLevel) {
-        MLDSASecurityCategory d = resolve(nistLevel);
+    public static MLKEMSecurityCategory valueOf(int nistLevel) {
+        MLKEMSecurityCategory d = resolve(nistLevel);
         if (d == null) {
             throw new IllegalArgumentException("No matching constant for [" + nistLevel + "]");
         }
@@ -58,9 +60,9 @@ public enum MLDSASecurityCategory {
     }
 
     @Nullable
-    public static MLDSASecurityCategory resolve(int nistLevel) {
+    public static MLKEMSecurityCategory resolve(int nistLevel) {
         // Use cached VALUES instead of values() to prevent array allocation.
-        for (MLDSASecurityCategory d : VALUES) {
+        for (MLKEMSecurityCategory d : VALUES) {
             if (d.nistSecurityCategory == nistLevel) {
                 return d;
             }

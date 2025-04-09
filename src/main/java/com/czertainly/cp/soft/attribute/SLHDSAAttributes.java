@@ -4,17 +4,16 @@ import com.czertainly.api.model.common.attribute.v2.AttributeType;
 import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
 import com.czertainly.api.model.common.attribute.v2.DataAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
-import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
 import com.czertainly.cp.soft.collection.SlhDSAHash;
-import com.czertainly.cp.soft.collection.SlhDsaSecurityCategory;
-import com.czertainly.cp.soft.collection.SlhDsaTradeoff;
+import com.czertainly.cp.soft.collection.SLHDSASecurityCategory;
+import com.czertainly.cp.soft.collection.SLHDSATradeoff;
 
 import java.util.List;
 
-public class SlhDsaKeyAttributes {
+public class SLHDSAAttributes {
 
-    private SlhDsaKeyAttributes() {
+    private SLHDSAAttributes() {
     }
 
     public static final String ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY = "data_slhdsaSecurityCategory";
@@ -31,6 +30,9 @@ public class SlhDsaKeyAttributes {
     public static final String ATTRIBUTE_DATA_SLHDSA_TRADEOFF_UUID = "6e64764c-7bc3-4af4-9bc4-9db8cac67286";
     public static final String ATTRIBUTE_DATA_SLHDSA_TRADEOFF_LABEL = "Signature generation trade-off";
     public static final String ATTRIBUTE_DATA_SLHDSA_TRADEOFF_DESCRIPTION = "Create relatively small signatures or have relatively fast signature generation";
+
+    public static final String ATTRIBUTE_DATA_USE_PREHASH = "data_slhdsaPrehash";
+
 
     public static List<BaseAttribute> getSlhDsaKeySpecAttributes() {
         return List.of(
@@ -81,7 +83,7 @@ public class SlhDsaKeyAttributes {
         attributeProperties.setReadOnly(false);
         attribute.setProperties(attributeProperties);
         // set content
-        attribute.setContent(SlhDsaSecurityCategory.asStringAttributeContentList());
+        attribute.setContent(SLHDSASecurityCategory.asStringAttributeContentList());
 
         return attribute;
     }
@@ -104,7 +106,7 @@ public class SlhDsaKeyAttributes {
         attributeProperties.setReadOnly(false);
         attribute.setProperties(attributeProperties);
         // set content
-        attribute.setContent(SlhDsaTradeoff.asStringAttributeContentList());
+        attribute.setContent(SLHDSATradeoff.asStringAttributeContentList());
 
         return attribute;
     }

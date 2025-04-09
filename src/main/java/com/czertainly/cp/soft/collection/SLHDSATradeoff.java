@@ -6,11 +6,21 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum SlhDsaTradeoff {
+public enum SLHDSATradeoff {
 
-    FAST,
-    SHORT
+    FAST("f"),
+    SHORT("s")
     ;
+
+    private final String parameterName;
+
+    SLHDSATradeoff(String parameterName) {
+        this.parameterName = parameterName;
+    }
+
+    public String getParameterName() {
+        return parameterName;
+    }
 
     public static List<BaseAttributeContent> asStringAttributeContentList() {
         return List.of(values()).stream()

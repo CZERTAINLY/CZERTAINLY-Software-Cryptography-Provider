@@ -6,13 +6,13 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum SlhDsaSecurityCategory {
-    CATEGORY_1("1", 256, 512),
-    CATEGORY_3("3", 384, 768),
-    CATEGORY_5("5", 512, 1024)
+public enum SLHDSASecurityCategory {
+    CATEGORY_1("1", 256, 512, "128"),
+    CATEGORY_3("3", 384, 768, "192"),
+    CATEGORY_5("5", 512, 1024, "256")
     ;
 
-    private static final SlhDsaSecurityCategory[] VALUES;
+    private static final SLHDSASecurityCategory[] VALUES;
 
     static {
         VALUES = values();
@@ -21,12 +21,14 @@ public enum SlhDsaSecurityCategory {
     private final String nistSecurityCategory;
     private final int publicKeySize;
     private final int privateKeySize;
+    private final String securityParameterLength;
 
-    SlhDsaSecurityCategory(String nistSecurityCategory, int publicKeySize, int privateKeySize) {
+
+    SLHDSASecurityCategory(String nistSecurityCategory, int publicKeySize, int privateKeySize, String securityParameterLength) {
         this.nistSecurityCategory = nistSecurityCategory;
         this.publicKeySize = publicKeySize;
         this.privateKeySize = privateKeySize;
-
+        this.securityParameterLength = securityParameterLength;
     }
 
     public String getNistSecurityCategory() {
@@ -39,6 +41,10 @@ public enum SlhDsaSecurityCategory {
 
     public int getPrivateKeySize() {
         return privateKeySize;
+    }
+
+    public String getSecurityParameterLength() {
+        return securityParameterLength;
     }
 
     @Override

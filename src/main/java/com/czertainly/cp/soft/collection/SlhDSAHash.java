@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum SlhDSAHash {
-    SHA2("SHA2", "sha2"),
-    SHAKE256("SHAKE256", "shake")
+    SHA2("SHA2"),
+    SHAKE256("SHAKE")
     ;
 
     private static final SlhDSAHash[] VALUES;
@@ -18,19 +18,12 @@ public enum SlhDSAHash {
     }
 
     private final String hashName;
-    private final String providerName;
-
-    SlhDSAHash(String hashName, String providerName) {
+    SlhDSAHash(String hashName) {
         this.hashName = hashName;
-        this.providerName = providerName;
     }
 
     public String getHashName() {
         return hashName;
-    }
-
-    public String getProviderName() {
-        return providerName;
     }
 
     @Override
