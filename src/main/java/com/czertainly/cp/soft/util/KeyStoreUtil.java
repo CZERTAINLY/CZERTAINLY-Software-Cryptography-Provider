@@ -223,11 +223,13 @@ public class KeyStoreUtil {
         }
     }
 
-    public static void generateSlhDsaKey(KeyStore keyStore, String alias, SlhDSAHash hash, SLHDSASecurityCategory securityCategory, SLHDSATradeoff tradeoff, String password) {
+    public static void generateSlhDsaKey(KeyStore keyStore, String alias, SLHDSAHash hash, SLHDSASecurityCategory securityCategory, SLHDSATradeoff tradeoff, boolean preHashKey, String password) {
         try {
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
 
             String algorithm = "SLH-DSA-%s-%s%s".formatted(hash.getHashName(), securityCategory.getSecurityParameterLength(), tradeoff.getParameterName());
+
+            algorithm = addPreHashSuffix(hash, securityCategory, preHashKey, algorithm);
 
             kpg.initialize(SLHDSAParameterSpec.fromName(algorithm));
 
@@ -245,6 +247,23 @@ public class KeyStoreUtil {
         } catch (KeyStoreException e) {
             throw new IllegalStateException("Cannot generate SLH-DSA key", e);
         }
+    }
+
+    private static String addPreHashSuffix(SLHDSAHash hash, SLHDSASecurityCategory securityCategory, boolean preHashKey, String algorithm) {
+        if (preHashKey) {
+            String hashSuffix = "-WITH-";
+            if (hash == SLHDSAHash.SHA2) {
+                hashSuffix += "SHA";
+                if (securityCategory == SLHDSASecurityCategory.CATEGORY_1) hashSuffix += "256";
+                else hashSuffix += "512";
+            } else {
+                hashSuffix += "SHAKE";
+                if (securityCategory == SLHDSASecurityCategory.CATEGORY_1) hashSuffix += "128";
+                else hashSuffix += "256";
+            }
+            algorithm += hashSuffix;
+        }
+        return algorithm;
     }
 
     public static void generateMLKEMKey(KeyStore keyStore, String alias, MLKEMSecurityCategory securityCategory, String password) {

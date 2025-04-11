@@ -6,19 +6,19 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum SlhDSAHash {
+public enum SLHDSAHash {
     SHA2("SHA2"),
     SHAKE256("SHAKE")
     ;
 
-    private static final SlhDSAHash[] VALUES;
+    private static final SLHDSAHash[] VALUES;
 
     static {
         VALUES = values();
     }
 
     private final String hashName;
-    SlhDSAHash(String hashName) {
+    SLHDSAHash(String hashName) {
         this.hashName = hashName;
     }
 

@@ -25,7 +25,6 @@ import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -166,7 +165,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                                 .getData()
                 );
 
-                final boolean forPreHash = AttributeDefinitionUtils.getSingleItemAttributeContentValue(MLDSAKeyAttributes.ATTRIBUTE_BOOLEAN_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
+                final boolean forPreHash =
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(MLDSAKeyAttributes.ATTRIBUTE_BOOLEAN_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
 
                 KeyStoreUtil.generateMLDSAKey(keyStore, alias, level, forPreHash, tokenInstance.getCode());
 
@@ -188,24 +188,28 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                         KeyFormat.CUSTOM, customKeyValue, level.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
             case SLHDSA -> {
-                final SlhDSAHash hash = SlhDSAHash.valueOf(
+                final SLHDSAHash hash = SLHDSAHash.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SLHDSAAttributes.ATTRIBUTE_DATA_SLHDSA_HASH, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_HASH, request.getCreateKeyAttributes(), StringAttributeContent.class)
                                 .getReference()
                 );
 
                 final SLHDSASecurityCategory slhDsaSecurityCategory = SLHDSASecurityCategory.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SLHDSAAttributes.ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY, request.getCreateKeyAttributes(), StringAttributeContent.class)
                                 .getReference()
                 );
 
                 final SLHDSATradeoff tradeoff = SLHDSATradeoff.valueOf(AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        SLHDSAAttributes.ATTRIBUTE_DATA_SLHDSA_TRADEOFF, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                        SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_TRADEOFF, request.getCreateKeyAttributes(), StringAttributeContent.class)
                         .getReference()
                 );
 
-                KeyStoreUtil.generateSlhDsaKey(keyStore, alias, hash, slhDsaSecurityCategory, tradeoff, tokenInstance.getCode());
+                final boolean preHashKey =
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(SLHDSAKeyAttributes.ATTRIBUTE_BOOLEAN_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
+
+
+                KeyStoreUtil.generateSlhDsaKey(keyStore, alias, hash, slhDsaSecurityCategory, tradeoff, preHashKey, tokenInstance.getCode());
 
                 // add metadata
 

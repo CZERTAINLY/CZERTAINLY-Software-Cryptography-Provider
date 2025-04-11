@@ -46,7 +46,7 @@ public class CallbackController {
                 return MLDSAKeyAttributes.getMldsaKeySpecAttributes();
             }
             case SLHDSA -> {
-                return SLHDSAAttributes.getSlhDsaKeySpecAttributes();
+                return SLHDSAKeyAttributes.getSlhDsaKeySpecAttributes();
             }
             case MLKEM -> {
                 return MLKEMAttributes.getMLKEMKeySpecAttributes();

@@ -7,9 +7,8 @@ import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
 import com.czertainly.api.model.common.enums.cryptography.RsaSignatureScheme;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
-import com.czertainly.cp.soft.attribute.MLDSAKeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
-import com.czertainly.cp.soft.attribute.SLHDSAAttributes;
+import com.czertainly.cp.soft.attribute.SLHDSAKeyAttributes;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.NotSupportedException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -68,14 +67,7 @@ public class SignatureUtil {
                 return getInstanceSignature("ML-DSA", BouncyCastleProvider.PROVIDER_NAME);
             }
             case SLHDSA -> {
-                signatureAlgorithm = "";
-                boolean usePrehash = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SLHDSAAttributes.ATTRIBUTE_DATA_USE_PREHASH, signatureAttributes, BooleanAttributeContent.class)
-                        .getData()
-                        ;
-                if (usePrehash) signatureAlgorithm += "HASH-";
-                signatureAlgorithm += "SLH-DSA";
-                return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
+                return getInstanceSignature("SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
             }
             default -> throw new NotSupportedException("Cryptographic algorithm not supported");
         }
