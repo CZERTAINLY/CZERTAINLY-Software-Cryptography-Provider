@@ -24,7 +24,7 @@ public class MLDSAKeyAttributes {
     public static final String ATTRIBUTE_BOOLEAN_PREHASH = "data_mldsaPrehash";
     public static final String ATTRIBUTE_BOOLEAN_PREHASH_UUID = "81f20bdd-ec84-4a7f-9c9d-13efce16665a";
     public static final String ATTRIBUTE_BOOLEAN_PREHASH_LABEL = "For Pre-Hash use";
-    public static final String ATTRIBUTE_BOOLEAN_PREHASH_DESCRIPTION = "When checked, the will be intended for SHA-512 pre-hash of the signature, otherwise it is intended for the pure version of algorithm";
+    public static final String ATTRIBUTE_BOOLEAN_PREHASH_DESCRIPTION = "When checked, the key will be intended for SHA-512 pre-hash of the signature, otherwise it is intended for the pure version of algorithm";
 
 
     public static DataAttribute buildBooleanPreHash() {
