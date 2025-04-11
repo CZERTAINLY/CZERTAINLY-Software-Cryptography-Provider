@@ -181,6 +181,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
                 customKeyValues.put("level", Integer.toString(level.getNistSecurityCategory()));
+                customKeyValues.put("prehash", String.valueOf(forPreHash));
                 customKeyValue.setValues(customKeyValues);
 
                 // prepare private key

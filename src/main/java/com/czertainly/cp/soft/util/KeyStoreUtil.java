@@ -203,7 +203,7 @@ public class KeyStoreUtil {
         try {
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("ML-DSA", BouncyCastleProvider.PROVIDER_NAME);
 
-            String algorithm = "ML-DSA-" + level.getParameterSet() + (forPreHash ? "WITH-SHA512" : "");
+            String algorithm = "ML-DSA-" + level.getParameterSet() + (forPreHash ? "-WITH-SHA512" : "");
 
             kpg.initialize(MLDSAParameterSpec.fromName(algorithm));
 
