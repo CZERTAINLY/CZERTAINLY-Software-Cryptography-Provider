@@ -2,6 +2,7 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
+import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
@@ -24,6 +25,7 @@ import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -164,7 +166,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                                 .getData()
                 );
 
-                KeyStoreUtil.generateMLDSAKey(keyStore, alias, level, tokenInstance.getCode());
+                final boolean forPreHash = AttributeDefinitionUtils.getSingleItemAttributeContentValue(MLDSAKeyAttributes.ATTRIBUTE_BOOLEAN_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
+
+                KeyStoreUtil.generateMLDSAKey(keyStore, alias, level, forPreHash, tokenInstance.getCode());
 
                 // add metadata
 

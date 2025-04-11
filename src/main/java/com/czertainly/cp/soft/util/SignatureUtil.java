@@ -65,15 +65,7 @@ public class SignatureUtil {
                 */
             }
             case MLDSA -> {
-                signatureAlgorithm = "";
-                boolean usePrehash = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                MLDSAKeyAttributes.ATTRIBUTE_DATA_USE_PREHASH, signatureAttributes, BooleanAttributeContent.class)
-                        .getData()
-                ;
-                if (usePrehash) signatureAlgorithm += "HASH-";
-                signatureAlgorithm += "ML-DSA";
-
-                return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
+                return getInstanceSignature("ML-DSA", BouncyCastleProvider.PROVIDER_NAME);
             }
             case SLHDSA -> {
                 signatureAlgorithm = "";
