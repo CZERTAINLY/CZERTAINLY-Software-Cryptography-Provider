@@ -1,7 +1,6 @@
 package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
 import com.czertainly.api.model.common.enums.cryptography.KeyType;
@@ -11,12 +10,12 @@ import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
-import com.czertainly.cp.soft.attribute.SLHDSAKeyAttributes;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.CryptographicOperationException;
 import com.czertainly.cp.soft.exception.NotSupportedException;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.mldsa.BCMLDSAPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.slhdsa.BCSLHDSAPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 
@@ -97,7 +96,29 @@ public class SignatureUtil {
                 return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
             }
             case SLHDSA -> {
-                return getInstanceSignature("SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
+                signatureAlgorithm = "";
+                boolean usePrehash = false;
+                if (key.getType() == KeyType.PRIVATE_KEY) {
+                    usePrehash = ((CustomKeyValue) key.getValue()).getValues().get("prehash").equals(String.valueOf(true));
+                } else {
+                    SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.getValue();
+                    BCSLHDSAPublicKey bcslhdsaPublicKey;
+                    try {
+                        bcslhdsaPublicKey = new BCSLHDSAPublicKey(
+                                SubjectPublicKeyInfo.getInstance(
+                                        Base64.getDecoder().decode(
+                                                spkiKeyValue.getValue()
+                                        )
+                                ));
+                    } catch (IOException e) {
+                        throw new CryptographicOperationException("Could not create BCSLHDSAPublicKey instance from SLH-DSA Public Key value: " + spkiKeyValue.getValue());
+                    }
+                    if (bcslhdsaPublicKey.getParameterSpec().getName().contains("WITH")) usePrehash = true;
+                }
+                if (usePrehash) signatureAlgorithm += "HASH-";
+                signatureAlgorithm += "SLH-DSA";
+
+                return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
             }
             default -> throw new NotSupportedException("Cryptographic algorithm not supported");
         }

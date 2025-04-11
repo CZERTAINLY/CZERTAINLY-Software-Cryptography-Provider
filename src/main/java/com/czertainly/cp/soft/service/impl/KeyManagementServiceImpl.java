@@ -226,6 +226,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 customKeyValues.put("securityCategory", slhDsaSecurityCategory.getNistSecurityCategory());
                 customKeyValues.put("hash", hash.getHashName());
                 customKeyValues.put("tradeoff", tradeoff.name());
+                customKeyValues.put("prehash", String.valueOf(preHashKey));
                 customKeyValue.setValues(customKeyValues);
 
                 // prepare private key
