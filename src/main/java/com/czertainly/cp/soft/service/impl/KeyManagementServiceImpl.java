@@ -233,27 +233,28 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.SLHDSA,
                         KeyFormat.CUSTOM, customKeyValue, slhDsaSecurityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
-            case MLKEM -> {
-                final MLKEMSecurityCategory securityCategory = MLKEMSecurityCategory.valueOf(
-                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                        MLKEMAttributes.ATTRIBUTE_DATA_MLKEM_LEVEL_LABEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
-                                .getData()
-                );
-
-                KeyStoreUtil.generateMLKEMKey(keyStore, alias, securityCategory, tokenInstance.getCode());
-
-                publicKey = createAndSaveKeyData(alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLKEM, KeyFormat.SPKI, KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias), securityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
-
-                CustomKeyValue customKeyValue = new CustomKeyValue();
-                HashMap<String, String> customKeyValues = new HashMap<>();
-                customKeyValues.put("securityCategory", String.valueOf(securityCategory.getNistSecurityCategory()));
-                customKeyValue.setValues(customKeyValues);
-
-                // prepare private key
-                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.MLKEM,
-                        KeyFormat.CUSTOM, customKeyValue, securityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
-
-            }
+            // TODO: Figure out how to store ML-KEM Key
+//            case MLKEM -> {
+//                final MLKEMSecurityCategory securityCategory = MLKEMSecurityCategory.valueOf(
+//                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+//                                        MLKEMAttributes.ATTRIBUTE_DATA_MLKEM_LEVEL_LABEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
+//                                .getData()
+//                );
+//
+//                KeyStoreUtil.generateMLKEMKey(keyStore, alias, securityCategory, tokenInstance.getCode());
+//
+//                publicKey = createAndSaveKeyData(alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLKEM, KeyFormat.SPKI, KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias), securityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
+//
+//                CustomKeyValue customKeyValue = new CustomKeyValue();
+//                HashMap<String, String> customKeyValues = new HashMap<>();
+//                customKeyValues.put("securityCategory", String.valueOf(securityCategory.getNistSecurityCategory()));
+//                customKeyValue.setValues(customKeyValues);
+//
+//                // prepare private key
+//                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.MLKEM,
+//                        KeyFormat.CUSTOM, customKeyValue, securityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+//
+//            }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
         }
 

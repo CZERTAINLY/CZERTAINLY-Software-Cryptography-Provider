@@ -271,11 +271,12 @@ public class KeyStoreUtil {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ML-KEM", BouncyCastleProvider.PROVIDER_NAME);
             keyPairGenerator.initialize(MLKEMParameterSpec.fromName(securityCategory.getParameterSet()));
 
-            KeyPair keyPair = keyPairGenerator.generateKeyPair();
-            final X509Certificate cert = X509Util.generateOrphanX509Certificate(keyPair, "SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
-            final X509Certificate[] chain = new X509Certificate[]{cert};
-
-            keyStore.setKeyEntry(alias, keyPair.getPrivate(), password.toCharArray(), chain);
+            // TODO: Figure out how to store the key
+//            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+//            final X509Certificate cert = X509Util.generateOrphanX509Certificate(keyPair, "SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
+//            final X509Certificate[] chain = new X509Certificate[]{cert};
+//
+//            keyStore.setKeyEntry(alias, keyPair.getPrivate(), password.toCharArray(), chain);
 
 
         } catch (NoSuchAlgorithmException e) {
@@ -285,10 +286,7 @@ public class KeyStoreUtil {
 
         } catch (InvalidAlgorithmParameterException e) {
             throw new IllegalStateException("Invalid ML-KEM algorithm parameters", e);
-        } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot generate ML-KEM key", e);
         }
-
     }
 
     public static void deleteAliasFromKeyStore(KeyStore keyStore, String alias) {
