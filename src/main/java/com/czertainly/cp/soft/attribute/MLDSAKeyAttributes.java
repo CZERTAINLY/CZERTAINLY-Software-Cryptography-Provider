@@ -17,28 +17,28 @@ public class MLDSAKeyAttributes {
     }
 
     public static final String ATTRIBUTE_DATA_MLDSA_LEVEL = "data_mldsaLevel";
-    public static final String ATTRIBUTE_DATA_MLDSA_LEVEL_UUID = "88a0fa46-dcdd-4d29-a51c-e563e21c9872";
+    public static final String ATTRIBUTE_DATA_MLDSA_LEVEL_UUID = "22e317d6-dd78-4968-9a26-c1823a4fb2e6";
     public static final String ATTRIBUTE_DATA_MLDSA_LEVEL_LABEL = "NIST Security Category";
     public static final String ATTRIBUTE_DATA_MLDSA_LEVEL_DESCRIPTION = "Security strength according NIST definition";
 
-    public static final String ATTRIBUTE_BOOLEAN_PREHASH = "data_mldsaPrehash";
-    public static final String ATTRIBUTE_BOOLEAN_PREHASH_UUID = "81f20bdd-ec84-4a7f-9c9d-13efce16665a";
-    public static final String ATTRIBUTE_BOOLEAN_PREHASH_LABEL = "For Pre-Hash use";
-    public static final String ATTRIBUTE_BOOLEAN_PREHASH_DESCRIPTION = "When checked, the key will be intended for SHA-512 pre-hash of the signature, otherwise it is intended for the pure version of algorithm";
+    public static final String ATTRIBUTE_DATA_MLDSA_PREHASH = "data_mldsaPrehash";
+    public static final String ATTRIBUTE_DATA_MLDSA_PREHASH_UUID = "dd1a8f25-a529-42a6-9c3d-3b9a70fc7e9b";
+    public static final String ATTRIBUTE_DATA_MLDSA_PREHASH_LABEL = "For Pre-Hash use";
+    public static final String ATTRIBUTE_DATA_MLDSA_PREHASH_DESCRIPTION = "When checked, the key will be intended for SHA-512 pre-hash of the signature, otherwise it is intended for the pure version of algorithm";
 
 
     public static DataAttribute buildBooleanPreHash() {
         // define Data Attribute
         DataAttribute attribute = new DataAttribute();
-        attribute.setUuid(ATTRIBUTE_BOOLEAN_PREHASH_UUID);
-        attribute.setName(ATTRIBUTE_BOOLEAN_PREHASH);
-        attribute.setDescription(ATTRIBUTE_BOOLEAN_PREHASH_DESCRIPTION);
+        attribute.setUuid(ATTRIBUTE_DATA_MLDSA_PREHASH_UUID);
+        attribute.setName(ATTRIBUTE_DATA_MLDSA_PREHASH);
+        attribute.setDescription(ATTRIBUTE_DATA_MLDSA_PREHASH_DESCRIPTION);
         attribute.setType(AttributeType.DATA);
         attribute.setContentType(AttributeContentType.BOOLEAN);
 
         // create properties
         DataAttributeProperties attributeProperties = new DataAttributeProperties();
-        attributeProperties.setLabel(ATTRIBUTE_BOOLEAN_PREHASH_LABEL);
+        attributeProperties.setLabel(ATTRIBUTE_DATA_MLDSA_PREHASH_LABEL);
         attributeProperties.setRequired(true);
         attributeProperties.setVisible(true);
         attributeProperties.setList(false);

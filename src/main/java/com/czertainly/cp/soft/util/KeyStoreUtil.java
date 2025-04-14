@@ -223,7 +223,7 @@ public class KeyStoreUtil {
         }
     }
 
-    public static void generateSlhDsaKey(KeyStore keyStore, String alias, SLHDSAHash hash, SLHDSASecurityCategory securityCategory, SLHDSATradeoff tradeoff, boolean preHashKey, String password) {
+    public static void generateSlhDsaKey(KeyStore keyStore, String alias, SLHDSAHash hash, SLHDSASecurityCategory securityCategory, SLHDSASignatureMode tradeoff, boolean preHashKey, String password) {
         try {
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
 

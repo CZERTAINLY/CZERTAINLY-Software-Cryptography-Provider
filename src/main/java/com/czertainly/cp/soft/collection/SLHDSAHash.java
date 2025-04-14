@@ -5,6 +5,7 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public enum SLHDSAHash {
     SHA2("SHA2"),
@@ -32,7 +33,7 @@ public enum SLHDSAHash {
     }
 
     public static List<BaseAttributeContent> asStringAttributeContentList() {
-        return List.of(values()).stream()
+        return Stream.of(values())
                 .map(d -> new StringAttributeContent(d.name(), d.getHashName()))
                 .collect(Collectors.toList());
     }

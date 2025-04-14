@@ -166,7 +166,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 );
 
                 final boolean forPreHash =
-                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(MLDSAKeyAttributes.ATTRIBUTE_BOOLEAN_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
 
                 KeyStoreUtil.generateMLDSAKey(keyStore, alias, level, forPreHash, tokenInstance.getCode());
 
@@ -201,13 +201,13 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                                 .getReference()
                 );
 
-                final SLHDSATradeoff tradeoff = SLHDSATradeoff.valueOf(AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_TRADEOFF, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                final SLHDSASignatureMode tradeoff = SLHDSASignatureMode.valueOf(AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                        SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE, request.getCreateKeyAttributes(), StringAttributeContent.class)
                         .getReference()
                 );
 
                 final boolean preHashKey =
-                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(SLHDSAKeyAttributes.ATTRIBUTE_BOOLEAN_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
 
 
                 KeyStoreUtil.generateSlhDsaKey(keyStore, alias, hash, slhDsaSecurityCategory, tradeoff, preHashKey, tokenInstance.getCode());

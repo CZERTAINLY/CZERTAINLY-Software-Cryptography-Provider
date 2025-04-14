@@ -14,7 +14,7 @@ public class MLKEMAttributes {
     private MLKEMAttributes() {
     }
 
-    public static final String ATTRIBUTE_DATA_MLKEM_LEVEL = "data_mldsaLevel";
+    public static final String ATTRIBUTE_DATA_MLKEM_LEVEL = "data_mlkemLevel";
     public static final String ATTRIBUTE_DATA_MLKEM_LEVEL_UUID = "b574e0fb-9db5-4864-9652-40ccf9cff64d";
     public static final String ATTRIBUTE_DATA_MLKEM_LEVEL_LABEL = "NIST Security Category";
     public static final String ATTRIBUTE_DATA_MLKEM_LEVEL_DESCRIPTION = "Security strength according NIST definition";

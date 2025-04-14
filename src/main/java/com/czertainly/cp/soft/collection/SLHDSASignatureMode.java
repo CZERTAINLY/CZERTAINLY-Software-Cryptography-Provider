@@ -5,16 +5,17 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public enum SLHDSATradeoff {
+public enum SLHDSASignatureMode {
 
     FAST("f"),
-    SHORT("s")
+    SMALL("s")
     ;
 
     private final String parameterName;
 
-    SLHDSATradeoff(String parameterName) {
+    SLHDSASignatureMode(String parameterName) {
         this.parameterName = parameterName;
     }
 
@@ -23,7 +24,7 @@ public enum SLHDSATradeoff {
     }
 
     public static List<BaseAttributeContent> asStringAttributeContentList() {
-        return List.of(values()).stream()
+        return Stream.of(values())
                 .map(d -> new StringAttributeContent(d.name()))
                 .collect(Collectors.toList());
     }

@@ -5,6 +5,7 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public enum SLHDSASecurityCategory {
     CATEGORY_1("1", 256, 512, "128"),
@@ -53,7 +54,7 @@ public enum SLHDSASecurityCategory {
     }
 
     public static List<BaseAttributeContent> asStringAttributeContentList() {
-        return List.of(values()).stream()
+        return Stream.of(values())
                 .map(d -> new StringAttributeContent(d.name(), d.getNistSecurityCategory()))
                 .collect(Collectors.toList());
     }
