@@ -9,10 +9,7 @@ import com.czertainly.cp.soft.attribute.*;
 import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,9 +25,8 @@ public class CallbackController {
         this.tokenInstanceService = tokenInstanceService;
     }
 
-    @RequestMapping(
+    @GetMapping(
             path = "/keyspec/{algorithm}/attributes",
-            method = RequestMethod.GET,
             produces = "application/json"
     )
     public List<BaseAttribute> getKeySpecAttributes(
@@ -46,20 +42,22 @@ public class CallbackController {
             case FALCON -> {
                 return FalconKeyAttributes.getFalconKeySpecAttributes();
             }
-            case DILITHIUM -> {
-                return DilithiumKeyAttributes.getDilithiumKeySpecAttributes();
+            case MLDSA -> {
+                return MLDSAKeyAttributes.getMldsaKeySpecAttributes();
             }
-            case SPHINCSPLUS -> {
-                return SphincsPlusKeyAttributes.getSphincsPLusKeySpecAttributes();
+            case SLHDSA -> {
+                return SLHDSAKeyAttributes.getSlhDsaKeySpecAttributes();
+            }
+            case MLKEM -> {
+                return MLKEMAttributes.getMLKEMKeySpecAttributes();
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }
 
     }
 
-    @RequestMapping(
+    @GetMapping(
             path = "/token/{option}/attributes",
-            method = RequestMethod.GET,
             produces = "application/json"
     )
     public List<BaseAttribute> getCreateTokenAttributes(
@@ -79,9 +77,7 @@ public class CallbackController {
 
     private List<BaseAttributeContent> tokenInstancesToStringContentList(List<TokenInstanceDto> tokenInstanceDtos) {
         return tokenInstanceDtos.stream()
-                .map(tokenInstanceDto -> {
-                    return new StringAttributeContent(tokenInstanceDto.getName(), tokenInstanceDto.getUuid());
-                })
+                .map(tokenInstanceDto -> new StringAttributeContent(tokenInstanceDto.getName(), tokenInstanceDto.getUuid()))
                 .collect(Collectors.toList());
     }
 

@@ -158,78 +158,103 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.FALCON,
                         KeyFormat.CUSTOM, customKeyValue, falconDegree.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
-            case DILITHIUM -> {
-                final DilithiumLevel level = DilithiumLevel.valueOf(
+            case MLDSA -> {
+                final MLDSASecurityCategory level = MLDSASecurityCategory.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                DilithiumKeyAttributes.ATTRIBUTE_DATA_DILITIHIUM_LEVEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
+                                MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_LEVEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
                                 .getData()
                 );
 
-                final boolean useAes = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        DilithiumKeyAttributes.ATTRIBUTE_DATA_DILITIHIUM_USE_AES, request.getCreateKeyAttributes(), BooleanAttributeContent.class)
-                        .getData();
+                final boolean forPreHash =
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
 
-                KeyStoreUtil.generateDilithiumKey(keyStore, alias, level, useAes, tokenInstance.getCode());
+                KeyStoreUtil.generateMLDSAKey(keyStore, alias, level, forPreHash, tokenInstance.getCode());
 
                 // add metadata
 
                 // prepare public key
                 publicKey = createAndSaveKeyData(
-                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.DILITHIUM, KeyFormat.SPKI,
+                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLDSA, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
                         level.getPublicKeySize(), metadata, tokenInstance.getUuid());
 
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
-                customKeyValues.put("level", Integer.toString(level.getNistLevel()));
-                if (useAes) {
-                    customKeyValues.put("usingAes", "true");
-                }
+                customKeyValues.put("level", Integer.toString(level.getNistSecurityCategory()));
+                customKeyValues.put("prehash", String.valueOf(forPreHash));
                 customKeyValue.setValues(customKeyValues);
 
                 // prepare private key
-                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.DILITHIUM,
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.MLDSA,
                         KeyFormat.CUSTOM, customKeyValue, level.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
-            case SPHINCSPLUS -> {
-                final SphincsPlusHash hash = SphincsPlusHash.valueOf(
+            case SLHDSA -> {
+                final SLHDSAHash hash = SLHDSAHash.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_HASH, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_HASH, request.getCreateKeyAttributes(), StringAttributeContent.class)
                                 .getReference()
                 );
 
-                final SphincsPlusParameterSet paramSet = SphincsPlusParameterSet.valueOf(
+                final SLHDSASecurityCategory slhDsaSecurityCategory = SLHDSASecurityCategory.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_PARAMETER_SET, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY, request.getCreateKeyAttributes(), StringAttributeContent.class)
                                 .getReference()
                 );
 
-                final boolean robust = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        SphincsPlusKeyAttributes.ATTRIBUTE_DATA_SPHINCS_ROBUST, request.getCreateKeyAttributes(), BooleanAttributeContent.class)
-                        .getData();
+                final SLHDSASignatureMode tradeoff = SLHDSASignatureMode.valueOf(AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                        SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                        .getReference()
+                );
 
-                KeyStoreUtil.generateSphincsPlusKey(keyStore, alias, hash, paramSet, robust, tokenInstance.getCode());
+                final boolean preHashKey =
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
+
+
+                KeyStoreUtil.generateSlhDsaKey(keyStore, alias, hash, slhDsaSecurityCategory, tradeoff, preHashKey, tokenInstance.getCode());
 
                 // add metadata
 
                 // prepare public key
                 publicKey = createAndSaveKeyData(
-                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.SPHINCSPLUS, KeyFormat.SPKI,
+                        alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.SLHDSA, KeyFormat.SPKI,
                         //KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
-                        paramSet.getPublicKeySize(), metadata, tokenInstance.getUuid());
+                        slhDsaSecurityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
 
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
+                customKeyValues.put("securityCategory", slhDsaSecurityCategory.getNistSecurityCategory());
                 customKeyValues.put("hash", hash.getHashName());
-                customKeyValues.put("parameterSet", paramSet.getParamSet());
-                customKeyValues.put("instantiation", robust ? "robust" : "simple");
+                customKeyValues.put("tradeoff", tradeoff.name());
+                customKeyValues.put("prehash", String.valueOf(preHashKey));
                 customKeyValue.setValues(customKeyValues);
 
                 // prepare private key
-                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.SPHINCSPLUS,
-                        KeyFormat.CUSTOM, customKeyValue, paramSet.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.SLHDSA,
+                        KeyFormat.CUSTOM, customKeyValue, slhDsaSecurityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
+            // TODO: Figure out how to store ML-KEM Key
+//            case MLKEM -> {
+//                final MLKEMSecurityCategory securityCategory = MLKEMSecurityCategory.valueOf(
+//                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+//                                        MLKEMAttributes.ATTRIBUTE_DATA_MLKEM_LEVEL_LABEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
+//                                .getData()
+//                );
+//
+//                KeyStoreUtil.generateMLKEMKey(keyStore, alias, securityCategory, tokenInstance.getCode());
+//
+//                publicKey = createAndSaveKeyData(alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLKEM, KeyFormat.SPKI, KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias), securityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
+//
+//                CustomKeyValue customKeyValue = new CustomKeyValue();
+//                HashMap<String, String> customKeyValues = new HashMap<>();
+//                customKeyValues.put("securityCategory", String.valueOf(securityCategory.getNistSecurityCategory()));
+//                customKeyValue.setValues(customKeyValues);
+//
+//                // prepare private key
+//                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.MLKEM,
+//                        KeyFormat.CUSTOM, customKeyValue, securityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+//
+//            }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
         }
 

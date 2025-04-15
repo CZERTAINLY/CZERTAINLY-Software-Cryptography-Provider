@@ -38,7 +38,7 @@ public class X509Util {
         }
     }
 
-    public static X509Certificate generateOrphanX509Certificate(KeyPair keyPair, String signatureAlgorithm, String provider) {;
+    public static X509Certificate generateOrphanX509Certificate(KeyPair keyPair, String signatureAlgorithm, String provider) {
         SecureRandom random = new SecureRandom();
 
         X500Name owner = new X500Name("CN=generatedCertificate,O=orphan");

@@ -5,32 +5,26 @@ import com.czertainly.api.model.common.attribute.v2.content.StringAttributeConte
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public enum SphincsPlusHash {
-    SHA2("SHA2", "sha2"),
-    SHAKE256("SHAKE256", "shake"),
-    HARAKA("Haraka", "haraka");
+public enum SLHDSAHash {
+    SHA2("SHA2"),
+    SHAKE256("SHAKE")
+    ;
 
-    private static final SphincsPlusHash[] VALUES;
+    private static final SLHDSAHash[] VALUES;
 
     static {
         VALUES = values();
     }
 
     private final String hashName;
-    private final String providerName;
-
-    SphincsPlusHash(String hashName, String providerName) {
+    SLHDSAHash(String hashName) {
         this.hashName = hashName;
-        this.providerName = providerName;
     }
 
     public String getHashName() {
         return hashName;
-    }
-
-    public String getProviderName() {
-        return providerName;
     }
 
     @Override
@@ -39,7 +33,7 @@ public enum SphincsPlusHash {
     }
 
     public static List<BaseAttributeContent> asStringAttributeContentList() {
-        return List.of(values()).stream()
+        return Stream.of(values())
                 .map(d -> new StringAttributeContent(d.name(), d.getHashName()))
                 .collect(Collectors.toList());
     }
