@@ -288,7 +288,11 @@ public class KeyStoreUtil {
             PKCS8EncryptedPrivateKeyInfo encryptedPrivateKeyInfo = new PKCS8EncryptedPrivateKeyInfoBuilder(originalInfo).build(oe);
             keyStore.setKeyEntry(alias, encryptedPrivateKeyInfo.getEncoded(), null);
 
-            return (BCMLKEMPublicKey) keyPair.getPublic();
+            PublicKey publicKey = keyPair.getPublic();
+            if (!(publicKey instanceof BCMLKEMPublicKey)) {
+                throw new IllegalStateException("Generated public key is not of type BCMLKEMPublicKey");
+            }
+            return (BCMLKEMPublicKey) publicKey;
 
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("ML-KEM algorithm not found", e);
