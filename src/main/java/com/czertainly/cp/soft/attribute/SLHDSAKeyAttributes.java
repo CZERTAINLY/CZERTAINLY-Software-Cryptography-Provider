@@ -69,7 +69,7 @@ public class SLHDSAKeyAttributes {
         return List.of(
                 buildDataSecurityCategory(),
                 buildDataHash(),
-                buildDataTradeoff(),
+                buildDataSignatureMode(),
                 buildBooleanPreHash()
         );
     }
@@ -120,7 +120,7 @@ public class SLHDSAKeyAttributes {
         return attribute;
     }
 
-    public static BaseAttribute buildDataTradeoff() {
+    public static BaseAttribute buildDataSignatureMode() {
         // define Data Attribute
         DataAttribute attribute = new DataAttribute();
         attribute.setUuid(ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE_UUID);
