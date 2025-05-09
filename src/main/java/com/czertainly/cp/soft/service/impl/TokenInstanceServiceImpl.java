@@ -18,6 +18,7 @@ import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.TokenInstanceRepository;
+import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -120,8 +122,8 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                     TokenInstanceAttributes.ATTRIBUTE_DATA_TOKEN_CODE, request.getAttributes(), SecretAttributeContent.class).getData().getSecret();
             try {
-                KeyStoreUtil.initKeystore(tokenInstance.getData(), tokenCode);
-            } catch (IllegalStateException e) {
+                KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenCode);
+            } catch (IllegalStateException | UnrecoverableKeyException e) {
                 logger.debug("Token activation failed", e);
                 throw new TokenInstanceException("Cannot activate token " + tokenInstance.getName() + ": " + e.getMessage());
             }
@@ -173,10 +175,12 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                     TokenInstanceActivationAttributes.ATTRIBUTE_DATA_ACTIVATION_CODE, attributes, SecretAttributeContent.class).getData().getSecret();
             try {
-                KeyStoreUtil.initKeystore(token.getData(), tokenCode);
+                KeyStoreUtil.loadKeystore(token.getData(), tokenCode);
             } catch (IllegalStateException e) {
                 logger.debug("Token activation failed", e);
                 throw new TokenInstanceException("Cannot activate token " + token.getName() + ": " + e.getMessage());
+            } catch (UnrecoverableKeyException e) {
+                throw new NotSupportedException("Cannot recover keys from token.");
             }
 
             token.setCode(tokenCode);

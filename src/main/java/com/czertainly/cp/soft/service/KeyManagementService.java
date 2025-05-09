@@ -6,14 +6,15 @@ import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDto;
 import com.czertainly.cp.soft.dao.entity.KeyData;
 
+import java.security.UnrecoverableKeyException;
 import java.util.List;
 import java.util.UUID;
 
 public interface KeyManagementService {
 
-    KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException;
+    KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException, UnrecoverableKeyException;
 
-    void destroyKey(UUID uuid, UUID keyUuid) throws NotFoundException;
+    void destroyKey(UUID uuid, UUID keyUuid) throws NotFoundException, UnrecoverableKeyException;
 
     List<KeyData> listKeyEntities(UUID uuid) throws NotFoundException;
 

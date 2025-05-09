@@ -111,7 +111,7 @@ public class CipherUtil {
                 cipherResponseData.setData(decBytes);
                 responseDataList.add(cipherResponseData);
             } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
-                     IllegalBlockSizeException | BadPaddingException e) {
+                     IllegalBlockSizeException | BadPaddingException | UnrecoverableKeyException e) {
                 throw new ValidationException(ValidationError.create("Exception when decrypting data. Exception is :" + e.getMessage()));
             }
         }

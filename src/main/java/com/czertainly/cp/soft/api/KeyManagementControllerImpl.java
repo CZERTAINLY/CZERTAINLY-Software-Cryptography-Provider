@@ -14,6 +14,7 @@ import com.czertainly.cp.soft.service.KeyManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.UnrecoverableKeyException;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,7 +62,7 @@ public class KeyManagementControllerImpl implements KeyManagementController {
     }
 
     @Override
-    public KeyPairDataResponseDto createKeyPair(String uuid, CreateKeyRequestDto request) throws NotFoundException {
+    public KeyPairDataResponseDto createKeyPair(String uuid, CreateKeyRequestDto request) throws NotFoundException, UnrecoverableKeyException {
         return keyManagementService.createKeyPair(UUID.fromString(uuid), request);
     }
 
@@ -76,7 +77,7 @@ public class KeyManagementControllerImpl implements KeyManagementController {
     }
 
     @Override
-    public void destroyKey(String uuid, String keyUuid) throws NotFoundException {
+    public void destroyKey(String uuid, String keyUuid) throws NotFoundException, UnrecoverableKeyException {
         keyManagementService.destroyKey(UUID.fromString(uuid), UUID.fromString(keyUuid));
     }
 

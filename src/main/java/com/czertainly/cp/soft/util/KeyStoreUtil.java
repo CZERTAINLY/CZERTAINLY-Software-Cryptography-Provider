@@ -88,7 +88,7 @@ public class KeyStoreUtil {
     }
 
 
-    public static KeyStore loadKeystore(byte[] data, String code) {
+    public static KeyStore loadKeystore(byte[] data, String code) throws UnrecoverableKeyException {
         try {
             KeyStore ks = KeyStore.getInstance("PKCS12");
             char[] password = code.toCharArray();
@@ -99,6 +99,7 @@ public class KeyStoreUtil {
         } catch (KeyStoreException e) {
             throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
+            if (e.getCause() instanceof UnrecoverableKeyException e1) throw e1;
             throw new IllegalStateException("Cannot instantiate KeyStore", e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
@@ -110,7 +111,7 @@ public class KeyStoreUtil {
             X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
             return new SpkiKeyValue(Base64.getEncoder().encodeToString(certificate.getPublicKey().getEncoded()));
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot get public key with alias '"+alias+"' from KeyStore", e);
+            throw new IllegalStateException("Cannot get public key with alias '" + alias + "' from KeyStore", e);
         }
     }
 
@@ -121,7 +122,7 @@ public class KeyStoreUtil {
         } catch (KeyStoreException e) {
             throw new IllegalStateException("Cannot open KeyStore", e);
         } catch (UnrecoverableKeyException e) {
-            throw new IllegalStateException("Cannot get private key with alias '"+alias+"' from KeyStore", e);
+            throw new IllegalStateException("Cannot get private key with alias '" + alias + "' from KeyStore", e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Invalid algorithm", e);
         }
@@ -163,7 +164,7 @@ public class KeyStoreUtil {
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException(PROVIDER_NOT_FOUND, e);
         } catch (InvalidAlgorithmParameterException e) {
-            throw new IllegalStateException("Invalid curve name `"+curveName.getName()+"`", e);
+            throw new IllegalStateException("Invalid curve name `" + curveName.getName() + "`", e);
         }
     }
 
@@ -174,7 +175,7 @@ public class KeyStoreUtil {
             switch (degree) {
                 case FALCON_512 -> kpg.initialize(FalconParameterSpec.falcon_512);
                 case FALCON_1024 -> kpg.initialize(FalconParameterSpec.falcon_1024);
-                default ->  throw new IllegalStateException("Invalid Falcon degree");
+                default -> throw new IllegalStateException("Invalid Falcon degree");
             }
 
             final KeyPair kp = kpg.generateKeyPair();
@@ -297,25 +298,25 @@ public class KeyStoreUtil {
         }
     }
 
-    public static PrivateKey getPrivateKey(KeyData key) {
-        KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
+    public static PrivateKey getPrivateKey(KeyData key) throws UnrecoverableKeyException {
         try {
+            KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
             return (PrivateKey) keyStore.getKey(key.getName(), key.getTokenInstance().getCode().toCharArray());
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot load Token '"+key.getTokenInstance().getName()+"'", e);
+            throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Algorithm '"+key.getAlgorithm()+"' cannot be used", e);
+            throw new IllegalStateException("Algorithm '" + key.getAlgorithm() + "' cannot be used", e);
         } catch (UnrecoverableKeyException e) {
-            throw new IllegalStateException("Cannot load private key '"+key.getName()+"' from Token '"+key.getTokenInstance().getName()+"'", e);
+            throw new IllegalStateException("Cannot load private key '" + key.getName() + "' from Token '" + key.getTokenInstance().getName() + "'", e);
         }
     }
 
-    public static X509Certificate getCertificate(KeyData key) {
+    public static X509Certificate getCertificate(KeyData key) throws UnrecoverableKeyException {
         KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
         try {
             return (X509Certificate) keyStore.getCertificate(key.getName());
         } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot load Token '"+key.getTokenInstance().getName()+"'", e);
+            throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
         }
     }
 

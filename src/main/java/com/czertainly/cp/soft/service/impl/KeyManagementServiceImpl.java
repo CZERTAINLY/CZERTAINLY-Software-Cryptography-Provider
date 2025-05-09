@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyStore;
+import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +55,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
-    public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
+    public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException, UnrecoverableKeyException {
         // check if the token instance exists
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(uuid);
 
@@ -272,7 +273,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
-    public void destroyKey(UUID uuid, UUID keyUuid) throws NotFoundException {
+    public void destroyKey(UUID uuid, UUID keyUuid) throws NotFoundException, UnrecoverableKeyException {
 
         KeyData key = keyDataRepository.findByUuid(keyUuid)
                 .orElseThrow(() -> new NotFoundException(KeyData.class, keyUuid));
@@ -287,7 +288,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         keyDataRepository.delete(key);
     }
 
-    private void removeKeyFromKeyStore(UUID tokenInstanceUuid, String alias) throws NotFoundException {
+    private void removeKeyFromKeyStore(UUID tokenInstanceUuid, String alias) throws NotFoundException, UnrecoverableKeyException {
         // check if the token exists
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(tokenInstanceUuid);
 

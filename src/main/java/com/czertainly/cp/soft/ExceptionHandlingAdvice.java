@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.security.UnrecoverableKeyException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,10 +154,21 @@ public class ExceptionHandlingAdvice {
 
     @ExceptionHandler(NotSupportedException.class)
     @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-    public ResponseEntity<Object> handleTokenInstanceException(NotSupportedException ex) {
+    public ResponseEntity<Object> handleNotSupportedException(NotSupportedException ex) {
         log.debug("HTTP 501: {}", ex.getMessage());
         ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
         ApiErrorResponseDto apiErrorResponseDto = new ApiErrorResponseDto(501, HttpStatus.NOT_IMPLEMENTED, "", errorMessage);
+        apiErrorResponseDto.setTimestamp(Instant.now().toEpochMilli());
+        return new ResponseEntity<>(
+                apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
+    }
+
+    @ExceptionHandler(UnrecoverableKeyException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<Object> handleUnrecoverableKeyException(UnrecoverableKeyException ex) {
+        log.debug("HTTP 422: {}", ex.getMessage());
+        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
+        ApiErrorResponseDto apiErrorResponseDto = new ApiErrorResponseDto(422, HttpStatus.UNPROCESSABLE_ENTITY, "Token contains unrecoverable key", errorMessage);
         apiErrorResponseDto.setTimestamp(Instant.now().toEpochMilli());
         return new ResponseEntity<>(
                 apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
