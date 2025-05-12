@@ -4,11 +4,18 @@ import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jcajce.spec.MLKEMParameterSpec;
 import org.bouncycastle.jcajce.spec.SLHDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PKCS8Generator;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
+import org.bouncycastle.operator.*;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfoBuilder;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 
 import java.io.ByteArrayInputStream;
@@ -100,7 +107,6 @@ public class KeyStoreUtil {
         } catch (KeyStoreException e) {
             throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
-            if (e.getCause() instanceof UnrecoverableKeyException e1) throw new ValidationException("Cannot load Keystore because of unrecoverable key: " + e1.getMessage());
             throw new IllegalStateException("Cannot instantiate KeyStore", e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
@@ -268,18 +274,26 @@ public class KeyStoreUtil {
         return algorithm;
     }
 
-    public static void generateMLKEMKey(KeyStore keyStore, String alias, MLKEMSecurityCategory securityCategory, String password) {
+    public static BCMLKEMPublicKey generateMLKEMKey(KeyStore keyStore, String alias, MLKEMSecurityCategory securityCategory, String password) {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ML-KEM", BouncyCastleProvider.PROVIDER_NAME);
             keyPairGenerator.initialize(MLKEMParameterSpec.fromName(securityCategory.getParameterSet()));
 
-            // TODO: Figure out how to store the key
-//            KeyPair keyPair = keyPairGenerator.generateKeyPair();
-//            final X509Certificate cert = X509Util.generateOrphanX509Certificate(keyPair, "SLH-DSA", BouncyCastleProvider.PROVIDER_NAME);
-//            final X509Certificate[] chain = new X509Certificate[]{cert};
-//
-//            keyStore.setKeyEntry(alias, keyPair.getPrivate(), password.toCharArray(), chain);
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
+            // Store Private Key as Encrypted Private Key Info
+            byte[] encoded = keyPair.getPrivate().getEncoded();
+            PrivateKeyInfo originalInfo = PrivateKeyInfo.getInstance(encoded);
+            JceOpenSSLPKCS8EncryptorBuilder encryptorBuilder = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.PBE_SHA1_3DES).setPassword(password.toCharArray());
+            OutputEncryptor oe = encryptorBuilder.build();
+            PKCS8EncryptedPrivateKeyInfo encryptedPrivateKeyInfo = new PKCS8EncryptedPrivateKeyInfoBuilder(originalInfo).build(oe);
+            keyStore.setKeyEntry(alias, encryptedPrivateKeyInfo.getEncoded(), null);
+
+            PublicKey publicKey = keyPair.getPublic();
+            if (!(publicKey instanceof BCMLKEMPublicKey)) {
+                throw new IllegalStateException("Generated public key is not of type BCMLKEMPublicKey");
+            }
+            return (BCMLKEMPublicKey) publicKey;
 
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("ML-KEM algorithm not found", e);
@@ -288,6 +302,12 @@ public class KeyStoreUtil {
 
         } catch (InvalidAlgorithmParameterException e) {
             throw new IllegalStateException("Invalid ML-KEM algorithm parameters", e);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot generate ML-KEM key", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot generate ML-KEM Private Key Info", e);
+        } catch (OperatorCreationException e) {
+            throw new IllegalStateException("Cannot build encryptor for ML-KEM Private Key Info", e);
         }
     }
 

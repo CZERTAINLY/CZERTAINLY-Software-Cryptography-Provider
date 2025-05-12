@@ -13,6 +13,7 @@ import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.key.value.CustomKeyValue;
 import com.czertainly.api.model.connector.cryptography.key.value.KeyValue;
+import com.czertainly.api.model.connector.cryptography.key.value.RawKeyValue;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.*;
 import com.czertainly.cp.soft.collection.*;
@@ -25,10 +26,12 @@ import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyStore;
+import java.util.*;
 import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -234,28 +237,27 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.SLHDSA,
                         KeyFormat.CUSTOM, customKeyValue, slhDsaSecurityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
             }
-            // TODO: Figure out how to store ML-KEM Key
-//            case MLKEM -> {
-//                final MLKEMSecurityCategory securityCategory = MLKEMSecurityCategory.valueOf(
-//                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-//                                        MLKEMAttributes.ATTRIBUTE_DATA_MLKEM_LEVEL_LABEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
-//                                .getData()
-//                );
-//
-//                KeyStoreUtil.generateMLKEMKey(keyStore, alias, securityCategory, tokenInstance.getCode());
-//
-//                publicKey = createAndSaveKeyData(alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLKEM, KeyFormat.SPKI, KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias), securityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
-//
-//                CustomKeyValue customKeyValue = new CustomKeyValue();
-//                HashMap<String, String> customKeyValues = new HashMap<>();
-//                customKeyValues.put("securityCategory", String.valueOf(securityCategory.getNistSecurityCategory()));
-//                customKeyValue.setValues(customKeyValues);
-//
-//                // prepare private key
-//                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.MLKEM,
-//                        KeyFormat.CUSTOM, customKeyValue, securityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
-//
-//            }
+            case MLKEM -> {
+                final MLKEMSecurityCategory securityCategory = MLKEMSecurityCategory.valueOf(
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(
+                                        MLKEMAttributes.ATTRIBUTE_DATA_MLKEM_LEVEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
+                                .getData()
+                );
+
+                BCMLKEMPublicKey kemPublicKey =  KeyStoreUtil.generateMLKEMKey(keyStore, alias, securityCategory, tokenInstance.getCode());
+                RawKeyValue keyValue = new RawKeyValue(Base64.getEncoder().encodeToString(kemPublicKey.getEncoded()));
+                publicKey = createAndSaveKeyData(alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLKEM, KeyFormat.SPKI, keyValue, securityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
+
+                CustomKeyValue customKeyValue = new CustomKeyValue();
+                HashMap<String, String> customKeyValues = new HashMap<>();
+                customKeyValues.put("securityCategory", String.valueOf(securityCategory.getNistSecurityCategory()));
+                customKeyValue.setValues(customKeyValues);
+
+                // prepare private key
+                privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.MLKEM,
+                        KeyFormat.CUSTOM, customKeyValue, securityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+
+            }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
         }
 
