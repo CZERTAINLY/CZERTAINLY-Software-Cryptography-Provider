@@ -55,7 +55,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
-    public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException, UnrecoverableKeyException {
+    public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
         // check if the token instance exists
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(uuid);
 
@@ -288,7 +288,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         keyDataRepository.delete(key);
     }
 
-    private void removeKeyFromKeyStore(UUID tokenInstanceUuid, String alias) throws NotFoundException, UnrecoverableKeyException {
+    private void removeKeyFromKeyStore(UUID tokenInstanceUuid, String alias) throws NotFoundException {
         // check if the token exists
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(tokenInstanceUuid);
 

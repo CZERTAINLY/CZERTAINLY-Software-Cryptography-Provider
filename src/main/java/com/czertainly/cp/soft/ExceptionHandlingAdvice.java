@@ -163,17 +163,6 @@ public class ExceptionHandlingAdvice {
                 apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
     }
 
-    @ExceptionHandler(UnrecoverableKeyException.class)
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public ResponseEntity<Object> handleUnrecoverableKeyException(UnrecoverableKeyException ex) {
-        log.debug("HTTP 422: {}", ex.getMessage());
-        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
-        ApiErrorResponseDto apiErrorResponseDto = new ApiErrorResponseDto(422, HttpStatus.UNPROCESSABLE_ENTITY, "Token contains unrecoverable key", errorMessage);
-        apiErrorResponseDto.setTimestamp(Instant.now().toEpochMilli());
-        return new ResponseEntity<>(
-                apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
-    }
-
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleAll(Exception ex) {
         ErrorMessageDto errorMessage = new ErrorMessageDto("Unexpected error", ex.getClass().getSimpleName(), ex.getMessage());

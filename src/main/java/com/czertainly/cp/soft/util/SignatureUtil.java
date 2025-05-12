@@ -1,5 +1,6 @@
 package com.czertainly.cp.soft.util;
 
+import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
@@ -145,7 +146,7 @@ public class SignatureUtil {
     public static void initVerification(Signature signature, KeyData key) {
         try {
             signature.initVerify(KeyStoreUtil.getCertificate(key));
-        } catch (InvalidKeyException | UnrecoverableKeyException e) {
+        } catch (InvalidKeyException | ValidationException e) {
             throw new IllegalStateException("Invalid key '" + key.getName() + "'", e);
         }
     }

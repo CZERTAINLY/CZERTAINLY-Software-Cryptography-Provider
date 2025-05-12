@@ -2,6 +2,7 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.AlreadyExistException;
 import com.czertainly.api.exception.NotFoundException;
+import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.AttributeType;
 import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
@@ -123,7 +124,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
                     TokenInstanceAttributes.ATTRIBUTE_DATA_TOKEN_CODE, request.getAttributes(), SecretAttributeContent.class).getData().getSecret();
             try {
                 KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenCode);
-            } catch (IllegalStateException | UnrecoverableKeyException e) {
+            } catch (IllegalStateException | ValidationException e) {
                 logger.debug("Token activation failed", e);
                 throw new TokenInstanceException("Cannot activate token " + tokenInstance.getName() + ": " + e.getMessage());
             }
@@ -176,11 +177,9 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
                     TokenInstanceActivationAttributes.ATTRIBUTE_DATA_ACTIVATION_CODE, attributes, SecretAttributeContent.class).getData().getSecret();
             try {
                 KeyStoreUtil.loadKeystore(token.getData(), tokenCode);
-            } catch (IllegalStateException e) {
+            } catch (IllegalStateException | ValidationException e) {
                 logger.debug("Token activation failed", e);
                 throw new TokenInstanceException("Cannot activate token " + token.getName() + ": " + e.getMessage());
-            } catch (UnrecoverableKeyException e) {
-                throw new NotSupportedException("Cannot recover keys from token.");
             }
 
             token.setCode(tokenCode);

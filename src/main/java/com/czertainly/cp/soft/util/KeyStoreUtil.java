@@ -1,5 +1,6 @@
 package com.czertainly.cp.soft.util;
 
+import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
@@ -88,7 +89,7 @@ public class KeyStoreUtil {
     }
 
 
-    public static KeyStore loadKeystore(byte[] data, String code) throws UnrecoverableKeyException {
+    public static KeyStore loadKeystore(byte[] data, String code) {
         try {
             KeyStore ks = KeyStore.getInstance("PKCS12");
             char[] password = code.toCharArray();
@@ -99,7 +100,7 @@ public class KeyStoreUtil {
         } catch (KeyStoreException e) {
             throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
-            if (e.getCause() instanceof UnrecoverableKeyException e1) throw e1;
+            if (e.getCause() instanceof UnrecoverableKeyException e1) throw new ValidationException("Cannot load Keystore because of unrecoverable key: " + e1.getMessage());
             throw new IllegalStateException("Cannot instantiate KeyStore", e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
@@ -302,7 +303,7 @@ public class KeyStoreUtil {
         try {
             KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
             return (PrivateKey) keyStore.getKey(key.getName(), key.getTokenInstance().getCode().toCharArray());
-        } catch (KeyStoreException e) {
+        } catch (KeyStoreException | ValidationException e) {
             throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algorithm '" + key.getAlgorithm() + "' cannot be used", e);
@@ -311,11 +312,11 @@ public class KeyStoreUtil {
         }
     }
 
-    public static X509Certificate getCertificate(KeyData key) throws UnrecoverableKeyException {
+    public static X509Certificate getCertificate(KeyData key) {
         KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
         try {
             return (X509Certificate) keyStore.getCertificate(key.getName());
-        } catch (KeyStoreException e) {
+        } catch (KeyStoreException | ValidationException e) {
             throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
         }
     }
