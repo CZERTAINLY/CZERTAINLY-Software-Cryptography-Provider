@@ -9,6 +9,7 @@ import com.czertainly.api.model.connector.cryptography.key.value.*;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.util.KeyUtil;
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -34,13 +35,13 @@ public class KeyData extends UniquelyIdentified {
     @Column(name = "format")
     private KeyFormat format;
 
-    @Column(name = "value")
+    @Column(name = "value", length = Integer.MAX_VALUE)
     private String value;
 
     @Column(name = "length")
     private int length;
 
-    @Column(name = "metadata")
+    @Column(name = "metadata", length = Integer.MAX_VALUE)
     private String metadata;
 
     @ManyToOne()
