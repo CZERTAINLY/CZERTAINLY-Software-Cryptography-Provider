@@ -21,6 +21,7 @@ import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.KeyDataRepository;
 import com.czertainly.cp.soft.exception.KeyManagementException;
+import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
@@ -61,6 +62,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
         // check if the token instance exists
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(uuid);
+
+        if (tokenInstance.getCode() == null) throw new TokenInstanceException("Token is not activated.");
 
         // load the keystore
         KeyStore keyStore = KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenInstance.getCode());
@@ -291,8 +294,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     private void removeKeyFromKeyStore(UUID tokenInstanceUuid, String alias) throws NotFoundException {
-        // check if the token exists
+        // check if the token exists and if it is activated
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(tokenInstanceUuid);
+        if (tokenInstance.getCode() == null) throw new TokenInstanceException("Token is not activated.");
 
         // load the token
         KeyStore keyStore = KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenInstance.getCode());

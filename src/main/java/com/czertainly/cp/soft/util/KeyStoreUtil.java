@@ -4,6 +4,7 @@ import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
+import com.czertainly.cp.soft.exception.TokenInstanceException;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
@@ -79,22 +80,6 @@ public class KeyStoreUtil {
         }
     }
 
-    public static void initKeystore(byte[] data, String code) {
-        try {
-            KeyStore ks = KeyStore.getInstance("PKCS12");
-            char[] password = code.toCharArray();
-            ks.load(new ByteArrayInputStream(data), password);
-        } catch (CertificateException e) {
-            throw new IllegalStateException(CERTIFICATE_EXCEPTION_FOR_KEY_STORE, e);
-        } catch (KeyStoreException e) {
-            throw new IllegalStateException(INVALID_KEY_STORE, e);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot instantiate KeyStore", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
-        }
-    }
-
 
     public static KeyStore loadKeystore(byte[] data, String code) {
         try {
@@ -107,7 +92,7 @@ public class KeyStoreUtil {
         } catch (KeyStoreException e) {
             throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot instantiate KeyStore", e);
+            throw new IllegalStateException("Cannot instantiate KeyStore: " + e.getCause().getMessage(), e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
         }
@@ -323,7 +308,7 @@ public class KeyStoreUtil {
         try {
             KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
             return (PrivateKey) keyStore.getKey(key.getName(), key.getTokenInstance().getCode().toCharArray());
-        } catch (KeyStoreException | ValidationException e) {
+        } catch (KeyStoreException e) {
             throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algorithm '" + key.getAlgorithm() + "' cannot be used", e);
@@ -336,7 +321,7 @@ public class KeyStoreUtil {
         KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
         try {
             return (X509Certificate) keyStore.getCertificate(key.getName());
-        } catch (KeyStoreException | ValidationException e) {
+        } catch (KeyStoreException e) {
             throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
         }
     }
