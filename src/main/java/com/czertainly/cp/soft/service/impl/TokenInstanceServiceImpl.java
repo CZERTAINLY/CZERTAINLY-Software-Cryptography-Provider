@@ -2,7 +2,6 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.AlreadyExistException;
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.AttributeType;
 import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
@@ -19,7 +18,6 @@ import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.TokenInstanceRepository;
-import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
@@ -30,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
