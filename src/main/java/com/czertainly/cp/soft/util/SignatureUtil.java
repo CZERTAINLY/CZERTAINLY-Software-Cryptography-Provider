@@ -1,6 +1,5 @@
 package com.czertainly.cp.soft.util;
 
-import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
 import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
