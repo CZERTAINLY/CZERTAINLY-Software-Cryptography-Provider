@@ -1,5 +1,6 @@
 package db.migration;
 
+import com.czertainly.cp.soft.util.DatabaseMigration;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import com.czertainly.cp.soft.util.SecretEncodingVersion;
 import com.czertainly.cp.soft.util.SecretsUtil;
@@ -19,6 +20,11 @@ import java.util.Base64;
 @SuppressWarnings("java:S101")
 public class V202505121340__DeactivateTokensWithDeprecatedAlgorithms extends BaseJavaMigration {
     private static final Logger logger = LoggerFactory.getLogger(V202505121340__DeactivateTokensWithDeprecatedAlgorithms.class);
+
+    @Override
+    public Integer getChecksum() {
+        return DatabaseMigration.JavaMigrationChecksums.V202505121340__DeactivateTokensWithDeprecatedAlgorithms.getChecksum();
+    }
 
     @Override
     public void migrate(Context context) throws Exception {

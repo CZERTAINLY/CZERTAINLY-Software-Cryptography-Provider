@@ -44,8 +44,7 @@ public class DatabaseMigration {
      */
     @SuppressWarnings("java:S115")
     public enum JavaMigrationChecksums {
-        V202505021400__RemoveDeprecatedKeysFromKeystore(1418544588);
-
+        V202505121340__DeactivateTokensWithDeprecatedAlgorithms(1269234600);
 
         private final int checksum;
 
