@@ -1,6 +1,5 @@
 package com.czertainly.cp.soft.util;
 
-import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.*;
 import com.czertainly.cp.soft.dao.entity.KeyData;
@@ -304,7 +303,7 @@ public class KeyStoreUtil {
         }
     }
 
-    public static PrivateKey getPrivateKey(KeyData key) throws UnrecoverableKeyException {
+    public static PrivateKey getPrivateKey(KeyData key) {
         try {
             if (key.getTokenInstance().getCode() == null) throw new TokenInstanceException("Token is not activated. Missing code for the token.");
             KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());

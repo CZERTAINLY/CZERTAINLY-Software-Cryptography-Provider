@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.KeyStore;
 import java.util.*;
-import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -278,7 +277,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
-    public void destroyKey(UUID uuid, UUID keyUuid) throws NotFoundException, UnrecoverableKeyException {
+    public void destroyKey(UUID uuid, UUID keyUuid) throws NotFoundException {
 
         KeyData key = keyDataRepository.findByUuid(keyUuid)
                 .orElseThrow(() -> new NotFoundException(KeyData.class, keyUuid));

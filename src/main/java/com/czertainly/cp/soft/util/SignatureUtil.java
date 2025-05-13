@@ -138,7 +138,7 @@ public class SignatureUtil {
     public static void initSigning(Signature signature, KeyData key) {
         try {
             signature.initSign(KeyStoreUtil.getPrivateKey(key));
-        } catch (InvalidKeyException | UnrecoverableKeyException e) {
+        } catch (InvalidKeyException e) {
             throw new IllegalStateException("Invalid key '"+key.getName()+"'", e);
         }
     }
@@ -146,7 +146,7 @@ public class SignatureUtil {
     public static void initVerification(Signature signature, KeyData key) {
         try {
             signature.initVerify(KeyStoreUtil.getCertificate(key));
-        } catch (InvalidKeyException | ValidationException e) {
+        } catch (InvalidKeyException e) {
             throw new IllegalStateException("Invalid key '" + key.getName() + "'", e);
         }
     }
