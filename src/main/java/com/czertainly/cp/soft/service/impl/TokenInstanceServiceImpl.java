@@ -120,7 +120,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                     TokenInstanceAttributes.ATTRIBUTE_DATA_TOKEN_CODE, request.getAttributes(), SecretAttributeContent.class).getData().getSecret();
             try {
-                KeyStoreUtil.initKeystore(tokenInstance.getData(), tokenCode);
+                KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenCode);
             } catch (IllegalStateException e) {
                 logger.debug("Token activation failed", e);
                 throw new TokenInstanceException("Cannot activate token " + tokenInstance.getName() + ": " + e.getMessage());
@@ -173,7 +173,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             final String tokenCode = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
                     TokenInstanceActivationAttributes.ATTRIBUTE_DATA_ACTIVATION_CODE, attributes, SecretAttributeContent.class).getData().getSecret();
             try {
-                KeyStoreUtil.initKeystore(token.getData(), tokenCode);
+                KeyStoreUtil.loadKeystore(token.getData(), tokenCode);
             } catch (IllegalStateException e) {
                 logger.debug("Token activation failed", e);
                 throw new TokenInstanceException("Cannot activate token " + token.getName() + ": " + e.getMessage());

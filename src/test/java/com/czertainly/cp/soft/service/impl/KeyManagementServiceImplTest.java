@@ -4,6 +4,7 @@ import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.model.client.attribute.RequestAttributeDto;
 import com.czertainly.api.model.common.attribute.v2.content.*;
 import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
+import com.czertainly.api.model.common.enums.cryptography.KeyType;
 import com.czertainly.api.model.connector.cryptography.key.CreateKeyRequestDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDto;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
@@ -11,8 +12,11 @@ import com.czertainly.cp.soft.attribute.MLDSAKeyAttributes;
 import com.czertainly.cp.soft.attribute.MLKEMAttributes;
 import com.czertainly.cp.soft.attribute.SLHDSAKeyAttributes;
 import com.czertainly.cp.soft.collection.*;
+import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
+import com.czertainly.cp.soft.dao.repository.KeyDataRepository;
 import com.czertainly.cp.soft.dao.repository.TokenInstanceRepository;
+import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import jakarta.transaction.Transactional;
@@ -25,17 +29,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.security.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest
 @Transactional
 class KeyManagementServiceImplTest {
 
     public static final String PASSWORD = "123";
+
     @Autowired
     KeyManagementService keyManagementService;
 
     @Autowired
     TokenInstanceRepository tokenInstanceRepository;
+    @Autowired
+    KeyDataRepository keyDataRepository;
 
     TokenInstance tokenInstance;
 
@@ -185,6 +193,20 @@ class KeyManagementServiceImplTest {
         return attributes;
     }
 
+    @Test
+    void testNotActivatedToken() {
+        tokenInstance.setCode(null);
+        KeyData keyData = new KeyData();
+        keyData.setTokenInstance(tokenInstance);
+        keyData.setType(KeyType.PRIVATE_KEY);
+        keyDataRepository.save(keyData);
+        UUID keyUuid = keyData.getUuid();
+
+        UUID tokenInstanceUuid = tokenInstance.getUuid();
+        CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
+        Assertions.assertThrows(TokenInstanceException.class, () -> keyManagementService.createKeyPair(tokenInstanceUuid, createKeyRequestDto));
+        Assertions.assertThrows(TokenInstanceException.class, () -> keyManagementService.destroyKey(tokenInstanceUuid, keyUuid));
+    }
 
 
 }

@@ -146,7 +146,7 @@ public class SignatureUtil {
         try {
             signature.initVerify(KeyStoreUtil.getCertificate(key));
         } catch (InvalidKeyException e) {
-            throw new IllegalStateException("Invalid key '"+key.getName()+"'", e);
+            throw new IllegalStateException("Invalid key '" + key.getName() + "'", e);
         }
     }
 
