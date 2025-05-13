@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.security.UnrecoverableKeyException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

@@ -62,7 +62,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         // check if the token instance exists
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(uuid);
 
-        if (tokenInstance.getCode() == null) throw new TokenInstanceException("Token is not activated. Missing code for the token.");
+        if (tokenInstance.getCode() == null) throw new TokenInstanceException("Token is not activated.");
 
         // load the keystore
         KeyStore keyStore = KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenInstance.getCode());
@@ -295,7 +295,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private void removeKeyFromKeyStore(UUID tokenInstanceUuid, String alias) throws NotFoundException {
         // check if the token exists and if it is activated
         TokenInstance tokenInstance = tokenInstanceService.getTokenInstanceEntity(tokenInstanceUuid);
-        if (tokenInstance.getCode() == null) throw new TokenInstanceException("Token is not activated. Missing code for the token.");
+        if (tokenInstance.getCode() == null) throw new TokenInstanceException("Token is not activated.");
 
         // load the token
         KeyStore keyStore = KeyStoreUtil.loadKeystore(tokenInstance.getData(), tokenInstance.getCode());
