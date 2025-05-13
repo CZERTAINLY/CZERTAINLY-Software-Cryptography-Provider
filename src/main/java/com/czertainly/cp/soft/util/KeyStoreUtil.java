@@ -306,6 +306,7 @@ public class KeyStoreUtil {
 
     public static PrivateKey getPrivateKey(KeyData key) throws UnrecoverableKeyException {
         try {
+            if (key.getTokenInstance().getCode() == null) throw new TokenInstanceException("Token is not activated. Missing code for the token.");
             KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
             return (PrivateKey) keyStore.getKey(key.getName(), key.getTokenInstance().getCode().toCharArray());
         } catch (KeyStoreException e) {
@@ -318,6 +319,7 @@ public class KeyStoreUtil {
     }
 
     public static X509Certificate getCertificate(KeyData key) {
+        if (key.getTokenInstance().getCode() == null) throw new TokenInstanceException("Token is not activated. Missing code for the token.");
         KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
         try {
             return (X509Certificate) keyStore.getCertificate(key.getName());
