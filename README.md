@@ -25,13 +25,14 @@ Software Cryptography Provider `Connector` requires the PostgreSQL database to s
 
 Software Cryptography Provider `Connector` supports the following asymmetric algorithms:
 
-| Algorithm            | Type       | Key Properties                                                               |
-|----------------------|------------|------------------------------------------------------------------------------|
-| `RSA`                | Asymmetric | Key lengths `1024`, `2048`, `4096`                                           |
-| `ECDSA`              | Asymmetric | Named curves `secp192r1`, `secp224r1`, `secp256r1`, `secp384r1`, `secp521r1` |
-| `FALCON`             | Asymmetric | With `512` and `1024` degrees spec                                           |
-| `CRYSTALS-Dilithium` | Asymmetric | Levels `2`, `3`, `5` and `AES-256` option for expansion function             |
-| `SPHINCS+`           | Asymmetric | With all parameter sets and robust instantiation option                      |
+| Algorithm | Type       | Key Properties                                                                                                                                        |
+|-----------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `RSA`     | Asymmetric | Key lengths `1024`, `2048`, `4096`                                                                                                                    |
+| `ECDSA`   | Asymmetric | Named curves `secp192r1`, `secp224r1`, `secp256r1`, `secp384r1`, `secp521r1`                                                                          |
+| `FALCON`  | Asymmetric | With `512` and `1024` degrees spec                                                                                                                    |
+| `ML-DSA`  | Asymmetric | Lattice-based and the primary signature algorithm standardised by NIST - [FIPS 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)         |
+| `SLH-DSA` | Asymmetric | Stateless hash-based signature algorithm standardised by NIST - [FIPS 205](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf)                  |
+| `ML-KEM`  | Asymmetric | Lattice-based and the primary key encapsulation mechanism standardised by NIST - [FIPS 203](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf) |
 
 > Note: Symmetric keys are not supported by this `Connector`.
 
