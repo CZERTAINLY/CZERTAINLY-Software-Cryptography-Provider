@@ -12,11 +12,6 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     env:
       HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-    permissions:
-      actions: read
-      contents: read
-      packages: read
-      security-events: write
     steps:
       # Create a temporary directory for artifacts
       - run: mkdir -p ${{ runner.temp }}/artifacts/
