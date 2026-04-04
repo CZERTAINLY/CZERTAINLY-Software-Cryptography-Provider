@@ -4,8 +4,8 @@ import com.czertainly.api.exception.AlreadyExistException;
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.interfaces.connector.cryptography.TokenInstanceController;
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceRequestDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceStatusDto;
@@ -76,7 +76,7 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
     }
 
     @Override
-    public void validateTokenProfileAttributes(String uuid, List<RequestAttributeDto> attributes) throws ValidationException, NotFoundException {
+    public void validateTokenProfileAttributes(String uuid, List<RequestAttribute> attributes) throws ValidationException, NotFoundException {
         // there are no attributes needed for token profile
     }
 
@@ -86,12 +86,12 @@ public class TokenInstanceControllerImpl implements TokenInstanceController {
     }
 
     @Override
-    public void validateTokenInstanceActivationAttributes(String uuid, List<RequestAttributeDto> attributes) throws ValidationException, NotFoundException {
+    public void validateTokenInstanceActivationAttributes(String uuid, List<RequestAttribute> attributes) throws ValidationException, NotFoundException {
         attributeService.validateTokenInstanceActivationAttributes(uuid, attributes);
     }
 
     @Override
-    public void activateTokenInstance(String uuid, List<RequestAttributeDto> attributes) throws NotFoundException {
+    public void activateTokenInstance(String uuid, List<RequestAttribute> attributes) throws NotFoundException {
         if (!attributeService.validateTokenInstanceActivationAttributes(uuid, attributes)) {
             throw new ValidationException("Token instance attributes validation failed.");
         }

@@ -1,13 +1,18 @@
 package com.czertainly.cp.soft.attribute;
 
-import com.czertainly.api.model.common.attribute.v2.*;
-import com.czertainly.api.model.common.attribute.v2.callback.AttributeCallback;
-import com.czertainly.api.model.common.attribute.v2.callback.AttributeCallbackMapping;
-import com.czertainly.api.model.common.attribute.v2.callback.AttributeValueTarget;
-import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
-import com.czertainly.api.model.common.attribute.v2.properties.MetadataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.AttributeType;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.common.MetadataAttribute;
+import com.czertainly.api.model.common.attribute.common.callback.AttributeCallback;
+import com.czertainly.api.model.common.attribute.common.callback.AttributeCallbackMapping;
+import com.czertainly.api.model.common.attribute.common.callback.AttributeValueTarget;
+import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
+import com.czertainly.api.model.common.attribute.common.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.properties.MetadataAttributeProperties;
+import com.czertainly.api.model.common.attribute.v2.DataAttributeV2;
+import com.czertainly.api.model.common.attribute.v2.GroupAttributeV2;
+import com.czertainly.api.model.common.attribute.v2.MetadataAttributeV2;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
 
 import java.util.HashSet;
@@ -47,7 +52,7 @@ public class KeyAttributes {
 
     public static BaseAttribute buildDataKeyAlias() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_KEY_ALIAS_UUID);
         attribute.setName(ATTRIBUTE_DATA_KEY_ALIAS);
         attribute.setDescription(ATTRIBUTE_DATA_KEY_ALIAS_DESCRIPTION);
@@ -69,7 +74,7 @@ public class KeyAttributes {
 
     public static BaseAttribute buildDataKeyAlgorithmSelect() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_KEY_ALGORITHM_UUID);
         attribute.setName(ATTRIBUTE_DATA_KEY_ALGORITHM);
         attribute.setDescription(ATTRIBUTE_DATA_KEY_ALGORITHM_DESCRIPTION);
@@ -87,7 +92,7 @@ public class KeyAttributes {
         // set content
         attribute.setContent(
                 Stream.of(KeyAlgorithm.values())
-                        .map(item -> new StringAttributeContent(item.getLabel(), item.getCode()))
+                        .map(item -> new StringAttributeContentV2(item.getLabel(), item.getCode()))
                         .collect(Collectors.toList())
         );
 
@@ -96,7 +101,7 @@ public class KeyAttributes {
 
     public static BaseAttribute buildGroupKeyAttributesBasedOnSelectedAlgorithm() {
         // define Group Attribute
-        GroupAttribute attribute = new GroupAttribute();
+        GroupAttributeV2 attribute = new GroupAttributeV2();
         attribute.setUuid(ATTRIBUTE_GROUP_KEY_SPEC_UUID);
         attribute.setName(ATTRIBUTE_GROUP_KEY_SPEC);
         attribute.setType(AttributeType.GROUP);
@@ -119,7 +124,7 @@ public class KeyAttributes {
 
     public static MetadataAttribute buildAliasMetadata(String alias) {
         // define Metadata Attribute
-        MetadataAttribute metadataAttribute = new MetadataAttribute();
+        MetadataAttributeV2 metadataAttribute = new MetadataAttributeV2();
         metadataAttribute.setUuid(ATTRIBUTE_META_KEY_ALIAS_UUID);
         metadataAttribute.setName(ATTRIBUTE_META_KEY_ALIAS);
         metadataAttribute.setType(AttributeType.META);
@@ -132,7 +137,7 @@ public class KeyAttributes {
         metadataAttributeProperties.setGlobal(false);
         metadataAttribute.setProperties(metadataAttributeProperties);
         // create StringAttributeContent
-        StringAttributeContent stringAttributeContent = new StringAttributeContent();
+        StringAttributeContentV2 stringAttributeContent = new StringAttributeContentV2();
         stringAttributeContent.setReference("alias");
         stringAttributeContent.setData(alias);
         metadataAttribute.setContent(List.of(stringAttributeContent));

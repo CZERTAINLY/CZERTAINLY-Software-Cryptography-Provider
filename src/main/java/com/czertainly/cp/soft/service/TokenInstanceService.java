@@ -2,7 +2,7 @@ package com.czertainly.cp.soft.service;
 
 import com.czertainly.api.exception.AlreadyExistException;
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceRequestDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceStatusDto;
@@ -25,7 +25,7 @@ public interface TokenInstanceService {
 
     TokenInstanceStatusDto getTokenInstanceStatus(UUID uuid) throws NotFoundException;
 
-    void activateTokenInstance(UUID uuid, List<RequestAttributeDto> attributes) throws NotFoundException;
+    void activateTokenInstance(UUID uuid, List<RequestAttribute> attributes) throws NotFoundException;
 
     void deactivateTokenInstance(UUID uuid) throws NotFoundException;
 

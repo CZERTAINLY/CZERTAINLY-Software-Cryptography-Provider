@@ -3,8 +3,8 @@ package com.czertainly.cp.soft.api;
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.exception.ValidationException;
 import com.czertainly.api.interfaces.connector.cryptography.KeyManagementController;
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
 import com.czertainly.api.model.connector.cryptography.key.CreateKeyRequestDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.key.KeyPairDataResponseDto;
@@ -41,7 +41,7 @@ public class KeyManagementControllerImpl implements KeyManagementController {
     }
 
     @Override
-    public void validateCreateSecretKeyAttributes(String uuid, List<RequestAttributeDto> attributes) throws NotFoundException, ValidationException {
+    public void validateCreateSecretKeyAttributes(String uuid, List<RequestAttribute> attributes) throws NotFoundException, ValidationException {
         throw new NotSupportedException("Secret keys are not supported.");
     }
 
@@ -56,7 +56,7 @@ public class KeyManagementControllerImpl implements KeyManagementController {
     }
 
     @Override
-    public void validateCreateKeyPairAttributes(String uuid, List<RequestAttributeDto> attributes) throws NotFoundException, ValidationException {
+    public void validateCreateKeyPairAttributes(String uuid, List<RequestAttribute> attributes) throws NotFoundException, ValidationException {
         attributeService.validateCreateKeyAttributes(uuid, attributes);
     }
 

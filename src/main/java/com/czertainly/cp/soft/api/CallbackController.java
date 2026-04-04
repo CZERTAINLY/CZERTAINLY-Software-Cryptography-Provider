@@ -1,8 +1,8 @@
 package com.czertainly.cp.soft.api;
 
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.cp.soft.attribute.*;
@@ -75,9 +75,9 @@ public class CallbackController {
 
     }
 
-    private List<BaseAttributeContent> tokenInstancesToStringContentList(List<TokenInstanceDto> tokenInstanceDtos) {
+    private List<BaseAttributeContentV2> tokenInstancesToStringContentList(List<TokenInstanceDto> tokenInstanceDtos) {
         return tokenInstanceDtos.stream()
-                .map(tokenInstanceDto -> new StringAttributeContent(tokenInstanceDto.getName(), tokenInstanceDto.getUuid()))
+                .map(tokenInstanceDto -> new StringAttributeContentV2(tokenInstanceDto.getName(), tokenInstanceDto.getUuid()))
                 .collect(Collectors.toList());
     }
 
