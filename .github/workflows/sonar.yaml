@@ -1,89 +1,124 @@
 name: Sonar
 on:
-  workflow_run:
-    workflows: ["Build PR"]
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:   { description: "PR number", required: true }
+      head_sha:    { description: "Head commit SHA", required: true }
+      head_repo:   { description: "Fork repo full_name", required: true }
+      head_branch: { description: "Fork branch", required: true }
+      base_ref:    { description: "Base branch", required: true }
+      run_id:      { description: "Upstream run ID", required: true }
+
+# What appears in the Actions list
+run-name: >-
+  Sonar • PR #${{ inputs.pr_number }}
+  • ${{ inputs.head_repo }}@${{ inputs.head_branch }}
+  • ${{ inputs.head_sha }}
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: read
+  actions: read
 
 jobs:
   sonar:
-    name: Sonar
+    name: Sonar • PR #${{ inputs.pr_number }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: github.event.workflow_run.conclusion == 'success'
-    env:
-      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-    permissions:
-      actions: read
-      contents: read
-      packages: read
-      security-events: write
+
     steps:
-      # Create a temporary directory for artifacts
-      - run: mkdir -p ${{ runner.temp }}/artifacts/
-      # Download the PR number artifact
-      - name: Download PR number
-        uses: actions/download-artifact@v6
+      - name: Export context
+        run: |
+          echo "PR_NUMBER=${{ inputs.pr_number }}"    >> $GITHUB_ENV
+          echo "HEAD_SHA=${{ inputs.head_sha }}"      >> $GITHUB_ENV
+          echo "HEAD_REPO=${{ inputs.head_repo }}"    >> $GITHUB_ENV
+          echo "PR_BRANCH=${{ inputs.head_branch }}"  >> $GITHUB_ENV
+          echo "BASE_BRANCH=${{ inputs.base_ref }}"   >> $GITHUB_ENV
+          echo "UPSTREAM_RUN_ID=${{ inputs.run_id }}" >> $GITHUB_ENV
+
+      - name: Generate token
+        id: app_token
+        uses: actions/create-github-app-token@v2
         with:
-          name: pr-number
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
-          path: ${{ runner.temp }}/artifacts/
-      # Read the PR number from the file and store it in 'steps.pr_number.outputs.content'
-      - name: Read PR number from file
-        id: pr_number
-        run: echo "content=$(cat ${{ runner.temp }}/artifacts/pr-number.txt)" >> $GITHUB_OUTPUT
-      # Request GitHub API for PR data
-      - name: Request GitHub API for PR data
-        if: github.event.workflow_run.event == 'pull_request'
-        uses: octokit/request-action@dad4362715b7fb2ddedf9772c8670824af564f0d # v2.4.0
-        id: get_pr_data
+          app-id: ${{ secrets.SONAR_GH_APP_ID }}
+          private-key: ${{ secrets.SONAR_GH_APP_PRIVATE_KEY }}
+
+      - name: Create GitHub Check (in_progress)
+        id: create_check
+        uses: actions/github-script@v8
         with:
-          route: GET /repos/${{ github.event.repository.full_name }}/pulls/${{ steps.pr_number.outputs.content }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Checkout the PR branch
-      - uses: actions/checkout@v5
+          github-token: ${{ steps.app_token.outputs.token }}
+          script: |
+            const check = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: `SonarQube Analysis`,
+              head_sha: process.env.HEAD_SHA,
+              status: "in_progress"
+            });
+            core.setOutput("check_id", check.data.id);
+
+      # Checkout fork PR branch + fetch base to compute diff
+      - uses: actions/checkout@v6
         with:
-          repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_branch }}
+          repository: ${{ env.HEAD_REPO }}
+          ref: ${{ env.PR_BRANCH }}
           fetch-depth: 0
-      # Checkout the base branch to keep the information about the new lines of code
-      - name: Checkout base branch
-        if: github.event.workflow_run.event == 'pull_request'
+
+      - name: Fetch base branch
         run: |
           git remote add upstream ${{ github.event.repository.clone_url }}
-          git fetch upstream
-          git checkout -B ${{ fromJson(steps.get_pr_data.outputs.data).base.ref }} upstream/${{ fromJson(steps.get_pr_data.outputs.data).base.ref }}
-          git checkout $HEAD_BRANCH
+          git fetch upstream $BASE_BRANCH
+          git checkout -B "$BASE_BRANCH" "upstream/$BASE_BRANCH"
+          git checkout "$PR_BRANCH"
           git clean -ffdx && git reset --hard HEAD
-      # Download compiled classes
-      - name: Download Compiled Classes
-        uses: actions/download-artifact@v6
+
+      - name: Download Compiled Classes from upstream run
+        uses: actions/download-artifact@v8
         with:
           name: compiled-classes
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ inputs.run_id }}
           path: target/classes
-      # Download Jacoco XML coverage files
-      - name: Download Coverage Reports
-        uses: actions/download-artifact@v6
+
+      - name: Download Coverage Reports from upstream run
+        uses: actions/download-artifact@v8
         with:
           name: coverage-reports
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ inputs.run_id }}
           path: target/site/jacoco
-      # SonarCloud Scan analysis and push
+
       - name: SonarCloud Scan
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_REVISION: ${{ github.event.workflow_run.head_sha }}
-          SONAR_PR_KEY: ${{ fromJson(steps.get_pr_data.outputs.data).number }}
-          SONAR_PR_BRANCH: ${{ fromJson(steps.get_pr_data.outputs.data).head.ref }}
-          SONAR_PR_BASE: ${{ fromJson(steps.get_pr_data.outputs.data).base.ref }}
         run: |
           mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.scm.revision=$SONAR_REVISION \
-            -Dsonar.pullrequest.key=$SONAR_PR_KEY \
-            -Dsonar.pullrequest.branch=$SONAR_PR_BRANCH \
-            -Dsonar.pullrequest.base=$SONAR_PR_BASE
+            -Dsonar.scm.revision=${{ env.HEAD_SHA }} \
+            -Dsonar.pullrequest.key=${{ env.PR_NUMBER }} \
+            -Dsonar.pullrequest.branch=${{ env.PR_BRANCH }} \
+            -Dsonar.pullrequest.base=${{ env.BASE_BRANCH }}
+
+      - name: Finalize GitHub Check
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ steps.app_token.outputs.token }}
+          script: |
+            const checkId = "${{ steps.create_check.outputs.check_id }}";
+            const status = "${{ job.status }}";
+            const conclusions = { success: "success", failure: "failure", cancelled: "cancelled" };
+            const conclusion = conclusions[status] || "failure";
+            await github.rest.checks.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: checkId,
+              completed_at: new Date().toISOString(),
+              status: "completed",
+              conclusion,
+              output: {
+                title: "SonarQube Analysis Result",
+                summary: `✅ SonarQube analysis concluded with status: **${conclusion}**`,
+              }
+            });
