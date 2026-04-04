@@ -40,7 +40,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'sonar.yml',
+              workflow_id: 'sonar.yaml',
               ref: '${{ steps.ctx.outputs.base_ref }}',
               inputs: {
                 pr_number:  '${{ steps.ctx.outputs.pr_number }}',
