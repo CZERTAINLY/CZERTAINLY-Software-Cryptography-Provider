@@ -1,16 +1,18 @@
 package com.czertainly.cp.soft.attribute;
 
+import com.czertainly.api.model.common.attribute.common.AttributeType;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.common.callback.AttributeCallback;
+import com.czertainly.api.model.common.attribute.common.callback.AttributeCallbackMapping;
+import com.czertainly.api.model.common.attribute.common.callback.AttributeValueTarget;
+import com.czertainly.api.model.common.attribute.common.constraint.RegexpAttributeConstraint;
+import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
+import com.czertainly.api.model.common.attribute.common.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.properties.InfoAttributeProperties;
 import com.czertainly.api.model.common.attribute.v2.*;
-import com.czertainly.api.model.common.attribute.v2.callback.AttributeCallback;
-import com.czertainly.api.model.common.attribute.v2.callback.AttributeCallbackMapping;
-import com.czertainly.api.model.common.attribute.v2.callback.AttributeValueTarget;
-import com.czertainly.api.model.common.attribute.v2.constraint.RegexpAttributeConstraint;
-import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
-import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.TextAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
-import com.czertainly.api.model.common.attribute.v2.properties.InfoAttributeProperties;
+import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.TextAttributeContentV2;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -81,7 +83,7 @@ public class TokenInstanceAttributes {
         return attrs;
     }
 
-    public static List<BaseAttribute> getExistingTokenAttributes(List<BaseAttributeContent> tokens) {
+    public static List<BaseAttribute> getExistingTokenAttributes(List<BaseAttributeContentV2> tokens) {
         List<BaseAttribute> attrs = new ArrayList<>();
 
         attrs.add(buildDataCreateTokenAction("existing"));
@@ -93,7 +95,7 @@ public class TokenInstanceAttributes {
 
     public static BaseAttribute buildDataCreateTokenAction(String action) {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_UUID);
         attribute.setName(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION);
         attribute.setDescription(ATTRIBUTE_DATA_CREATE_TOKEN_ACTION_DESCRIPTION);
@@ -110,7 +112,7 @@ public class TokenInstanceAttributes {
         attribute.setProperties(attributeProperties);
         // set content
         attribute.setContent(List.of(
-                new StringAttributeContent(action, action)
+                new StringAttributeContentV2(action, action)
         ));
 
         return attribute;
@@ -118,7 +120,7 @@ public class TokenInstanceAttributes {
 
     public static BaseAttribute buildInfoNewToken() {
         // define Info Attribute
-        InfoAttribute attribute = new InfoAttribute();
+        InfoAttributeV2 attribute = new InfoAttributeV2();
         attribute.setUuid(ATTRIBUTE_INFO_NEW_TOKEN_UUID);
         attribute.setName(ATTRIBUTE_INFO_NEW_TOKEN);
         attribute.setDescription(ATTRIBUTE_INFO_NEW_TOKEN_DESCRIPTION);
@@ -133,14 +135,14 @@ public class TokenInstanceAttributes {
         String content = """
                 It seems that there are no existing Tokens available. You can create a new one by providing the name and activation code below.
                 """;
-        attribute.setContent(List.of(new TextAttributeContent(content)));
+        attribute.setContent(List.of(new TextAttributeContentV2(content)));
 
         return attribute;
     }
 
     public static BaseAttribute buildDataNewTokenName() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_NEW_TOKEN_NAME_UUID);
         attribute.setName(ATTRIBUTE_DATA_NEW_TOKEN_NAME);
         attribute.setDescription(ATTRIBUTE_DATA_NEW_TOKEN_NAME_DESCRIPTION);
@@ -167,7 +169,7 @@ public class TokenInstanceAttributes {
 
     public static BaseAttribute buildDataTokenCode() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_TOKEN_CODE_UUID);
         attribute.setName(ATTRIBUTE_DATA_TOKEN_CODE);
         attribute.setDescription(ATTRIBUTE_DATA_TOKEN_CODE_DESCRIPTION);
@@ -187,7 +189,7 @@ public class TokenInstanceAttributes {
 
     public static BaseAttribute buildInitialInfo() {
         // define Info Attribute
-        InfoAttribute attribute = new InfoAttribute();
+        InfoAttributeV2 attribute = new InfoAttributeV2();
         attribute.setUuid(ATTRIBUTE_INFO_INITIAL_UUID);
         attribute.setName(ATTRIBUTE_INFO_INITIAL);
         attribute.setDescription(ATTRIBUTE_INFO_INITIAL_LABEL);
@@ -203,14 +205,14 @@ public class TokenInstanceAttributes {
                 You can select from existing Tokens when available, or create a new one.
                 Based on the selection, additional information will be requested.
                 """;
-        attribute.setContent(List.of(new TextAttributeContent(content)));
+        attribute.setContent(List.of(new TextAttributeContentV2(content)));
 
         return attribute;
     }
 
     public static BaseAttribute buildOptions() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_OPTIONS_UUID);
         attribute.setName(ATTRIBUTE_DATA_OPTIONS);
         attribute.setDescription(ATTRIBUTE_DATA_OPTIONS_LABEL);
@@ -226,16 +228,16 @@ public class TokenInstanceAttributes {
         attribute.setProperties(attributeProperties);
         // set content
         attribute.setContent(List.of(
-                new StringAttributeContent("Create new Token", "new"),
-                new StringAttributeContent("Select existing Token", "existing")
+                new StringAttributeContentV2("Create new Token", "new"),
+                new StringAttributeContentV2("Select existing Token", "existing")
         ));
 
         return attribute;
     }
 
-    public static BaseAttribute buildDataSelectExistingToken(List<BaseAttributeContent> tokens) {
+    public static BaseAttribute buildDataSelectExistingToken(List<BaseAttributeContentV2> tokens) {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN_UUID);
         attribute.setName(ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN);
         attribute.setDescription(ATTRIBUTE_DATA_SELECT_EXISTING_TOKEN_LABEL);
@@ -257,7 +259,7 @@ public class TokenInstanceAttributes {
 
     public static BaseAttribute buildGroupBasedOnSelect() {
         // define Group Attribute
-        GroupAttribute attribute = new GroupAttribute();
+        GroupAttributeV2 attribute = new GroupAttributeV2();
         attribute.setUuid(ATTRIBUTE_GROUP_LOAD_TOKEN_UUID);
         attribute.setName(ATTRIBUTE_GROUP_LOAD_TOKEN);
         attribute.setType(AttributeType.GROUP);

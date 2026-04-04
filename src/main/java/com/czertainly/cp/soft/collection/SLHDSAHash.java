@@ -1,7 +1,7 @@
 package com.czertainly.cp.soft.collection;
 
-import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
+import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,9 +32,9 @@ public enum SLHDSAHash {
         return name();
     }
 
-    public static List<BaseAttributeContent> asStringAttributeContentList() {
+    public static List<BaseAttributeContentV2> asStringAttributeContentList() {
         return Stream.of(values())
-                .map(d -> new StringAttributeContent(d.name(), d.getHashName()))
+                .map(d -> new StringAttributeContentV2(d.name(), d.getHashName()))
                 .collect(Collectors.toList());
     }
 }

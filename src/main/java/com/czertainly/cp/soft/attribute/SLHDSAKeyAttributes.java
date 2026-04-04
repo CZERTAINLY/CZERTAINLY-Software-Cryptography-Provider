@@ -1,11 +1,12 @@
 package com.czertainly.cp.soft.attribute;
 
-import com.czertainly.api.model.common.attribute.v2.AttributeType;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
-import com.czertainly.api.model.common.attribute.v2.DataAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
-import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.AttributeType;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.common.DataAttribute;
+import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
+import com.czertainly.api.model.common.attribute.common.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.v2.DataAttributeV2;
+import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContentV2;
 import com.czertainly.cp.soft.collection.SLHDSAHash;
 import com.czertainly.cp.soft.collection.SLHDSASecurityCategory;
 import com.czertainly.cp.soft.collection.SLHDSASignatureMode;
@@ -42,7 +43,7 @@ public class SLHDSAKeyAttributes {
 
     public static DataAttribute buildBooleanPreHash() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_SLHDSA_PREHASH_UUID);
         attribute.setName(ATTRIBUTE_DATA_SLHDSA_PREHASH);
         attribute.setDescription(ATTRIBUTE_DATA_SLHDSA_PREHASH_DESCRIPTION);
@@ -59,7 +60,7 @@ public class SLHDSAKeyAttributes {
         attribute.setProperties(attributeProperties);
 
         // Set content
-        attribute.setContent(List.of(new BooleanAttributeContent(false)));
+        attribute.setContent(List.of(new BooleanAttributeContentV2(false)));
 
         return attribute;
     }
@@ -76,7 +77,7 @@ public class SLHDSAKeyAttributes {
 
     public static BaseAttribute buildDataHash() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_SLHDSA_HASH_UUID);
         attribute.setName(ATTRIBUTE_DATA_SLHDSA_HASH);
         attribute.setDescription(ATTRIBUTE_DATA_SLHDSA_HASH_DESCRIPTION);
@@ -99,7 +100,7 @@ public class SLHDSAKeyAttributes {
 
     public static BaseAttribute buildDataSecurityCategory() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY_UUID);
         attribute.setName(ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY);
         attribute.setDescription(ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY_DESCRIPTION);
@@ -122,7 +123,7 @@ public class SLHDSAKeyAttributes {
 
     public static BaseAttribute buildDataSignatureMode() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE_UUID);
         attribute.setName(ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE);
         attribute.setDescription(ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE_DESCRIPTION);

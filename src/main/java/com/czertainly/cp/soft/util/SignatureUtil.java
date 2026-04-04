@@ -1,7 +1,7 @@
 package com.czertainly.cp.soft.util;
 
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
 import com.czertainly.api.model.common.enums.cryptography.KeyType;
 import com.czertainly.api.model.common.enums.cryptography.RsaSignatureScheme;
@@ -26,19 +26,19 @@ import java.util.List;
 
 public class SignatureUtil {
 
-    public static Signature prepareSignature(KeyData key, List<RequestAttributeDto> signatureAttributes) {
+    public static Signature prepareSignature(KeyData key, List<RequestAttribute> signatureAttributes) {
         String signatureAlgorithm;
 
         switch (key.getAlgorithm()) {
             case RSA -> {
                 final RsaSignatureScheme scheme = RsaSignatureScheme.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                RsaKeyAttributes.ATTRIBUTE_DATA_RSA_SIG_SCHEME, signatureAttributes, StringAttributeContent.class)
+                                RsaKeyAttributes.ATTRIBUTE_DATA_RSA_SIG_SCHEME, signatureAttributes, StringAttributeContentV2.class)
                                 .getData()
                 );
                 final DigestAlgorithm digest = DigestAlgorithm.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                RsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContent.class)
+                                RsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContentV2.class)
                                 .getData()
                 );
 
@@ -52,7 +52,7 @@ public class SignatureUtil {
             case ECDSA -> {
                 final DigestAlgorithm digest = DigestAlgorithm.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                EcdsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContent.class)
+                                EcdsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContentV2.class)
                                 .getData()
                 );
 

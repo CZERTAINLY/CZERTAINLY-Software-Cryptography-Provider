@@ -2,10 +2,11 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.AlreadyExistException;
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.content.SecretAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.data.SecretAttributeContentData;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
+import com.czertainly.api.model.client.attribute.RequestAttributeV2;
+import com.czertainly.api.model.common.attribute.common.content.data.SecretAttributeContentData;
+import com.czertainly.api.model.common.attribute.v2.content.SecretAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceRequestDto;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
@@ -20,49 +21,49 @@ import java.util.List;
 import java.util.UUID;
 
 @SpringBootTest
-public class TokenInstanceServiceImplTest {
+class TokenInstanceServiceImplTest {
 
     private TokenInstanceService tokenInstanceService;
 
     @Autowired
-    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
+    void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
         this.tokenInstanceService = tokenInstanceService;
     }
 
     @Test
-    public void testTokenDeleteOnRemoveFalse() throws AlreadyExistException, NotFoundException {
+    void testTokenDeleteOnRemoveFalse() throws AlreadyExistException, NotFoundException {
         // create dummy token instance
         TokenInstanceRequestDto request = new TokenInstanceRequestDto();
         request.setKind("SOFT");
         request.setName("DummyToken");
 
-        List<RequestAttributeDto> attributes = new ArrayList<>();
+        List<RequestAttribute> attributes = new ArrayList<>();
 
-        RequestAttributeDto data_newTokenName = new RequestAttributeDto();
+        RequestAttributeV2 data_newTokenName = new RequestAttributeV2();
         data_newTokenName.setName(TokenInstanceAttributes.ATTRIBUTE_DATA_NEW_TOKEN_NAME);
         data_newTokenName.setContent(List.of(
-                new StringAttributeContent( "DummyToken")
+                new StringAttributeContentV2( "DummyToken")
         ));
         attributes.add(data_newTokenName);
 
-        RequestAttributeDto data_createTokenAction = new RequestAttributeDto();
+        RequestAttributeV2 data_createTokenAction = new RequestAttributeV2();
         data_createTokenAction.setName(TokenInstanceAttributes.ATTRIBUTE_DATA_CREATE_TOKEN_ACTION);
         data_createTokenAction.setContent(List.of(
-                new StringAttributeContent( "new", "new")
+                new StringAttributeContentV2( "new", "new")
         ));
         attributes.add(data_createTokenAction);
 
-        RequestAttributeDto data_options = new RequestAttributeDto();
+        RequestAttributeV2 data_options = new RequestAttributeV2();
         data_options.setName(TokenInstanceAttributes.ATTRIBUTE_DATA_OPTIONS);
         data_options.setContent(List.of(
-                new StringAttributeContent( "new", "Create new Token")
+                new StringAttributeContentV2( "new", "Create new Token")
         ));
         attributes.add(data_options);
 
-        RequestAttributeDto data_tokenCode = new RequestAttributeDto();
+        RequestAttributeV2 data_tokenCode = new RequestAttributeV2();
         data_tokenCode.setName(TokenInstanceAttributes.ATTRIBUTE_DATA_TOKEN_CODE);
         data_tokenCode.setContent(List.of(
-                new SecretAttributeContent("DummyToken", new SecretAttributeContentData("00000000"))
+                new SecretAttributeContentV2("DummyToken", new SecretAttributeContentData("00000000"))
         ));
         attributes.add(data_tokenCode);
 

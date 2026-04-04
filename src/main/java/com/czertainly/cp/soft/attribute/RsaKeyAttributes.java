@@ -1,13 +1,14 @@
 package com.czertainly.cp.soft.attribute;
 
-import com.czertainly.api.model.common.attribute.v2.AttributeType;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
-import com.czertainly.api.model.common.attribute.v2.DataAttribute;
-import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
-import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
-import com.czertainly.api.model.common.attribute.v2.properties.MetadataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.AttributeType;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.common.MetadataAttribute;
+import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
+import com.czertainly.api.model.common.attribute.common.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.properties.MetadataAttributeProperties;
+import com.czertainly.api.model.common.attribute.v2.DataAttributeV2;
+import com.czertainly.api.model.common.attribute.v2.MetadataAttributeV2;
+import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContentV2;
 import com.czertainly.cp.soft.collection.RsaKeySize;
 
 import java.util.List;
@@ -42,7 +43,7 @@ public class RsaKeyAttributes {
 
     public static BaseAttribute buildDataRsaKeySize() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_RSA_KEY_SIZE_UUID);
         attribute.setName(ATTRIBUTE_DATA_RSA_KEY_SIZE);
         attribute.setDescription(ATTRIBUTE_DATA_RSA_KEY_SIZE_DESCRIPTION);
@@ -65,7 +66,7 @@ public class RsaKeyAttributes {
 
     public static MetadataAttribute buildRsaKeySizeMetadata(int keySize) {
         // define Metadata Attribute
-        MetadataAttribute metadataAttribute = new MetadataAttribute();
+        MetadataAttributeV2 metadataAttribute = new MetadataAttributeV2();
         metadataAttribute.setUuid(ATTRIBUTE_META_RSA_KEY_SIZE_UUID);
         metadataAttribute.setName(ATTRIBUTE_META_RSA_KEY_SIZE);
         metadataAttribute.setType(AttributeType.META);
@@ -78,7 +79,7 @@ public class RsaKeyAttributes {
         metadataAttributeProperties.setGlobal(false);
         metadataAttribute.setProperties(metadataAttributeProperties);
         // create IntegerAttributeContent
-        IntegerAttributeContent integerAttributeContent = new IntegerAttributeContent();
+        IntegerAttributeContentV2 integerAttributeContent = new IntegerAttributeContentV2();
         integerAttributeContent.setReference("size");
         integerAttributeContent.setData(keySize);
         metadataAttribute.setContent(List.of(integerAttributeContent));

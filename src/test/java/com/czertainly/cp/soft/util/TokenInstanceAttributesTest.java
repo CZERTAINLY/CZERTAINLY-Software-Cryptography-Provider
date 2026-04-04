@@ -1,9 +1,10 @@
 package com.czertainly.cp.soft.util;
 
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
+import com.czertainly.api.model.client.attribute.RequestAttributeV2;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import org.junit.jupiter.api.Assertions;
@@ -12,22 +13,23 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest
-public class TokenInstanceAttributesTest {
+class TokenInstanceAttributesTest {
 
     @Test
-    public void testTokenNameAttributeMatching_ok() {
+    void testTokenNameAttributeMatching_ok() {
 
         List<BaseAttribute> definition = new ArrayList<>();
         definition.add(TokenInstanceAttributes.buildDataNewTokenName());
 
-        List<RequestAttributeDto> request = new ArrayList<>();
-        RequestAttributeDto requestAttributeDto = new RequestAttributeDto();
+        List<RequestAttribute> request = new ArrayList<>();
+        RequestAttributeV2 requestAttributeDto = new RequestAttributeV2();
         requestAttributeDto.setName(definition.get(0).getName());
-        requestAttributeDto.setUuid(definition.get(0).getUuid());
-        List<BaseAttributeContent> contents = new ArrayList<>();
-        StringAttributeContent content = new StringAttributeContent();
+        requestAttributeDto.setUuid(UUID.fromString(definition.get(0).getUuid()));
+        List<BaseAttributeContentV2<?>> contents = new ArrayList<>();
+        StringAttributeContentV2 content = new StringAttributeContentV2();
         content.setReference("reference");
         content.setData("Aa_aa");
         contents.add(content);

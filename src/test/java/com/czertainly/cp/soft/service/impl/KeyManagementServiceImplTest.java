@@ -1,7 +1,9 @@
 package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
+import com.czertainly.api.model.client.attribute.RequestAttributeV2;
+import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
 import com.czertainly.api.model.common.attribute.v2.content.*;
 import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
 import com.czertainly.api.model.common.enums.cryptography.KeyType;
@@ -59,23 +61,23 @@ class KeyManagementServiceImplTest {
     void testMLDSAKey() throws NotFoundException, UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
         String alias = "alias";
-        List<RequestAttributeDto> createKeyAttributes = new ArrayList<>(getCreateKeyCommonAttributes(alias, KeyAlgorithm.MLDSA.getCode()));
+        List<RequestAttribute> createKeyAttributes = new ArrayList<>(getCreateKeyCommonAttributes(alias, KeyAlgorithm.MLDSA.getCode()));
 
-        RequestAttributeDto mldsaLevel = new RequestAttributeDto();
+        RequestAttributeV2 mldsaLevel = new RequestAttributeV2();
         mldsaLevel.setName(MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_LEVEL);
         mldsaLevel.setContentType(AttributeContentType.INTEGER);
 
-        IntegerAttributeContent mldsaLevelContent = new IntegerAttributeContent();
+        IntegerAttributeContentV2 mldsaLevelContent = new IntegerAttributeContentV2();
         mldsaLevelContent.setReference(MLDSASecurityCategory.MLDSA_44.name());
         mldsaLevelContent.setData(MLDSASecurityCategory.MLDSA_44.getNistSecurityCategory());
         mldsaLevel.setContent(List.of(mldsaLevelContent));
         createKeyAttributes.add(mldsaLevel);
 
-        RequestAttributeDto mldsaUsePrehash = new RequestAttributeDto();
+        RequestAttributeV2 mldsaUsePrehash = new RequestAttributeV2();
         mldsaUsePrehash.setName(MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_PREHASH);
         mldsaUsePrehash.setContentType(AttributeContentType.BOOLEAN);
 
-        BooleanAttributeContent mldsaUsePrehashContent = new BooleanAttributeContent();
+        BooleanAttributeContentV2 mldsaUsePrehashContent = new BooleanAttributeContentV2();
         mldsaUsePrehashContent.setData(false);
         mldsaUsePrehash.setContent(List.of(mldsaUsePrehashContent));
         createKeyAttributes.add(mldsaUsePrehash);
@@ -97,37 +99,37 @@ class KeyManagementServiceImplTest {
     void testSLHDSAKey() throws NotFoundException, UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
         String alias = "alias";
-        List<RequestAttributeDto> createKeyAttributes = new ArrayList<>(getCreateKeyCommonAttributes(alias, KeyAlgorithm.SLHDSA.getCode()));
+        List<RequestAttribute> createKeyAttributes = new ArrayList<>(getCreateKeyCommonAttributes(alias, KeyAlgorithm.SLHDSA.getCode()));
 
-        RequestAttributeDto slhdsaSecurityCategory = new RequestAttributeDto();
+        RequestAttributeV2 slhdsaSecurityCategory = new RequestAttributeV2();
         slhdsaSecurityCategory.setName(SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY);
         slhdsaSecurityCategory.setContentType(AttributeContentType.STRING);
 
-        StringAttributeContent slhdsaLevelContent = new StringAttributeContent();
+        StringAttributeContentV2 slhdsaLevelContent = new StringAttributeContentV2();
         slhdsaLevelContent.setReference(SLHDSASecurityCategory.CATEGORY_1.name());
         slhdsaLevelContent.setData(SLHDSASecurityCategory.CATEGORY_1.getNistSecurityCategory());
         slhdsaSecurityCategory.setContent(List.of(slhdsaLevelContent));
         createKeyAttributes.add(slhdsaSecurityCategory);
 
-        RequestAttributeDto slhdsaUsePrehash = new RequestAttributeDto();
+        RequestAttributeV2 slhdsaUsePrehash = new RequestAttributeV2();
         slhdsaUsePrehash.setName(SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_PREHASH);
         slhdsaUsePrehash.setContentType(AttributeContentType.BOOLEAN);
 
-        BooleanAttributeContent slhdsaUsePrehashContent = new BooleanAttributeContent();
+        BooleanAttributeContentV2 slhdsaUsePrehashContent = new BooleanAttributeContentV2();
         slhdsaUsePrehashContent.setData(true);
         slhdsaUsePrehash.setContent(List.of(slhdsaUsePrehashContent));
         createKeyAttributes.add(slhdsaUsePrehash);
 
-        RequestAttributeDto slhdsaHash = new RequestAttributeDto();
+        RequestAttributeV2 slhdsaHash = new RequestAttributeV2();
         slhdsaHash.setName(SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_HASH);
         slhdsaHash.setContentType(AttributeContentType.STRING);
-        slhdsaHash.setContent(List.of(new StringAttributeContent(SLHDSAHash.SHAKE256.name())));
+        slhdsaHash.setContent(List.of(new StringAttributeContentV2(SLHDSAHash.SHAKE256.name())));
         createKeyAttributes.add(slhdsaHash);
 
-        RequestAttributeDto slhdsaSignatureMode = new RequestAttributeDto();
+        RequestAttributeV2 slhdsaSignatureMode = new RequestAttributeV2();
         slhdsaSignatureMode.setName(SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE);
         slhdsaSignatureMode.setContentType(AttributeContentType.STRING);
-        slhdsaSignatureMode.setContent(List.of(new StringAttributeContent(SLHDSASignatureMode.FAST.name())));
+        slhdsaSignatureMode.setContent(List.of(new StringAttributeContentV2(SLHDSASignatureMode.FAST.name())));
         createKeyAttributes.add(slhdsaSignatureMode);
 
         createKeyRequestDto.setCreateKeyAttributes(createKeyAttributes);
@@ -148,13 +150,13 @@ class KeyManagementServiceImplTest {
     void testGeneratingAndStoringMLKEMKeyPair() throws NotFoundException, UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
         String alias = "alias";
-        List<RequestAttributeDto> createKeyAttributes = new ArrayList<>(getCreateKeyCommonAttributes(alias, KeyAlgorithm.MLKEM.getCode()));
+        List<RequestAttribute> createKeyAttributes = new ArrayList<>(getCreateKeyCommonAttributes(alias, KeyAlgorithm.MLKEM.getCode()));
 
-        RequestAttributeDto mlkemLevel = new RequestAttributeDto();
+        RequestAttributeV2 mlkemLevel = new RequestAttributeV2();
         mlkemLevel.setName(MLKEMAttributes.ATTRIBUTE_DATA_MLKEM_LEVEL);
         mlkemLevel.setContentType(AttributeContentType.INTEGER);
 
-        IntegerAttributeContent mlkemLevelContent = new IntegerAttributeContent();
+        IntegerAttributeContentV2 mlkemLevelContent = new IntegerAttributeContentV2();
         mlkemLevelContent.setReference(MLKEMSecurityCategory.CATEGORY_3.name());
         mlkemLevelContent.setData(MLKEMSecurityCategory.CATEGORY_3.getNistSecurityCategory());
         mlkemLevel.setContent(List.of(mlkemLevelContent));
@@ -172,19 +174,19 @@ class KeyManagementServiceImplTest {
         Assertions.assertEquals("ML-KEM-768", privateKey.getAlgorithm());
     }
 
-    List<RequestAttributeDto> getCreateKeyCommonAttributes(String alias, String algorithm) {
-        List<RequestAttributeDto> attributes = new ArrayList<>();
-        RequestAttributeDto keyAlias = new RequestAttributeDto();
+    List<RequestAttribute> getCreateKeyCommonAttributes(String alias, String algorithm) {
+        List<RequestAttribute> attributes = new ArrayList<>();
+        RequestAttributeV2 keyAlias = new RequestAttributeV2();
         keyAlias.setName(KeyAttributes.ATTRIBUTE_DATA_KEY_ALIAS);
         keyAlias.setContentType(AttributeContentType.STRING);
-        keyAlias.setContent(List.of(new StringAttributeContent(alias)));
+        keyAlias.setContent(List.of(new StringAttributeContentV2(alias)));
         attributes.add(keyAlias);
 
-        RequestAttributeDto keyAlgorithm = new RequestAttributeDto();
+        RequestAttributeV2 keyAlgorithm = new RequestAttributeV2();
         keyAlgorithm.setName(KeyAttributes.ATTRIBUTE_DATA_KEY_ALGORITHM);
         keyAlgorithm.setContentType(AttributeContentType.STRING);
 
-        BaseAttributeContent<String> algorithmContent = new StringAttributeContent();
+        BaseAttributeContentV2<String> algorithmContent = new StringAttributeContentV2();
         algorithmContent.setReference(algorithm);
         algorithmContent.setData(algorithm);
         keyAlgorithm.setContent(List.of(algorithmContent));

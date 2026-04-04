@@ -1,7 +1,7 @@
 package com.czertainly.cp.soft.collection;
 
-import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
+import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContentV2;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
@@ -68,9 +68,9 @@ public enum MLDSASecurityCategory {
         return null;
     }
 
-    public static List<BaseAttributeContent> asIntegerAttributeContentList() {
+    public static List<BaseAttributeContentV2> asIntegerAttributeContentList() {
         return List.of(values()).stream()
-                .map(d -> new IntegerAttributeContent(d.name(), d.getNistSecurityCategory()))
+                .map(d -> new IntegerAttributeContentV2(d.name(), d.getNistSecurityCategory()))
                 .collect(Collectors.toList());
     }
 }

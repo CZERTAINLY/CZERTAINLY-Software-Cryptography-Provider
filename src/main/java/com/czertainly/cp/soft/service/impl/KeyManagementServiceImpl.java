@@ -1,10 +1,10 @@
 package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.NotFoundException;
-import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
+import com.czertainly.api.model.common.attribute.common.MetadataAttribute;
+import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
 import com.czertainly.api.model.common.enums.cryptography.KeyFormat;
 import com.czertainly.api.model.common.enums.cryptography.KeyType;
@@ -69,13 +69,13 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         // generate key inside the keystore
         final String algorithm = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                KeyAttributes.ATTRIBUTE_DATA_KEY_ALGORITHM, request.getCreateKeyAttributes(), StringAttributeContent.class).getData();
+                KeyAttributes.ATTRIBUTE_DATA_KEY_ALGORITHM, request.getCreateKeyAttributes(), StringAttributeContentV2.class).getData();
 
         KeyAlgorithm cryptographicAlgorithm = KeyAlgorithm.findByCode(algorithm);
 
         // alias should be always present for every key
         final String alias = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                KeyAttributes.ATTRIBUTE_DATA_KEY_ALIAS, request.getCreateKeyAttributes(), StringAttributeContent.class).getData();
+                KeyAttributes.ATTRIBUTE_DATA_KEY_ALIAS, request.getCreateKeyAttributes(), StringAttributeContentV2.class).getData();
 
         // check if the alias is already used in the keystore
         if (!keyDataRepository.findByNameAndTokenInstanceUuid(alias, uuid).isEmpty()) {
@@ -94,7 +94,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         switch (cryptographicAlgorithm) {
             case RSA -> {
                 final int keySize = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        RsaKeyAttributes.ATTRIBUTE_DATA_RSA_KEY_SIZE, request.getCreateKeyAttributes(), IntegerAttributeContent.class).getData();
+                        RsaKeyAttributes.ATTRIBUTE_DATA_RSA_KEY_SIZE, request.getCreateKeyAttributes(), IntegerAttributeContentV2.class).getData();
                 KeyStoreUtil.generateRsaKey(keyStore, alias, keySize, tokenInstance.getCode());
 
                 // create public key
@@ -115,7 +115,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             case ECDSA -> {
                 final EcdsaCurveName curveName = EcdsaCurveName.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                EcdsaKeyAttributes.ATTRIBUTE_DATA_ECDSA_CURVE, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                EcdsaKeyAttributes.ATTRIBUTE_DATA_ECDSA_CURVE, request.getCreateKeyAttributes(), StringAttributeContentV2.class)
                                 .getReference()
                 );
 
@@ -140,7 +140,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
             case FALCON -> {
                 final int degree = AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        FalconKeyAttributes.ATTRIBUTE_DATA_FALCON_DEGREE, request.getCreateKeyAttributes(), IntegerAttributeContent.class).getData();
+                        FalconKeyAttributes.ATTRIBUTE_DATA_FALCON_DEGREE, request.getCreateKeyAttributes(), IntegerAttributeContentV2.class).getData();
                 FalconDegree falconDegree = FalconDegree.resolve(degree);
 
                 KeyStoreUtil.generateFalconKey(keyStore, alias, falconDegree, tokenInstance.getCode());
@@ -167,12 +167,12 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             case MLDSA -> {
                 final MLDSASecurityCategory level = MLDSASecurityCategory.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_LEVEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
+                                MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_LEVEL, request.getCreateKeyAttributes(), IntegerAttributeContentV2.class)
                                 .getData()
                 );
 
                 final boolean forPreHash =
-                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(MLDSAKeyAttributes.ATTRIBUTE_DATA_MLDSA_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContentV2.class).getData();
 
                 KeyStoreUtil.generateMLDSAKey(keyStore, alias, level, forPreHash, tokenInstance.getCode());
 
@@ -197,23 +197,23 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             case SLHDSA -> {
                 final SLHDSAHash hash = SLHDSAHash.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_HASH, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_HASH, request.getCreateKeyAttributes(), StringAttributeContentV2.class)
                                 .getReference()
                 );
 
                 final SLHDSASecurityCategory slhDsaSecurityCategory = SLHDSASecurityCategory.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                                SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SECURITY_CATEGORY, request.getCreateKeyAttributes(), StringAttributeContentV2.class)
                                 .getReference()
                 );
 
                 final SLHDSASignatureMode tradeoff = SLHDSASignatureMode.valueOf(AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                        SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE, request.getCreateKeyAttributes(), StringAttributeContent.class)
+                        SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_SIGNATURE_MODE, request.getCreateKeyAttributes(), StringAttributeContentV2.class)
                         .getReference()
                 );
 
                 final boolean preHashKey =
-                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContent.class).getData();
+                        AttributeDefinitionUtils.getSingleItemAttributeContentValue(SLHDSAKeyAttributes.ATTRIBUTE_DATA_SLHDSA_PREHASH, request.getCreateKeyAttributes(), BooleanAttributeContentV2.class).getData();
 
 
                 KeyStoreUtil.generateSlhDsaKey(keyStore, alias, hash, slhDsaSecurityCategory, tradeoff, preHashKey, tokenInstance.getCode());
@@ -242,7 +242,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             case MLKEM -> {
                 final MLKEMSecurityCategory securityCategory = MLKEMSecurityCategory.valueOf(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                        MLKEMAttributes.ATTRIBUTE_DATA_MLKEM_LEVEL, request.getCreateKeyAttributes(), IntegerAttributeContent.class)
+                                        MLKEMAttributes.ATTRIBUTE_DATA_MLKEM_LEVEL, request.getCreateKeyAttributes(), IntegerAttributeContentV2.class)
                                 .getData()
                 );
 
