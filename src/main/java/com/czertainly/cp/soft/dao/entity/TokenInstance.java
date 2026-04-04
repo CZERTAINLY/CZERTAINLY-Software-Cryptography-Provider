@@ -1,6 +1,6 @@
 package com.czertainly.cp.soft.dao.entity;
 
-import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
+import com.czertainly.api.model.common.attribute.common.MetadataAttribute;
 import com.czertainly.api.model.connector.cryptography.token.TokenInstanceDto;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.util.SecretEncodingVersion;

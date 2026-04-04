@@ -2,9 +2,9 @@ package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.exception.ValidationError;
 import com.czertainly.api.exception.ValidationException;
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContent;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
+import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
 import com.czertainly.api.model.connector.cryptography.operations.CipherDataRequestDto;
 import com.czertainly.api.model.connector.cryptography.operations.DecryptDataResponseDto;
@@ -29,8 +29,8 @@ public class CipherUtil {
     public static DecryptDataResponseDto decrypt(CipherDataRequestDto request, KeyData key) {
         switch (key.getAlgorithm()) {
             case RSA -> {
-                List<RequestAttributeDto> attributes = request.getCipherAttributes();
-                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContent.class).getData());
+                List<RequestAttribute> attributes = request.getCipherAttributes();
+                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
                 return decryptData(request, key, getCipherTransformation(rsaEncryptionScheme, request.getCipherAttributes()));
             }
             default -> throw new NotSupportedException("Algorithm not supported");
@@ -40,22 +40,22 @@ public class CipherUtil {
     public static EncryptDataResponseDto encrypt(CipherDataRequestDto request, KeyData key) {
         switch (key.getAlgorithm()) {
             case RSA -> {
-                List<RequestAttributeDto> attributes = request.getCipherAttributes();
-                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContent.class).getData());
+                List<RequestAttribute> attributes = request.getCipherAttributes();
+                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
                 return encryptData(request, key, getCipherTransformation(rsaEncryptionScheme, request.getCipherAttributes()));
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }
     }
 
-    private static String getCipherTransformation(RsaEncryptionScheme rsaEncryptionScheme, List<RequestAttributeDto> attributes) {
+    private static String getCipherTransformation(RsaEncryptionScheme rsaEncryptionScheme, List<RequestAttribute> attributes) {
         String transformation;
         if(rsaEncryptionScheme.equals(RsaEncryptionScheme.PKCS1_v1_5)) {
             transformation = framePkcs1Scheme();
         } else if (rsaEncryptionScheme.equals(RsaEncryptionScheme.OAEP)) {
             try {
-                DigestAlgorithm hash = DigestAlgorithm.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_HASH_NAME, attributes, StringAttributeContent.class).getData());
-                boolean useMgf = AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_USE_MGF_NAME, attributes, BooleanAttributeContent.class).getData();
+                DigestAlgorithm hash = DigestAlgorithm.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_HASH_NAME, attributes, StringAttributeContentV2.class).getData());
+                boolean useMgf = AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_OAEP_USE_MGF_NAME, attributes, BooleanAttributeContentV2.class).getData();
                 transformation = frameOaepTransformation(hash, useMgf);
             } catch (Exception e) {
                 throw new ValidationException("Invalid attributes for OAEP");

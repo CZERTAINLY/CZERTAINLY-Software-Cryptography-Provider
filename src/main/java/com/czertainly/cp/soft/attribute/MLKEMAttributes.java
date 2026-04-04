@@ -1,10 +1,10 @@
 package com.czertainly.cp.soft.attribute;
 
-import com.czertainly.api.model.common.attribute.v2.AttributeType;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
-import com.czertainly.api.model.common.attribute.v2.DataAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
-import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.AttributeType;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
+import com.czertainly.api.model.common.attribute.common.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.v2.DataAttributeV2;
 import com.czertainly.cp.soft.collection.MLKEMSecurityCategory;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class MLKEMAttributes {
 
     public static BaseAttribute buildDataMLKEMSecurityCategory() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_MLKEM_LEVEL_UUID);
         attribute.setName(ATTRIBUTE_DATA_MLKEM_LEVEL);
         attribute.setDescription(ATTRIBUTE_DATA_MLKEM_LEVEL_DESCRIPTION);

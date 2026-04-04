@@ -1,13 +1,14 @@
 package com.czertainly.cp.soft.attribute;
 
-import com.czertainly.api.model.common.attribute.v2.AttributeType;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
-import com.czertainly.api.model.common.attribute.v2.DataAttribute;
-import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
-import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
-import com.czertainly.api.model.common.attribute.v2.properties.MetadataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.AttributeType;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.common.MetadataAttribute;
+import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
+import com.czertainly.api.model.common.attribute.common.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.properties.MetadataAttributeProperties;
+import com.czertainly.api.model.common.attribute.v2.DataAttributeV2;
+import com.czertainly.api.model.common.attribute.v2.MetadataAttributeV2;
+import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContentV2;
 import com.czertainly.cp.soft.collection.FalconDegree;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public class FalconKeyAttributes {
 
     public static BaseAttribute buildDataFalconDegree() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_FALCON_DEGREE_UUID);
         attribute.setName(ATTRIBUTE_DATA_FALCON_DEGREE);
         attribute.setDescription(ATTRIBUTE_DATA_FALCON_DEGREE_DESCRIPTION);
@@ -56,7 +57,7 @@ public class FalconKeyAttributes {
 
     public static MetadataAttribute buildFalconDegreeMetadata(int degree) {
         // define Metadata Attribute
-        MetadataAttribute metadataAttribute = new MetadataAttribute();
+        MetadataAttributeV2 metadataAttribute = new MetadataAttributeV2();
         metadataAttribute.setUuid(ATTRIBUTE_META_FALCON_DEGREE_UUID);
         metadataAttribute.setName(ATTRIBUTE_META_FALCON_DEGREE);
         metadataAttribute.setType(AttributeType.META);
@@ -69,7 +70,7 @@ public class FalconKeyAttributes {
         metadataAttributeProperties.setGlobal(false);
         metadataAttribute.setProperties(metadataAttributeProperties);
         // create IntegerAttributeContent
-        IntegerAttributeContent integerAttributeContent = new IntegerAttributeContent();
+        IntegerAttributeContentV2 integerAttributeContent = new IntegerAttributeContentV2();
         integerAttributeContent.setReference("degree");
         integerAttributeContent.setData(degree);
         metadataAttribute.setContent(List.of(integerAttributeContent));

@@ -2,8 +2,8 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.interfaces.connector.AttributesController;
-import com.czertainly.api.model.client.attribute.RequestAttributeDto;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
+import com.czertainly.api.model.client.attribute.RequestAttribute;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.TokenInstanceActivationAttributes;
@@ -52,7 +52,7 @@ public class AttributeServiceImpl implements AttributeService {
     }
 
     @Override
-    public boolean validateAttributes(String kind, List<RequestAttributeDto> attributes) {
+    public boolean validateAttributes(String kind, List<RequestAttribute> attributes) {
         if (attributes == null) {
             return false;
         }
@@ -73,7 +73,7 @@ public class AttributeServiceImpl implements AttributeService {
     }
 
     @Override
-    public boolean validateTokenInstanceActivationAttributes(String uuid, List<RequestAttributeDto> attributes) {
+    public boolean validateTokenInstanceActivationAttributes(String uuid, List<RequestAttribute> attributes) {
         if (attributes == null) {
             return false;
         }
@@ -96,7 +96,7 @@ public class AttributeServiceImpl implements AttributeService {
     }
 
     @Override
-    public boolean validateCreateKeyAttributes(String uuid, List<RequestAttributeDto> attributes) throws NotFoundException {
+    public boolean validateCreateKeyAttributes(String uuid, List<RequestAttribute> attributes) throws NotFoundException {
         if (attributes == null) {
             return false;
         }

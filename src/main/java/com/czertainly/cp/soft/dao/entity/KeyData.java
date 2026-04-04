@@ -1,6 +1,6 @@
 package com.czertainly.cp.soft.dao.entity;
 
-import com.czertainly.api.model.common.attribute.v2.MetadataAttribute;
+import com.czertainly.api.model.common.attribute.common.MetadataAttribute;
 import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
 import com.czertainly.api.model.common.enums.cryptography.KeyFormat;
 import com.czertainly.api.model.common.enums.cryptography.KeyType;
@@ -9,7 +9,6 @@ import com.czertainly.api.model.connector.cryptography.key.value.*;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.util.KeyUtil;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 

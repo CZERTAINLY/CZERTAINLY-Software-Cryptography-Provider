@@ -1,7 +1,7 @@
 package com.czertainly.cp.soft.collection;
 
-import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContent;
-import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContent;
+import com.czertainly.api.model.common.attribute.v2.content.BaseAttributeContentV2;
+import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContentV2;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
@@ -63,9 +63,9 @@ public enum FalconDegree {
         return null;
     }
 
-    public static List<BaseAttributeContent> asIntegerAttributeContentList() {
+    public static List<BaseAttributeContentV2> asIntegerAttributeContentList() {
         return List.of(values()).stream()
-                .map(degree -> new IntegerAttributeContent(degree.name(), degree.getDegree()))
+                .map(degree -> new IntegerAttributeContentV2(degree.name(), degree.getDegree()))
                 .collect(Collectors.toList());
     }
 }

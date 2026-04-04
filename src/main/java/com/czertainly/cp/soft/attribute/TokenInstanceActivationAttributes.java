@@ -1,10 +1,10 @@
 package com.czertainly.cp.soft.attribute;
 
-import com.czertainly.api.model.common.attribute.v2.AttributeType;
-import com.czertainly.api.model.common.attribute.v2.BaseAttribute;
-import com.czertainly.api.model.common.attribute.v2.DataAttribute;
-import com.czertainly.api.model.common.attribute.v2.content.AttributeContentType;
-import com.czertainly.api.model.common.attribute.v2.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.common.AttributeType;
+import com.czertainly.api.model.common.attribute.common.BaseAttribute;
+import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
+import com.czertainly.api.model.common.attribute.common.properties.DataAttributeProperties;
+import com.czertainly.api.model.common.attribute.v2.DataAttributeV2;
 
 public class TokenInstanceActivationAttributes {
 
@@ -19,7 +19,7 @@ public class TokenInstanceActivationAttributes {
 
     public static BaseAttribute buildDataTokenActivationCode() {
         // define Data Attribute
-        DataAttribute attribute = new DataAttribute();
+        DataAttributeV2 attribute = new DataAttributeV2();
         attribute.setUuid(ATTRIBUTE_DATA_ACTIVATION_CODE_UUID);
         attribute.setName(ATTRIBUTE_DATA_ACTIVATION_CODE);
         attribute.setDescription(ATTRIBUTE_DATA_ACTIVATION_CODE_DESCRIPTION);
