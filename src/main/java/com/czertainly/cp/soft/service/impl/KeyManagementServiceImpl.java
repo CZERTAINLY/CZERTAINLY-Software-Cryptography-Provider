@@ -22,6 +22,7 @@ import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.KeyDataRepository;
 import com.czertainly.cp.soft.exception.KeyManagementException;
 import com.czertainly.cp.soft.exception.TokenInstanceException;
+import com.czertainly.cp.soft.service.KeyDataCacheService;
 import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
@@ -44,18 +45,8 @@ import java.util.stream.Collectors;
 public class KeyManagementServiceImpl implements KeyManagementService {
 
     private TokenInstanceService tokenInstanceService;
-
     private KeyDataRepository keyDataRepository;
-
-    @Autowired
-    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
-        this.tokenInstanceService = tokenInstanceService;
-    }
-
-    @Autowired
-    public void setKeyDataRepository(KeyDataRepository keyDataRepository) {
-        this.keyDataRepository = keyDataRepository;
-    }
+    private KeyDataCacheService keyDataCacheService;
 
     @Override
     public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
@@ -290,6 +281,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         // delete key from the database
         keyDataRepository.delete(key);
+        keyDataCacheService.evictAfterCommit(keyUuid);
     }
 
     private void removeKeyFromKeyStore(UUID tokenInstanceUuid, String alias) throws NotFoundException {
@@ -360,4 +352,18 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return keyData;
     }
 
+    @Autowired
+    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
+        this.tokenInstanceService = tokenInstanceService;
+    }
+
+    @Autowired
+    public void setKeyDataRepository(KeyDataRepository keyDataRepository) {
+        this.keyDataRepository = keyDataRepository;
+    }
+
+    @Autowired
+    public void setKeyDataCacheService(KeyDataCacheService keyDataCacheService) {
+        this.keyDataCacheService = keyDataCacheService;
+    }
 }

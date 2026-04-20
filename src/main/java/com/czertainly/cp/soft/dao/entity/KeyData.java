@@ -43,7 +43,7 @@ public class KeyData extends UniquelyIdentified {
     @Column(name = "metadata", length = Integer.MAX_VALUE)
     private String metadata;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "token_instance_uuid", insertable = false, updatable = false)
     private TokenInstance tokenInstance;
 

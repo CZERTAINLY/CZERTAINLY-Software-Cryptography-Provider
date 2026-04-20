@@ -14,8 +14,9 @@ import com.czertainly.api.model.connector.cryptography.operations.data.CipherRes
 import com.czertainly.api.model.common.enums.cryptography.RsaEncryptionScheme;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.RsaCipherAttributes;
-import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.NotSupportedException;
+import com.czertainly.cp.soft.model.CachedKeyData;
+import com.czertainly.cp.soft.model.CachedKeyMaterial;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -26,31 +27,63 @@ import java.util.*;
 
 public class CipherUtil {
 
-    public static DecryptDataResponseDto decrypt(CipherDataRequestDto request, KeyData key) {
-        switch (key.getAlgorithm()) {
+    public static DecryptDataResponseDto decrypt(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material) {
+        switch (key.algorithm()) {
             case RSA -> {
                 List<RequestAttribute> attributes = request.getCipherAttributes();
                 RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
-                return decryptData(request, key, getCipherTransformation(rsaEncryptionScheme, request.getCipherAttributes()));
+                return decryptData(request, key, material, getCipherTransformation(rsaEncryptionScheme, request.getCipherAttributes()));
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }
     }
 
-    public static EncryptDataResponseDto encrypt(CipherDataRequestDto request, KeyData key) {
-        switch (key.getAlgorithm()) {
+    public static EncryptDataResponseDto encrypt(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material) {
+        switch (key.algorithm()) {
             case RSA -> {
                 List<RequestAttribute> attributes = request.getCipherAttributes();
                 RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
-                return encryptData(request, key, getCipherTransformation(rsaEncryptionScheme, request.getCipherAttributes()));
+                return encryptData(request, key, material, getCipherTransformation(rsaEncryptionScheme, request.getCipherAttributes()));
             }
             default -> throw new NotSupportedException("Algorithm not supported");
         }
+    }
+
+    private static DecryptDataResponseDto decryptData(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material, String transformation) {
+        DecryptDataResponseDto responseDto = new DecryptDataResponseDto();
+        responseDto.setDecryptedData(doProcess(request.getCipherData(), Cipher.DECRYPT_MODE, transformation, key, material));
+        return responseDto;
+    }
+
+    private static EncryptDataResponseDto encryptData(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material, String transformation) {
+        EncryptDataResponseDto responseDto = new EncryptDataResponseDto();
+        responseDto.setEncryptedData(doProcess(request.getCipherData(), Cipher.ENCRYPT_MODE, transformation, key, material));
+        return responseDto;
+    }
+
+    private static List<CipherResponseData> doProcess(List<CipherRequestData> cipherData, int mode,
+                                                      String transformation, CachedKeyData key, CachedKeyMaterial material) {
+        Iterator<CipherRequestData> it = cipherData.stream().iterator();
+        List<CipherResponseData> responseDataList = new ArrayList<>();
+        while (it.hasNext()) {
+            try {
+                byte[] encBytes = it.next().getData();
+                Cipher cipher = Cipher.getInstance(transformation);
+                cipher.init(mode, KeyStoreUtil.getPrivateKey(key, material));
+                CipherResponseData cipherResponseData = new CipherResponseData();
+                cipherResponseData.setData(cipher.doFinal(encBytes));
+                responseDataList.add(cipherResponseData);
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
+                     IllegalBlockSizeException | BadPaddingException e) {
+                throw new ValidationException(ValidationError.create("Exception when processing cipher data: " + e.getMessage()));
+            }
+        }
+        return responseDataList;
     }
 
     private static String getCipherTransformation(RsaEncryptionScheme rsaEncryptionScheme, List<RequestAttribute> attributes) {
         String transformation;
-        if(rsaEncryptionScheme.equals(RsaEncryptionScheme.PKCS1_v1_5)) {
+        if (rsaEncryptionScheme.equals(RsaEncryptionScheme.PKCS1_v1_5)) {
             transformation = framePkcs1Scheme();
         } else if (rsaEncryptionScheme.equals(RsaEncryptionScheme.OAEP)) {
             try {
@@ -70,51 +103,7 @@ public class CipherUtil {
         return "RSA/NONE/PKCS1Padding";
     }
 
-    private static String frameOaepTransformation(DigestAlgorithm hash, boolean useMgf){
-        return "RSA/NONE/OAEPWith" + hash.getProviderName() + (useMgf ? "AndMGF1Padding": "Padding");
-    }
-
-    private static DecryptDataResponseDto decryptData(CipherDataRequestDto request, KeyData key, String transformation) {
-        DecryptDataResponseDto responseDto = new DecryptDataResponseDto();
-        responseDto.setDecryptedData(doProcess(
-                request.getCipherData(),
-                Cipher.DECRYPT_MODE,
-                transformation,
-                key
-        ));
-        return responseDto;
-    }
-
-    private static EncryptDataResponseDto encryptData(CipherDataRequestDto request, KeyData key, String transformation) {
-        EncryptDataResponseDto responseDto = new EncryptDataResponseDto();
-        responseDto.setEncryptedData(doProcess(
-                request.getCipherData(),
-                Cipher.ENCRYPT_MODE,
-                transformation,
-                key
-        ));
-        return responseDto;
-    }
-
-    private static List<CipherResponseData> doProcess(List<CipherRequestData> cipherData, int mode, String transformation, KeyData key) {
-        Iterator<CipherRequestData> cipherRequestDataIterator = cipherData.stream().iterator();
-        List<CipherResponseData> responseDataList = new ArrayList<>();
-        while (cipherRequestDataIterator.hasNext()) {
-            try {
-                byte[] encBytes = cipherRequestDataIterator.next().getData();
-                Cipher cipher = Cipher.getInstance(transformation);
-                cipher.init(mode, KeyStoreUtil.getPrivateKey(key));
-
-                byte[] decBytes = cipher.doFinal(encBytes);
-
-                CipherResponseData cipherResponseData = new CipherResponseData();
-                cipherResponseData.setData(decBytes);
-                responseDataList.add(cipherResponseData);
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
-                     IllegalBlockSizeException | BadPaddingException e) {
-                throw new ValidationException(ValidationError.create("Exception when decrypting data. Exception is :" + e.getMessage()));
-            }
-        }
-        return responseDataList;
+    private static String frameOaepTransformation(DigestAlgorithm hash, boolean useMgf) {
+        return "RSA/NONE/OAEPWith" + hash.getProviderName() + (useMgf ? "AndMGF1Padding" : "Padding");
     }
 }

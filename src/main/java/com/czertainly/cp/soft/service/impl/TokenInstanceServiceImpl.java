@@ -20,6 +20,7 @@ import com.czertainly.cp.soft.attribute.TokenInstanceAttributes;
 import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.TokenInstanceRepository;
 import com.czertainly.cp.soft.exception.TokenInstanceException;
+import com.czertainly.cp.soft.service.KeyStoreCacheService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import jakarta.transaction.Transactional;
@@ -41,11 +42,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
     private static final Logger logger = LoggerFactory.getLogger(TokenInstanceServiceImpl.class);
 
     private TokenInstanceRepository tokenInstanceRepository;
-
-    @Autowired
-    public void setTokenInstanceRepository(TokenInstanceRepository tokenInstanceRepository) {
-        this.tokenInstanceRepository = tokenInstanceRepository;
-    }
+    private KeyStoreCacheService keyStoreCacheService;
 
     @Value("${token.deleteOnRemove}")
     private boolean deleteOnRemove;
@@ -144,6 +141,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
         } else {
             logger.debug("Delete is disabled, keeping the token instance {} in database", token);
         }
+        keyStoreCacheService.evictAfterCommit(uuid);
     }
 
     @Override
@@ -183,6 +181,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
             token.setCode(tokenCode);
 
             tokenInstanceRepository.save(token);
+            keyStoreCacheService.evictAfterCommit(uuid);
         }
     }
 
@@ -196,6 +195,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
         } else {
             token.setCode(null);
             tokenInstanceRepository.save(token);
+            keyStoreCacheService.evictAfterCommit(uuid);
         }
     }
 
@@ -207,6 +207,7 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
     @Override
     public void saveTokenInstance(TokenInstance tokenInstance) {
         tokenInstanceRepository.save(tokenInstance);
+        keyStoreCacheService.evictAfterCommit(tokenInstance.getUuid());
     }
 
     private MetadataAttribute buildNameMetadata(String name) {
@@ -232,4 +233,13 @@ public class TokenInstanceServiceImpl implements TokenInstanceService {
         return metadataAttribute;
     }
 
+    @Autowired
+    public void setTokenInstanceRepository(TokenInstanceRepository tokenInstanceRepository) {
+        this.tokenInstanceRepository = tokenInstanceRepository;
+    }
+
+    @Autowired
+    public void setKeyStoreCacheService(KeyStoreCacheService keyStoreCacheService) {
+        this.keyStoreCacheService = keyStoreCacheService;
+    }
 }
