@@ -15,7 +15,6 @@ import com.czertainly.api.model.connector.cryptography.operations.VerifyDataRequ
 import com.czertainly.api.model.connector.cryptography.operations.VerifyDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureRequestData;
 import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
-import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.collection.EcdsaCurveName;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -24,7 +24,6 @@ import com.czertainly.cp.soft.exception.KeyManagementException;
 import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.cp.soft.service.KeyDataCacheService;
 import com.czertainly.cp.soft.service.KeyManagementService;
-import com.czertainly.cp.soft.service.KeyStoreCacheService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import jakarta.transaction.Transactional;

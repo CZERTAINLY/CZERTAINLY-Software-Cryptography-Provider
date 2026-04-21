@@ -17,6 +17,7 @@ import com.czertainly.cp.soft.attribute.RsaCipherAttributes;
 import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.czertainly.cp.soft.model.CachedKeyData;
 import com.czertainly.cp.soft.model.CachedKeyMaterial;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -79,7 +80,7 @@ public class CipherUtil {
         while (it.hasNext()) {
             try {
                 byte[] encBytes = it.next().getData();
-                Cipher cipher = Cipher.getInstance(cipherSpec.transformation());
+                Cipher cipher = Cipher.getInstance(cipherSpec.transformation(), BouncyCastleProvider.PROVIDER_NAME);
                 // RSA encryption must use the public key; decryption must use the private key.
                 Key cryptoKey = (mode == Cipher.ENCRYPT_MODE)
                         ? KeyStoreUtil.getPublicKey(key, material)
@@ -92,8 +93,9 @@ public class CipherUtil {
                 CipherResponseData cipherResponseData = new CipherResponseData();
                 cipherResponseData.setData(cipher.doFinal(encBytes));
                 responseDataList.add(cipherResponseData);
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
-                     InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException |
+                     InvalidKeyException | InvalidAlgorithmParameterException |
+                     IllegalBlockSizeException | BadPaddingException e) {
                 throw new ValidationException(ValidationError.create("Exception when processing cipher data: " + e.getMessage()));
             }
         }

@@ -2,8 +2,6 @@ package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.*;
-import com.czertainly.cp.soft.dao.entity.KeyData;
-import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.cp.soft.model.CachedKeyData;
 import com.czertainly.cp.soft.model.CachedKeyMaterial;
 import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
@@ -36,7 +34,7 @@ public class KeyStoreUtil {
 
     public static byte[] createNewKeystore(String type, String code) {
         try {
-            KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            KeyStore ks = KeyStore.getInstance(type, BouncyCastleProvider.PROVIDER_NAME);
             char[] password = code.toCharArray();
             ks.load(null, password);
 
@@ -89,7 +87,7 @@ public class KeyStoreUtil {
         } catch (KeyStoreException e) {
             throw new IllegalStateException(INVALID_KEY_STORE, e);
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot instantiate KeyStore: " + e.getCause().getMessage(), e);
+            throw new IllegalStateException("Cannot instantiate KeyStore: " + e.getMessage(), e);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(INVALID_ALGORITHM_FOR_KEY_STORE, e);
         } catch (NoSuchProviderException e) {

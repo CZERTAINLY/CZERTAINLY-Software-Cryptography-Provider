@@ -1,6 +1,5 @@
 package com.czertainly.cp.soft.service.impl;
 
-import com.czertainly.api.model.client.attribute.RequestAttribute;
 import com.czertainly.api.model.client.attribute.RequestAttributeV2;
 import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;

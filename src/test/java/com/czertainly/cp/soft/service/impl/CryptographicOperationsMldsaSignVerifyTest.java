@@ -14,7 +14,6 @@ import com.czertainly.api.model.connector.cryptography.operations.SignDataRespon
 import com.czertainly.api.model.connector.cryptography.operations.VerifyDataRequestDto;
 import com.czertainly.api.model.connector.cryptography.operations.VerifyDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureRequestData;
-import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.MLDSAKeyAttributes;
 import com.czertainly.cp.soft.collection.MLDSASecurityCategory;
 import org.junit.jupiter.api.Assertions;

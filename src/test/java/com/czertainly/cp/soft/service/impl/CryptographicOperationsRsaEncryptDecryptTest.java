@@ -16,7 +16,6 @@ import com.czertainly.api.model.connector.cryptography.operations.CipherDataRequ
 import com.czertainly.api.model.connector.cryptography.operations.DecryptDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.EncryptDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.data.CipherRequestData;
-import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaCipherAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import com.czertainly.cp.soft.exception.CryptographicOperationException;
