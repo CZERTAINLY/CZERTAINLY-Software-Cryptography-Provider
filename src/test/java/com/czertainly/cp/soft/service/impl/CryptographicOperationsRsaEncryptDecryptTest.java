@@ -19,7 +19,9 @@ import com.czertainly.api.model.connector.cryptography.operations.data.CipherReq
 import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaCipherAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
+import com.czertainly.cp.soft.exception.CryptographicOperationException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -76,8 +78,9 @@ class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographic
         KeyPairDataResponseDto keyPair = keyManagementService.createKeyPair(tokenInstance.getUuid(), createKeyRequestDto);
 
         UUID privateKeyUuid = UUID.fromString(keyPair.getPrivateKeyData().getUuid());
+        UUID publicKeyUuid = UUID.fromString(keyPair.getPublicKeyData().getUuid());
 
-        // Encrypt
+        // Encrypt with public key
         CipherDataRequestDto encryptRequest = new CipherDataRequestDto();
         if (scheme == RsaEncryptionScheme.PKCS1_v1_5) {
             encryptRequest.setCipherAttributes(buildRsaPkcs1EncryptAttributes());
@@ -87,7 +90,7 @@ class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographic
         encryptRequest.setCipherData(List.of(new CipherRequestData(PLAINTEXT, "item-1")));
 
         EncryptDataResponseDto encryptResponse = cryptographicOperationsService.encryptData(
-                tokenInstance.getUuid(), privateKeyUuid, encryptRequest);
+                tokenInstance.getUuid(), publicKeyUuid, encryptRequest);
 
         Assertions.assertNotNull(encryptResponse.getEncryptedData());
         Assertions.assertFalse(encryptResponse.getEncryptedData().isEmpty());
@@ -95,7 +98,7 @@ class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographic
         Assertions.assertFalse(java.util.Arrays.equals(encryptedBytes, PLAINTEXT),
                 "Encrypted data should differ from plaintext");
 
-        // Decrypt
+        // Decrypt with private key
         CipherDataRequestDto decryptRequest = new CipherDataRequestDto();
         if (scheme == RsaEncryptionScheme.PKCS1_v1_5) {
             decryptRequest.setCipherAttributes(buildRsaPkcs1EncryptAttributes());
@@ -112,6 +115,40 @@ class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographic
         byte[] decryptedBytes = decryptResponse.getDecryptedData().getFirst().getData();
         Assertions.assertArrayEquals(PLAINTEXT, decryptedBytes,
                 "Decrypted data should match original plaintext");
+    }
+
+    @Test
+    void testEncryptRejectsPrivateKey() throws NotFoundException {
+        CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
+        createKeyRequestDto.setCreateKeyAttributes(buildRsaCreateKeyAttributes("test-rsa-reject-enc", 2048));
+        KeyPairDataResponseDto keyPair = keyManagementService.createKeyPair(tokenInstance.getUuid(), createKeyRequestDto);
+
+        UUID privateKeyUuid = UUID.fromString(keyPair.getPrivateKeyData().getUuid());
+
+        CipherDataRequestDto request = new CipherDataRequestDto();
+        request.setCipherAttributes(buildRsaPkcs1EncryptAttributes());
+        request.setCipherData(List.of(new CipherRequestData(PLAINTEXT, "item-1")));
+
+        Assertions.assertThrows(CryptographicOperationException.class,
+                () -> cryptographicOperationsService.encryptData(tokenInstance.getUuid(), privateKeyUuid, request),
+                "encryptData with a private key should throw CryptographicOperationException");
+    }
+
+    @Test
+    void testDecryptRejectsPublicKey() throws NotFoundException {
+        CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
+        createKeyRequestDto.setCreateKeyAttributes(buildRsaCreateKeyAttributes("test-rsa-reject-dec", 2048));
+        KeyPairDataResponseDto keyPair = keyManagementService.createKeyPair(tokenInstance.getUuid(), createKeyRequestDto);
+
+        UUID publicKeyUuid = UUID.fromString(keyPair.getPublicKeyData().getUuid());
+
+        CipherDataRequestDto request = new CipherDataRequestDto();
+        request.setCipherAttributes(buildRsaPkcs1EncryptAttributes());
+        request.setCipherData(List.of(new CipherRequestData(PLAINTEXT, "item-1")));
+
+        Assertions.assertThrows(CryptographicOperationException.class,
+                () -> cryptographicOperationsService.decryptData(tokenInstance.getUuid(), publicKeyUuid, request),
+                "decryptData with a public key should throw CryptographicOperationException");
     }
 
     private List<RequestAttribute> buildRsaCreateKeyAttributes(String alias, int keySize) {

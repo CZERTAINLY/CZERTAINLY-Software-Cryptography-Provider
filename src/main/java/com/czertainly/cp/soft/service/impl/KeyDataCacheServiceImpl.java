@@ -33,7 +33,7 @@ public class KeyDataCacheServiceImpl implements KeyDataCacheService {
     }
 
     @Override
-    @Cacheable(value = CacheConfig.KEYDATA_CACHE, key = "#keyUuid")
+    @Cacheable(value = CacheConfig.KEYDATA_CACHE, key = "#keyUuid", sync = true)
     public CachedKeyData getCachedKeyData(UUID keyUuid) throws NotFoundException {
         logger.debug("Cache miss — loading KeyData {} from database", keyUuid);
 
@@ -49,7 +49,7 @@ public class KeyDataCacheServiceImpl implements KeyDataCacheService {
                 entity.getType(),
                 entity.getAlgorithm(),
                 entity.getFormat(),
-                entity.getValue(),  // KeyValue deserialized once
+                entity.getValue(),
                 entity.getLength(),
                 md != null ? Collections.unmodifiableList(md) : List.of()
         );
@@ -65,6 +65,7 @@ public class KeyDataCacheServiceImpl implements KeyDataCacheService {
                 }
             });
         } else {
+            logger.debug("evictAfterCommit called outside a transaction for key {}; evicting immediately", keyUuid);
             doEvict(keyUuid);
         }
     }

@@ -115,6 +115,7 @@ public class KeyStoreCacheServiceImpl implements KeyStoreCacheService {
                 }
             });
         } else {
+            logger.debug("evictAfterCommit called outside a transaction for token instance {}; evicting immediately", tokenInstanceUuid);
             doEvict(tokenInstanceUuid);
         }
     }

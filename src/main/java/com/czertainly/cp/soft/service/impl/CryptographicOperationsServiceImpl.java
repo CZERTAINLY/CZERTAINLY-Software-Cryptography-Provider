@@ -120,6 +120,12 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
     @Override
     public DecryptDataResponseDto decryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
         CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
+
+        // check if we are going to decrypt with private key
+        if (key.type() != KeyType.PRIVATE_KEY) {
+            throw new CryptographicOperationException("Only private keys can be used for decryption.");
+        }
+
         CachedKeyMaterial material = keyStoreCacheService.loadKeyMaterial(key.tokenInstanceUuid());
         return CipherUtil.decrypt(request, key, material);
     }
@@ -127,6 +133,12 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
     @Override
     public EncryptDataResponseDto encryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
         CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
+
+        // check if we are going to encrypt with public key
+        if (key.type() != KeyType.PUBLIC_KEY) {
+            throw new CryptographicOperationException("Only public keys can be used for encryption.");
+        }
+
         CachedKeyMaterial material = keyStoreCacheService.loadKeyMaterial(key.tokenInstanceUuid());
         return CipherUtil.encrypt(request, key, material);
     }
