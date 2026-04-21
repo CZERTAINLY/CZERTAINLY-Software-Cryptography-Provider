@@ -74,6 +74,9 @@ public class V202604211200__MigrateMLKEMKeyStorageFormat extends BaseJavaMigrati
 
     @Override
     public void migrate(Context context) throws Exception {
+        SecretsUtil secretsUtil = new SecretsUtil();
+        String encryptionKey = System.getenv("ENCRYPTION_KEY");
+        secretsUtil.setEncryptionKeyStatic(encryptionKey == null ? "tU)u&N~B{sqQh{imRDl}" : encryptionKey);
         Security.addProvider(new BouncyCastleProvider());
 
         try (Statement select = context.getConnection().createStatement()) {

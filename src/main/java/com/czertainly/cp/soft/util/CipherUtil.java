@@ -127,7 +127,7 @@ public class CipherUtil {
      * <p>When {@code useMgf} is {@code false} the specified digest is used only for the OAEP hash while MGF1 falls back
      * to SHA-1, which is the default defined in RFC 8017 §7.1. Because no JCE transformation string exists for this split-hash
      * variant, the same transformation string is reused but an explicit
-     * * {@link OAEPParameterSpec} is attached that overrides the MGF1 hash to SHA-1.
+     * {@link OAEPParameterSpec} is attached that overrides the MGF1 hash to SHA-1.
      */
     private static CipherSpec buildOaepCipherSpec(DigestAlgorithm hash, boolean useMgf) {
         String transformation = "RSA/NONE/OAEPWith" + hash.getProviderName() + "AndMGF1Padding";

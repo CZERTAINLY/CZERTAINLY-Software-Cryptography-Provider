@@ -75,13 +75,14 @@ public class KeyStoreCacheServiceImpl implements KeyStoreCacheService {
                     if (key instanceof PrivateKey pk) {
                         privateKeys.put(alias, pk);
                     }
+                    Certificate cert = ks.getCertificate(alias);
+                    if (cert != null) {
+                        publicKeys.put(alias, cert.getPublicKey());
+                    }
                 } catch (UnrecoverableKeyException | NoSuchAlgorithmException e) {
                     logger.warn("Skipping alias '{}' — cannot recover key: {}", alias, e.getMessage());
-                }
-
-                Certificate cert = ks.getCertificate(alias);
-                if (cert != null) {
-                    publicKeys.put(alias, cert.getPublicKey());
+                } catch (KeyStoreException e) {
+                    logger.warn("Skipping alias '{}' — cannot access key material: {}", alias, e.getMessage());
                 }
             }
         } catch (KeyStoreException e) {

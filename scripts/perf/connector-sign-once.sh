@@ -166,7 +166,7 @@ cleanup() {
             echo "    WARNING: failed to delete public key."
         fi
     fi
-    if [[ -n "$TOKEN_UUID" ]]; then
+    if [[ -n "$TOKEN_UUID" && "$TOKEN_PREEXISTED" == "false" ]]; then
         echo "  Deleting token $TOKEN_UUID ..."
         if connector_curl_soft DELETE \
                 "/v1/cryptographyProvider/tokens/${TOKEN_UUID}"; then

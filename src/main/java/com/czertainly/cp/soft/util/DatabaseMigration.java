@@ -45,7 +45,7 @@ public class DatabaseMigration {
     @SuppressWarnings("java:S115")
     public enum JavaMigrationChecksums {
         V202505121340__DeactivateTokensWithDeprecatedAlgorithms(1269234600),
-        V202604211200__MigrateMLKEMKeyStorageFormat(-707063106);
+        V202604211200__MigrateMLKEMKeyStorageFormat(-827819411);
 
         private final int checksum;
 
