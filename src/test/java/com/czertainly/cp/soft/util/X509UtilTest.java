@@ -7,6 +7,7 @@ import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.security.*;
 import java.security.cert.X509Certificate;
@@ -36,7 +37,7 @@ class X509UtilTest {
 
         assertNotNull(cert);
         assertArrayEquals(kp.getPublic().getEncoded(), cert.getPublicKey().getEncoded());
-        assertDoesNotThrow(() -> cert.checkValidity());
+        assertDoesNotThrow((Executable) cert::checkValidity);
     }
 
     @Test
@@ -49,7 +50,7 @@ class X509UtilTest {
 
         assertNotNull(cert);
         assertArrayEquals(kp.getPublic().getEncoded(), cert.getPublicKey().getEncoded());
-        assertDoesNotThrow(() -> cert.checkValidity());
+        assertDoesNotThrow((Executable) cert::checkValidity);
     }
 
     @Test
@@ -87,7 +88,7 @@ class X509UtilTest {
         assertNotNull(cert);
         assertArrayEquals(kp.getPublic().getEncoded(), cert.getPublicKey().getEncoded(),
                 "Certificate SubjectPublicKeyInfo must embed the ML-KEM public key");
-        assertDoesNotThrow(() -> cert.checkValidity());
+        assertDoesNotThrow((Executable) cert::checkValidity);
         // Signed by an ephemeral EC key — the cert cannot self-verify against the ML-KEM public key.
         assertTrue(cert.getSigAlgName().toUpperCase().contains("ECDSA"),
                 "ML-KEM orphan cert must be signed with ECDSA (not ML-KEM itself)");

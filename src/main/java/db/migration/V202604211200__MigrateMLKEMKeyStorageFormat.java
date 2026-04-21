@@ -55,6 +55,7 @@ import java.util.Map;
  * Aliases whose public key cannot be reconstructed are also skipped with a warning; the corresponding private key remains
  * inaccessible until the key pair is recreated.
  */
+@SuppressWarnings("java:S101") // Flyway requires this naming convention (V<version>__<description>)
 public class V202604211200__MigrateMLKEMKeyStorageFormat extends BaseJavaMigration {
 
     private static final Logger logger = LoggerFactory.getLogger(V202604211200__MigrateMLKEMKeyStorageFormat.class);
@@ -235,7 +236,7 @@ public class V202604211200__MigrateMLKEMKeyStorageFormat extends BaseJavaMigrati
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String alias = rs.getString("name");
-                    String valueJson = rs.getString("value");
+                    String valueJson = rs.getString(JSON_VALUE_FIELD);
                     reconstructPublicKey(alias, valueJson, tokenUuid).ifPresent(pk -> result.put(alias, pk));
                 }
             }

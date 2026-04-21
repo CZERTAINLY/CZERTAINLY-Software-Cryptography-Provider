@@ -128,8 +128,9 @@ class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographic
         request.setCipherAttributes(buildRsaPkcs1EncryptAttributes());
         request.setCipherData(List.of(new CipherRequestData(PLAINTEXT, "item-1")));
 
+        UUID tokenUuid = tokenInstance.getUuid();
         Assertions.assertThrows(CryptographicOperationException.class,
-                () -> cryptographicOperationsService.encryptData(tokenInstance.getUuid(), privateKeyUuid, request),
+                () -> cryptographicOperationsService.encryptData(tokenUuid, privateKeyUuid, request),
                 "encryptData with a private key should throw CryptographicOperationException");
     }
 
@@ -145,8 +146,9 @@ class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographic
         request.setCipherAttributes(buildRsaPkcs1EncryptAttributes());
         request.setCipherData(List.of(new CipherRequestData(PLAINTEXT, "item-1")));
 
+        UUID tokenUuid = tokenInstance.getUuid();
         Assertions.assertThrows(CryptographicOperationException.class,
-                () -> cryptographicOperationsService.decryptData(tokenInstance.getUuid(), publicKeyUuid, request),
+                () -> cryptographicOperationsService.decryptData(tokenUuid, publicKeyUuid, request),
                 "decryptData with a public key should throw CryptographicOperationException");
     }
 

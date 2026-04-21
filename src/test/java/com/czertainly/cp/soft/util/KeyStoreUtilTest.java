@@ -91,7 +91,7 @@ class KeyStoreUtilTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void spkiKeyValueFromKeyStoreMatchesGeneratedPublicKey() throws Exception {
+    void spkiKeyValueFromKeyStoreMatchesGeneratedPublicKey() {
         byte[] bytes = KeyStoreUtil.createNewKeystore("PKCS12", PASSWORD);
         KeyStore ks = KeyStoreUtil.loadKeystore(bytes, PASSWORD);
         BCMLKEMPublicKey publicKey = KeyStoreUtil.generateMLKEMKey(ks, "mlkem", MLKEMSecurityCategory.CATEGORY_3, PASSWORD);
@@ -155,7 +155,7 @@ class KeyStoreUtilTest {
     }
 
     @Test
-    void deleteNonExistentAliasDoesNotThrow() throws Exception {
+    void deleteNonExistentAliasDoesNotThrow() {
         byte[] bytes = KeyStoreUtil.createNewKeystore("PKCS12", PASSWORD);
         KeyStore ks = KeyStoreUtil.loadKeystore(bytes, PASSWORD);
 
