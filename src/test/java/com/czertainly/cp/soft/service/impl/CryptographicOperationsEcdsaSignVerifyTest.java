@@ -18,50 +18,32 @@ import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.collection.EcdsaCurveName;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 class CryptographicOperationsEcdsaSignVerifyTest extends AbstractCryptographicOperationsTest {
 
-    @Test
-    void testSignVerifyEcdsaSecp256r1Sha256() throws NotFoundException {
-        testEcdsaSignVerify(EcdsaCurveName.secp256r1, DigestAlgorithm.SHA_256);
+    static Stream<Arguments> parameters() {
+        return Stream.of(
+                Arguments.of(EcdsaCurveName.secp256r1, DigestAlgorithm.SHA_256),
+                Arguments.of(EcdsaCurveName.secp256r1, DigestAlgorithm.SHA_384),
+                Arguments.of(EcdsaCurveName.secp384r1, DigestAlgorithm.SHA_256),
+                Arguments.of(EcdsaCurveName.secp384r1, DigestAlgorithm.SHA_384),
+                Arguments.of(EcdsaCurveName.secp384r1, DigestAlgorithm.SHA_512),
+                Arguments.of(EcdsaCurveName.secp521r1, DigestAlgorithm.SHA_384),
+                Arguments.of(EcdsaCurveName.secp521r1, DigestAlgorithm.SHA_512)
+        );
     }
 
-    @Test
-    void testSignVerifyEcdsaSecp256r1Sha384() throws NotFoundException {
-        testEcdsaSignVerify(EcdsaCurveName.secp256r1, DigestAlgorithm.SHA_384);
-    }
-
-    @Test
-    void testSignVerifyEcdsaSecp384r1Sha256() throws NotFoundException {
-        testEcdsaSignVerify(EcdsaCurveName.secp384r1, DigestAlgorithm.SHA_256);
-    }
-
-    @Test
-    void testSignVerifyEcdsaSecp384r1Sha384() throws NotFoundException {
-        testEcdsaSignVerify(EcdsaCurveName.secp384r1, DigestAlgorithm.SHA_384);
-    }
-
-    @Test
-    void testSignVerifyEcdsaSecp384r1Sha512() throws NotFoundException {
-        testEcdsaSignVerify(EcdsaCurveName.secp384r1, DigestAlgorithm.SHA_512);
-    }
-
-    @Test
-    void testSignVerifyEcdsaSecp521r1Sha384() throws NotFoundException {
-        testEcdsaSignVerify(EcdsaCurveName.secp521r1, DigestAlgorithm.SHA_384);
-    }
-
-    @Test
-    void testSignVerifyEcdsaSecp521r1Sha512() throws NotFoundException {
-        testEcdsaSignVerify(EcdsaCurveName.secp521r1, DigestAlgorithm.SHA_512);
-    }
-
-    private void testEcdsaSignVerify(EcdsaCurveName curve, DigestAlgorithm digest) throws NotFoundException {
+    @ParameterizedTest(name = "{0} + {1}")
+    @MethodSource("parameters")
+    void testSignVerifyEcdsa(EcdsaCurveName curve, DigestAlgorithm digest) throws NotFoundException {
         // Create key pair
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
         createKeyRequestDto.setCreateKeyAttributes(buildEcdsaCreateKeyAttributes("test-ecdsa-" + curve.getName(), curve));

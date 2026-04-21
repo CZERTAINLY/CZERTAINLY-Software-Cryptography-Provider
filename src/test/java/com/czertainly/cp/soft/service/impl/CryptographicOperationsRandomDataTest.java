@@ -2,38 +2,19 @@ package com.czertainly.cp.soft.service.impl;
 
 import com.czertainly.api.model.connector.cryptography.operations.RandomDataRequestDto;
 import com.czertainly.api.model.connector.cryptography.operations.RandomDataResponseDto;
-import com.czertainly.cp.soft.service.CryptographicOperationsService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 @Transactional
 class CryptographicOperationsRandomDataTest extends AbstractCryptographicOperationsTest {
 
-    @Test
-    void testRandomData16Bytes() {
-        testRandomData(16);
-    }
-
-    @Test
-    void testRandomData32Bytes() {
-        testRandomData(32);
-    }
-
-    @Test
-    void testRandomData64Bytes() {
-        testRandomData(64);
-    }
-
-    @Test
-    void testRandomData256Bytes() {
-        testRandomData(256);
-    }
-
-    private void testRandomData(int requestedLength) {
+    @ParameterizedTest(name = "{0} bytes")
+    @ValueSource(ints = {16, 32, 64, 256})
+    void testRandomData(int requestedLength) {
         RandomDataRequestDto request = new RandomDataRequestDto();
         request.setLength(requestedLength);
 

@@ -20,95 +20,43 @@ import com.czertainly.cp.soft.collection.SLHDSAHash;
 import com.czertainly.cp.soft.collection.SLHDSASecurityCategory;
 import com.czertainly.cp.soft.collection.SLHDSASignatureMode;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 class CryptographicOperationsSlhdsaSignVerifyTest extends AbstractCryptographicOperationsTest {
 
-    // --- prehash = false (12 tests: all hash/mode combinations across all categories) ---
-
-    @Test
-    void testSignVerifySlhDsaCat1Sha2Fast() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHA2, SLHDSASignatureMode.FAST, false);
+    static Stream<Arguments> parameters() {
+        return Stream.of(
+                // prehash = false: all hash/mode combinations across all categories
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHA2,    SLHDSASignatureMode.FAST,  false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHA2,    SLHDSASignatureMode.SMALL, false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHAKE256, SLHDSASignatureMode.FAST,  false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHAKE256, SLHDSASignatureMode.SMALL, false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHA2,    SLHDSASignatureMode.FAST,  false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHA2,    SLHDSASignatureMode.SMALL, false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHAKE256, SLHDSASignatureMode.FAST,  false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHAKE256, SLHDSASignatureMode.SMALL, false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHA2,    SLHDSASignatureMode.FAST,  false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHA2,    SLHDSASignatureMode.SMALL, false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHAKE256, SLHDSASignatureMode.FAST,  false),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHAKE256, SLHDSASignatureMode.SMALL, false),
+                // prehash = true: representative hash/mode per category
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHA2,    SLHDSASignatureMode.FAST,  true),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHA2,    SLHDSASignatureMode.FAST,  true),
+                Arguments.of(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHA2,    SLHDSASignatureMode.FAST,  true)
+        );
     }
 
-    @Test
-    void testSignVerifySlhDsaCat1Sha2Small() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHA2, SLHDSASignatureMode.SMALL, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat1ShakeFast() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHAKE256, SLHDSASignatureMode.FAST, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat1ShakeSmall() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHAKE256, SLHDSASignatureMode.SMALL, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat3Sha2Fast() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHA2, SLHDSASignatureMode.FAST, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat3Sha2Small() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHA2, SLHDSASignatureMode.SMALL, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat3ShakeFast() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHAKE256, SLHDSASignatureMode.FAST, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat3ShakeSmall() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHAKE256, SLHDSASignatureMode.SMALL, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat5Sha2Fast() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHA2, SLHDSASignatureMode.FAST, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat5Sha2Small() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHA2, SLHDSASignatureMode.SMALL, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat5ShakeFast() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHAKE256, SLHDSASignatureMode.FAST, false);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat5ShakeSmall() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHAKE256, SLHDSASignatureMode.SMALL, false);
-    }
-
-    // --- prehash = true (3 tests: representative hash/mode, all categories) ---
-
-    @Test
-    void testSignVerifySlhDsaCat1Sha2FastPrehash() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_1, SLHDSAHash.SHA2, SLHDSASignatureMode.FAST, true);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat3Sha2FastPrehash() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_3, SLHDSAHash.SHA2, SLHDSASignatureMode.FAST, true);
-    }
-
-    @Test
-    void testSignVerifySlhDsaCat5Sha2FastPrehash() throws NotFoundException {
-        testSlhDsaSignVerify(SLHDSASecurityCategory.CATEGORY_5, SLHDSAHash.SHA2, SLHDSASignatureMode.FAST, true);
-    }
-
-    private void testSlhDsaSignVerify(SLHDSASecurityCategory category, SLHDSAHash hash,
-                                      SLHDSASignatureMode mode, boolean prehash) throws NotFoundException {
+    @ParameterizedTest(name = "{0} {1} {2} prehash={3}")
+    @MethodSource("parameters")
+    void testSignVerifySlhDsa(SLHDSASecurityCategory category, SLHDSAHash hash,
+                              SLHDSASignatureMode mode, boolean prehash) throws NotFoundException {
         // Create key pair
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
         createKeyRequestDto.setCreateKeyAttributes(

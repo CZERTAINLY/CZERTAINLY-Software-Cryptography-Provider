@@ -17,7 +17,8 @@ import com.czertainly.cp.soft.attribute.FalconKeyAttributes;
 import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.collection.FalconDegree;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,17 +26,9 @@ import java.util.UUID;
 
 class CryptographicOperationsFalconSignVerifyTest extends AbstractCryptographicOperationsTest {
 
-    @Test
-    void testSignVerifyFalcon512() throws NotFoundException {
-        testFalconSignVerify(FalconDegree.FALCON_512);
-    }
-
-    @Test
-    void testSignVerifyFalcon1024() throws NotFoundException {
-        testFalconSignVerify(FalconDegree.FALCON_1024);
-    }
-
-    private void testFalconSignVerify(FalconDegree degree) throws NotFoundException {
+    @ParameterizedTest(name = "{0}")
+    @EnumSource(FalconDegree.class)
+    void testSignVerifyFalcon(FalconDegree degree) throws NotFoundException {
         // Create key pair
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
         createKeyRequestDto.setCreateKeyAttributes(buildFalconCreateKeyAttributes("test-falcon-" + degree.getDegree(), degree));

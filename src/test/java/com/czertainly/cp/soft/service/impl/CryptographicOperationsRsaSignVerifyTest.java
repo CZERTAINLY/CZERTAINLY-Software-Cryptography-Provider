@@ -19,108 +19,47 @@ import com.czertainly.api.model.connector.cryptography.operations.data.Signature
 import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 class CryptographicOperationsRsaSignVerifyTest extends AbstractCryptographicOperationsTest {
 
-    // --- Sign/Verify 1024/2048/4096 x PKCS1_v1_5/PSS x SHA_256/SHA_384/SHA_512 = 18 tests ---
-
-    @Test
-    void testSignVerifyRsa1024Pkcs1v15Sha256() throws NotFoundException {
-        testRsaSignVerify(1024, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_256);
+    static Stream<Arguments> parameters() {
+        // RSA-1024 + PSS + SHA_512 is excluded: PSS with SHA-512 and the default salt length
+        // (sLen = hLen = 64 bytes) requires a modulus of at least
+        // 8 * ceil((hLen + sLen + 2) / 8) = 8 * ceil(130 / 8) = 1040 bits.
+        // A 1024-bit key is too small — BouncyCastle rejects it with
+        // "key too small for specified hash and salt lengths".
+        return Stream.of(
+                Arguments.of(1024, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_256),
+                Arguments.of(1024, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_384),
+                Arguments.of(1024, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_512),
+                Arguments.of(1024, RsaSignatureScheme.PSS,        DigestAlgorithm.SHA_256),
+                Arguments.of(1024, RsaSignatureScheme.PSS,        DigestAlgorithm.SHA_384),
+                Arguments.of(2048, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_256),
+                Arguments.of(2048, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_384),
+                Arguments.of(2048, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_512),
+                Arguments.of(2048, RsaSignatureScheme.PSS,        DigestAlgorithm.SHA_256),
+                Arguments.of(2048, RsaSignatureScheme.PSS,        DigestAlgorithm.SHA_384),
+                Arguments.of(2048, RsaSignatureScheme.PSS,        DigestAlgorithm.SHA_512),
+                Arguments.of(4096, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_256),
+                Arguments.of(4096, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_384),
+                Arguments.of(4096, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_512),
+                Arguments.of(4096, RsaSignatureScheme.PSS,        DigestAlgorithm.SHA_256),
+                Arguments.of(4096, RsaSignatureScheme.PSS,        DigestAlgorithm.SHA_384),
+                Arguments.of(4096, RsaSignatureScheme.PSS,        DigestAlgorithm.SHA_512)
+        );
     }
 
-    @Test
-    void testSignVerifyRsa1024Pkcs1v15Sha384() throws NotFoundException {
-        testRsaSignVerify(1024, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_384);
-    }
-
-    @Test
-    void testSignVerifyRsa1024Pkcs1v15Sha512() throws NotFoundException {
-        testRsaSignVerify(1024, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_512);
-    }
-
-    @Test
-    void testSignVerifyRsa1024PssSha256() throws NotFoundException {
-        testRsaSignVerify(1024, RsaSignatureScheme.PSS, DigestAlgorithm.SHA_256);
-    }
-
-    @Test
-    void testSignVerifyRsa1024PssSha384() throws NotFoundException {
-        testRsaSignVerify(1024, RsaSignatureScheme.PSS, DigestAlgorithm.SHA_384);
-    }
-
-    // RSA-1024 + PSS-SHA-512 is an invalid combination and cannot be tested.
-    // PSS with SHA-512 and the default salt length (sLen = hLen = 64 bytes) requires
-    // a modulus of at least 8 * ceil((hLen + sLen + 2) / 8) = 8 * ceil(130 / 8) = 1040 bits.
-    // A 1024-bit key is too small — BouncyCastle rejects it with "key too small for
-    // specified hash and salt lengths".
-
-    @Test
-    void testSignVerifyRsa2048Pkcs1v15Sha256() throws NotFoundException {
-        testRsaSignVerify(2048, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_256);
-    }
-
-    @Test
-    void testSignVerifyRsa2048Pkcs1v15Sha384() throws NotFoundException {
-        testRsaSignVerify(2048, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_384);
-    }
-
-    @Test
-    void testSignVerifyRsa2048Pkcs1v15Sha512() throws NotFoundException {
-        testRsaSignVerify(2048, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_512);
-    }
-
-    @Test
-    void testSignVerifyRsa2048PssSha256() throws NotFoundException {
-        testRsaSignVerify(2048, RsaSignatureScheme.PSS, DigestAlgorithm.SHA_256);
-    }
-
-    @Test
-    void testSignVerifyRsa2048PssSha384() throws NotFoundException {
-        testRsaSignVerify(2048, RsaSignatureScheme.PSS, DigestAlgorithm.SHA_384);
-    }
-
-    @Test
-    void testSignVerifyRsa2048PssSha512() throws NotFoundException {
-        testRsaSignVerify(2048, RsaSignatureScheme.PSS, DigestAlgorithm.SHA_512);
-    }
-
-    @Test
-    void testSignVerifyRsa4096Pkcs1v15Sha256() throws NotFoundException {
-        testRsaSignVerify(4096, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_256);
-    }
-
-    @Test
-    void testSignVerifyRsa4096Pkcs1v15Sha384() throws NotFoundException {
-        testRsaSignVerify(4096, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_384);
-    }
-
-    @Test
-    void testSignVerifyRsa4096Pkcs1v15Sha512() throws NotFoundException {
-        testRsaSignVerify(4096, RsaSignatureScheme.PKCS1_v1_5, DigestAlgorithm.SHA_512);
-    }
-
-    @Test
-    void testSignVerifyRsa4096PssSha256() throws NotFoundException {
-        testRsaSignVerify(4096, RsaSignatureScheme.PSS, DigestAlgorithm.SHA_256);
-    }
-
-    @Test
-    void testSignVerifyRsa4096PssSha384() throws NotFoundException {
-        testRsaSignVerify(4096, RsaSignatureScheme.PSS, DigestAlgorithm.SHA_384);
-    }
-
-    @Test
-    void testSignVerifyRsa4096PssSha512() throws NotFoundException {
-        testRsaSignVerify(4096, RsaSignatureScheme.PSS, DigestAlgorithm.SHA_512);
-    }
-
-    private void testRsaSignVerify(int keySize, RsaSignatureScheme scheme, DigestAlgorithm digest)
+    @ParameterizedTest(name = "RSA-{0} {1} {2}")
+    @MethodSource("parameters")
+    void testSignVerifyRsa(int keySize, RsaSignatureScheme scheme, DigestAlgorithm digest)
             throws NotFoundException {
         // Create key pair
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();

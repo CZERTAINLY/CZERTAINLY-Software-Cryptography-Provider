@@ -18,45 +18,31 @@ import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.MLDSAKeyAttributes;
 import com.czertainly.cp.soft.collection.MLDSASecurityCategory;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 class CryptographicOperationsMldsaSignVerifyTest extends AbstractCryptographicOperationsTest {
 
-    @Test
-    void testSignVerifyMldsa44Pure() throws NotFoundException {
-        testMldsaSignVerify(MLDSASecurityCategory.MLDSA_44, false);
+    static Stream<Arguments> parameters() {
+        return Stream.of(
+                Arguments.of(MLDSASecurityCategory.MLDSA_44, false),
+                Arguments.of(MLDSASecurityCategory.MLDSA_65, false),
+                Arguments.of(MLDSASecurityCategory.MLDSA_87, false),
+                Arguments.of(MLDSASecurityCategory.MLDSA_44, true),
+                Arguments.of(MLDSASecurityCategory.MLDSA_65, true),
+                Arguments.of(MLDSASecurityCategory.MLDSA_87, true)
+        );
     }
 
-    @Test
-    void testSignVerifyMldsa65Pure() throws NotFoundException {
-        testMldsaSignVerify(MLDSASecurityCategory.MLDSA_65, false);
-    }
-
-    @Test
-    void testSignVerifyMldsa87Pure() throws NotFoundException {
-        testMldsaSignVerify(MLDSASecurityCategory.MLDSA_87, false);
-    }
-
-    @Test
-    void testSignVerifyMldsa44Prehash() throws NotFoundException {
-        testMldsaSignVerify(MLDSASecurityCategory.MLDSA_44, true);
-    }
-
-    @Test
-    void testSignVerifyMldsa65Prehash() throws NotFoundException {
-        testMldsaSignVerify(MLDSASecurityCategory.MLDSA_65, true);
-    }
-
-    @Test
-    void testSignVerifyMldsa87Prehash() throws NotFoundException {
-        testMldsaSignVerify(MLDSASecurityCategory.MLDSA_87, true);
-    }
-
-    private void testMldsaSignVerify(MLDSASecurityCategory level, boolean prehash) throws NotFoundException {
+    @ParameterizedTest(name = "{0} prehash={1}")
+    @MethodSource("parameters")
+    void testSignVerifyMldsa(MLDSASecurityCategory level, boolean prehash) throws NotFoundException {
         // Create key pair
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
         createKeyRequestDto.setCreateKeyAttributes(buildMldsaCreateKeyAttributes("test-mldsa-" + level.name(), level, prehash));

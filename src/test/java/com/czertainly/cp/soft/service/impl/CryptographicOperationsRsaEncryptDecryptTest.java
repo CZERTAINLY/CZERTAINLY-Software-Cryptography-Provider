@@ -20,122 +20,55 @@ import com.czertainly.cp.soft.attribute.KeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaCipherAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographicOperationsTest {
 
     private static final byte[] PLAINTEXT = "Hello, CZERTAINLY!".getBytes();
 
-    // --- PKCS1_v1_5: 3 tests (1024, 2048, 4096) ---
-
-    @Test
-    void testEncryptDecryptRsa1024Pkcs1v15() throws NotFoundException {
-        testRsaEncryptDecrypt(1024, RsaEncryptionScheme.PKCS1_v1_5, null, false);
+    static Stream<Arguments> parameters() {
+        // RSA-1024 + OAEP + SHA_512 is excluded: OAEP-SHA-512 has a fixed overhead of
+        // 2 * hLen + 2 = 2 * 64 + 2 = 130 bytes, which already exceeds the 128-byte (1024-bit)
+        // RSA block size, leaving no room for any plaintext.
+        // BouncyCastle rejects this at encryption time with "too much data for RSA block".
+        return Stream.of(
+                // PKCS1_v1_5 — no digest, no MGF flag
+                Arguments.of(1024, RsaEncryptionScheme.PKCS1_v1_5, null,                   false),
+                Arguments.of(2048, RsaEncryptionScheme.PKCS1_v1_5, null,                   false),
+                Arguments.of(4096, RsaEncryptionScheme.PKCS1_v1_5, null,                   false),
+                // OAEP — 1024-bit key
+                Arguments.of(1024, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_256, true),
+                Arguments.of(1024, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_256, false),
+                Arguments.of(1024, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_384, true),
+                Arguments.of(1024, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_384, false),
+                // OAEP — 2048-bit key
+                Arguments.of(2048, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_256, true),
+                Arguments.of(2048, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_256, false),
+                Arguments.of(2048, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_384, true),
+                Arguments.of(2048, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_384, false),
+                Arguments.of(2048, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_512, true),
+                Arguments.of(2048, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_512, false),
+                // OAEP — 4096-bit key
+                Arguments.of(4096, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_256, true),
+                Arguments.of(4096, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_256, false),
+                Arguments.of(4096, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_384, true),
+                Arguments.of(4096, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_384, false),
+                Arguments.of(4096, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_512, true),
+                Arguments.of(4096, RsaEncryptionScheme.OAEP,       DigestAlgorithm.SHA_512, false)
+        );
     }
 
-    @Test
-    void testEncryptDecryptRsa2048Pkcs1v15() throws NotFoundException {
-        testRsaEncryptDecrypt(2048, RsaEncryptionScheme.PKCS1_v1_5, null, false);
-    }
-
-    @Test
-    void testEncryptDecryptRsa4096Pkcs1v15() throws NotFoundException {
-        testRsaEncryptDecrypt(4096, RsaEncryptionScheme.PKCS1_v1_5, null, false);
-    }
-
-    // --- OAEP: 18 tests (3 key sizes x 3 hashes x 2 MGF flags) ---
-
-    @Test
-    void testEncryptDecryptRsa1024OaepSha256WithMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(1024, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_256, true);
-    }
-
-    @Test
-    void testEncryptDecryptRsa1024OaepSha256NoMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(1024, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_256, false);
-    }
-
-    @Test
-    void testEncryptDecryptRsa1024OaepSha384WithMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(1024, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_384, true);
-    }
-
-    @Test
-    void testEncryptDecryptRsa1024OaepSha384NoMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(1024, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_384, false);
-    }
-
-    // RSA-1024 + OAEP-SHA-512 (with or without MGF1) is an invalid combination and cannot be tested.
-    // OAEP-SHA-512 has a fixed overhead of 2 * hLen + 2 = 2 * 64 + 2 = 130 bytes, which already
-    // exceeds the 128-byte (1024-bit) RSA block size, leaving no room for any plaintext.
-    // BouncyCastle rejects this at encryption time with "too much data for RSA block".
-
-    @Test
-    void testEncryptDecryptRsa2048OaepSha256WithMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(2048, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_256, true);
-    }
-
-    @Test
-    void testEncryptDecryptRsa2048OaepSha256NoMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(2048, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_256, false);
-    }
-
-    @Test
-    void testEncryptDecryptRsa2048OaepSha384WithMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(2048, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_384, true);
-    }
-
-    @Test
-    void testEncryptDecryptRsa2048OaepSha384NoMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(2048, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_384, false);
-    }
-
-    @Test
-    void testEncryptDecryptRsa2048OaepSha512WithMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(2048, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_512, true);
-    }
-
-    @Test
-    void testEncryptDecryptRsa2048OaepSha512NoMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(2048, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_512, false);
-    }
-
-    @Test
-    void testEncryptDecryptRsa4096OaepSha256WithMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(4096, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_256, true);
-    }
-
-    @Test
-    void testEncryptDecryptRsa4096OaepSha256NoMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(4096, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_256, false);
-    }
-
-    @Test
-    void testEncryptDecryptRsa4096OaepSha384WithMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(4096, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_384, true);
-    }
-
-    @Test
-    void testEncryptDecryptRsa4096OaepSha384NoMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(4096, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_384, false);
-    }
-
-    @Test
-    void testEncryptDecryptRsa4096OaepSha512WithMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(4096, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_512, true);
-    }
-
-    @Test
-    void testEncryptDecryptRsa4096OaepSha512NoMgf1() throws NotFoundException {
-        testRsaEncryptDecrypt(4096, RsaEncryptionScheme.OAEP, DigestAlgorithm.SHA_512, false);
-    }
-
-    private void testRsaEncryptDecrypt(int keySize, RsaEncryptionScheme scheme,
-                                      DigestAlgorithm hash, boolean useMgf) throws NotFoundException {
+    @ParameterizedTest(name = "RSA-{0} {1} {2} mgf={3}")
+    @MethodSource("parameters")
+    void testEncryptDecryptRsa(int keySize, RsaEncryptionScheme scheme,
+                               DigestAlgorithm hash, boolean useMgf) throws NotFoundException {
         // Create key pair
         CreateKeyRequestDto createKeyRequestDto = new CreateKeyRequestDto();
         createKeyRequestDto.setCreateKeyAttributes(buildRsaCreateKeyAttributes("test-rsa-" + keySize, keySize));
@@ -157,8 +90,8 @@ class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographic
                 tokenInstance.getUuid(), privateKeyUuid, encryptRequest);
 
         Assertions.assertNotNull(encryptResponse.getEncryptedData());
-        Assertions.assertTrue(encryptResponse.getEncryptedData().size() > 0);
-        byte[] encryptedBytes = encryptResponse.getEncryptedData().get(0).getData();
+        Assertions.assertFalse(encryptResponse.getEncryptedData().isEmpty());
+        byte[] encryptedBytes = encryptResponse.getEncryptedData().getFirst().getData();
         Assertions.assertFalse(java.util.Arrays.equals(encryptedBytes, PLAINTEXT),
                 "Encrypted data should differ from plaintext");
 
@@ -175,8 +108,8 @@ class CryptographicOperationsRsaEncryptDecryptTest extends AbstractCryptographic
                 tokenInstance.getUuid(), privateKeyUuid, decryptRequest);
 
         Assertions.assertNotNull(decryptResponse.getDecryptedData());
-        Assertions.assertTrue(decryptResponse.getDecryptedData().size() > 0);
-        byte[] decryptedBytes = decryptResponse.getDecryptedData().get(0).getData();
+        Assertions.assertFalse(decryptResponse.getDecryptedData().isEmpty());
+        byte[] decryptedBytes = decryptResponse.getDecryptedData().getFirst().getData();
         Assertions.assertArrayEquals(PLAINTEXT, decryptedBytes,
                 "Decrypted data should match original plaintext");
     }
