@@ -131,12 +131,18 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
     @Override
     public DecryptDataResponseDto decryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
         KeyData key = keyManagementService.getKeyEntity(uuid, keyUuid);
+        if (key.getType() != KeyType.PRIVATE_KEY) {
+            throw new CryptographicOperationException("Only private keys can be used for decryption.");
+        }
         return CipherUtil.decrypt(request, key);
     }
 
     @Override
     public EncryptDataResponseDto encryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
         KeyData key = keyManagementService.getKeyEntity(uuid, keyUuid);
+        if (key.getType() != KeyType.PUBLIC_KEY) {
+            throw new CryptographicOperationException("Only public keys can be used for encryption.");
+        }
         return CipherUtil.encrypt(request, key);
     }
 }
