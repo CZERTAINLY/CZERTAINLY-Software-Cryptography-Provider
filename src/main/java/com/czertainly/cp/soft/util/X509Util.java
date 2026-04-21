@@ -19,6 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 
 public class X509Util {
+    private static final SecureRandom random = new SecureRandom();
 
     public static X509Certificate generateRsaOrphanX509Certificate(KeyPair keyPair) {;
         return generateOrphanX509Certificate(keyPair, "SHA512WithRSAEncryption", BouncyCastleProvider.PROVIDER_NAME);
@@ -52,7 +53,6 @@ public class X509Util {
             ecKpg.initialize(new java.security.spec.ECGenParameterSpec("P-256"));
             KeyPair signingPair = ecKpg.generateKeyPair();
 
-            SecureRandom random = new SecureRandom();
             X500Name owner = new X500Name("CN=generatedCertificate,O=orphan");
 
             final Date notBefore = new Date(System.currentTimeMillis() - 86400000L * 365);
@@ -85,8 +85,6 @@ public class X509Util {
     }
 
     public static X509Certificate generateOrphanX509Certificate(KeyPair keyPair, String signatureAlgorithm, String provider) {
-        SecureRandom random = new SecureRandom();
-
         X500Name owner = new X500Name("CN=generatedCertificate,O=orphan");
 
         // current time minus 1 year, just in case software clock goes back due to time synchronization

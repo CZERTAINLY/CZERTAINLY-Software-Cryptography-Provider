@@ -61,7 +61,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * </ul>
  */
 @SpringBootTest(classes = Application.class)
-class V202604211200__MigrateMLKEMKeyStorageFormatIT {
+class V202604211200__MigrateMLKEMKeyStorageFormatITest {
 
     private static final String PASSWORD = "integration-test-password";
     private static final String MLKEM_ALIAS = "my-mlkem-key";
