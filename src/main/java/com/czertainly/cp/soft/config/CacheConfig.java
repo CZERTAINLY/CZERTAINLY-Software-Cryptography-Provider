@@ -21,7 +21,7 @@ public class CacheConfig {
     private long keyStoreTtlSeconds;
 
     @Value("${provider.cache.keystore.max-size:500}")
-    private long maxSize;
+    private long keyStoreMaxSize;
 
     @Value("${provider.cache.keydata.ttl-seconds:300}")
     private long keyDataTtlSeconds;
@@ -35,7 +35,7 @@ public class CacheConfig {
         manager.registerCustomCache(KEYSTORES_CACHE,
                 Caffeine.newBuilder()
                         .expireAfterWrite(keyStoreTtlSeconds, TimeUnit.SECONDS)
-                        .maximumSize(maxSize)
+                        .maximumSize(keyStoreMaxSize)
                         .recordStats()
                         .build());
         manager.registerCustomCache(KEYDATA_CACHE,

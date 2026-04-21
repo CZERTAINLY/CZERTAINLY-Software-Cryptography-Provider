@@ -355,6 +355,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         keyData.setTokenInstanceUuid(tokenInstanceUuid);
 
         keyDataRepository.save(keyData);
+        keyDataCacheService.evictAfterCommit(keyData.getUuid());
 
         return keyData;
     }

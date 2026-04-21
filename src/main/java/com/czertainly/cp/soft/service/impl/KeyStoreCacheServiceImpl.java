@@ -76,7 +76,7 @@ public class KeyStoreCacheServiceImpl implements KeyStoreCacheService {
                         privateKeys.put(alias, pk);
                     }
                 } catch (UnrecoverableKeyException | NoSuchAlgorithmException e) {
-                    logger.debug("Skipping alias '{}' — cannot recover key: {}", alias, e.getMessage());
+                    logger.warn("Skipping alias '{}' — cannot recover key: {}", alias, e.getMessage());
                 }
 
                 Certificate cert = ks.getCertificate(alias);

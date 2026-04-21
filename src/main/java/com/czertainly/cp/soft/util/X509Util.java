@@ -68,7 +68,7 @@ public class X509Util {
 
             X509CertificateHolder certHolder = builder.build(signer);
             return new JcaX509CertificateConverter()
-                    .setProvider(new BouncyCastleProvider())
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
                     .getCertificate(certHolder);
 
         } catch (NoSuchAlgorithmException e) {
@@ -103,7 +103,7 @@ public class X509Util {
 
             X509CertificateHolder certHolder = builder.build(signer);
             X509Certificate cert = new JcaX509CertificateConverter()
-                    .setProvider(new BouncyCastleProvider())
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
                     .getCertificate(certHolder);
 
             //check so that cert is valid
