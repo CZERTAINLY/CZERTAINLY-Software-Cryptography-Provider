@@ -24,6 +24,7 @@ import com.czertainly.cp.soft.exception.KeyManagementException;
 import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.cp.soft.service.KeyDataCacheService;
 import com.czertainly.cp.soft.service.KeyManagementService;
+import com.czertainly.cp.soft.service.KeyStoreCacheService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
 import jakarta.transaction.Transactional;
@@ -47,6 +48,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private TokenInstanceService tokenInstanceService;
     private KeyDataRepository keyDataRepository;
     private KeyDataCacheService keyDataCacheService;
+    private KeyStoreCacheService keyStoreCacheService;
 
     @Override
     public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
@@ -260,6 +262,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         // save token and return
         tokenInstanceService.saveTokenInstance(tokenInstance);
+        keyStoreCacheService.evictAfterCommit(uuid);
 
         response.setPublicKeyData(publicKey.toKeyDataResponseDto());
         response.setPrivateKeyData(privateKey.toKeyDataResponseDto());
@@ -365,5 +368,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     @Autowired
     public void setKeyDataCacheService(KeyDataCacheService keyDataCacheService) {
         this.keyDataCacheService = keyDataCacheService;
+    }
+
+    @Autowired
+    public void setKeyStoreCacheService(KeyStoreCacheService keyStoreCacheService) {
+        this.keyStoreCacheService = keyStoreCacheService;
     }
 }
