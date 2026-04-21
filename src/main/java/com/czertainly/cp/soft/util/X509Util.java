@@ -41,6 +41,9 @@ public class X509Util {
     /**
      * ML-KEM is a KEM, not a signing algorithm, so it cannot self-sign an X.509 certificate. We generate
      * an orphan certificate signed by an ephemeral EC key that embeds the ML-KEM public key in its SubjectPublicKeyInfo.
+     *
+     * <p>The ephemeral EC key is intentionally unverifiable (the signing key is discarded immediately) and
+     * must NEVER be used as a trust anchor.</p>
      */
     public static X509Certificate generateMLKEMOrphanX509Certificate(KeyPair mlkemKeyPair) {
         try {

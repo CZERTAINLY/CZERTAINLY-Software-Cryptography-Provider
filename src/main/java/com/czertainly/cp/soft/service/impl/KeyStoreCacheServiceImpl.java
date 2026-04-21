@@ -47,7 +47,7 @@ public class KeyStoreCacheServiceImpl implements KeyStoreCacheService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.KEYSTORES_CACHE, key = "#tokenInstanceUuid")
+    @Cacheable(value = CacheConfig.KEYSTORES_CACHE, key = "#tokenInstanceUuid", sync = true)
     public CachedKeyMaterial loadKeyMaterial(UUID tokenInstanceUuid) throws NotFoundException {
         logger.debug("Cache miss — loading key material for token instance {} from database",
                 tokenInstanceUuid);
@@ -94,6 +94,17 @@ public class KeyStoreCacheServiceImpl implements KeyStoreCacheService {
         );
     }
 
+    /**
+     * Schedules cache eviction to run after the current transaction commits.
+     *
+     * <p><b>Consistency guarantee (eventual, not strict):</b> eviction fires in the {@code afterCommit} phase of Spring's
+     * transaction synchronization, which runs <em>after</em> the database row has already been made visible to other transactions.</p>
+     *
+     * <p>In the narrow window between commit and the synchronization callback, a concurrent reader <em>could</em> repopulate
+     * the cache with the newly-written value — which is correct — rather than the stale value. This is benign (the cached value
+     * is never stale-after-eviction, only potentially refreshed a few microseconds early), but callers should not assume
+     * strict linearizability between writes and cache state.</p>
+     */
     @Override
     public void evictAfterCommit(UUID tokenInstanceUuid) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {

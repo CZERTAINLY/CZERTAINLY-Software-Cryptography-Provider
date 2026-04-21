@@ -48,7 +48,6 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private TokenInstanceService tokenInstanceService;
     private KeyDataRepository keyDataRepository;
     private KeyDataCacheService keyDataCacheService;
-    private KeyStoreCacheService keyStoreCacheService;
 
     @Override
     public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
@@ -216,7 +215,6 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 // prepare public key
                 publicKey = createAndSaveKeyData(
                         alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.SLHDSA, KeyFormat.SPKI,
-                        //KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
                         slhDsaSecurityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
 
@@ -261,8 +259,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         tokenInstance.setData(data);
 
         // save token and return
+        // Note: saveTokenInstance already schedules keystore cache eviction internally
+        // (see TokenInstanceServiceImpl.saveTokenInstance), so no explicit evict call is needed here.
         tokenInstanceService.saveTokenInstance(tokenInstance);
-        keyStoreCacheService.evictAfterCommit(uuid);
 
         response.setPublicKeyData(publicKey.toKeyDataResponseDto());
         response.setPrivateKeyData(privateKey.toKeyDataResponseDto());
@@ -276,8 +275,13 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         KeyData key = keyDataRepository.findByUuid(keyUuid)
                 .orElseThrow(() -> new NotFoundException(KeyData.class, keyUuid));
 
-        // remove key from the keystore only of it is private key
-        // public key is removed automatically when private key is removed, however, we can keep it in the database
+        // Only the private-key entry occupies a KeyStore alias; the paired public key is stored only in the database (as SPKI bytes)
+        // and has no separate alias in the PKCS12 store.  Deleting the private-key alias also removes the associated certificate chain, so no
+        // separate public-key removal from the KeyStore is needed.
+        //
+        // For PUBLIC_KEY records we skip keystore eviction intentionally: once the DB row is deleted, any subsequent getCachedKeyData()
+        // call will miss the keydata cache → hit the DB → throw NotFoundException before the stale CachedKeyMaterial.publicKeys
+        // entry is ever consulted. The stale keystore entry is therefore harmless and will be evicted naturally at TTL.
         if (key.getType() == KeyType.PRIVATE_KEY) {
             removeKeyFromKeyStore(uuid, key.getName());
         }
@@ -368,10 +372,5 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     @Autowired
     public void setKeyDataCacheService(KeyDataCacheService keyDataCacheService) {
         this.keyDataCacheService = keyDataCacheService;
-    }
-
-    @Autowired
-    public void setKeyStoreCacheService(KeyStoreCacheService keyStoreCacheService) {
-        this.keyStoreCacheService = keyStoreCacheService;
     }
 }

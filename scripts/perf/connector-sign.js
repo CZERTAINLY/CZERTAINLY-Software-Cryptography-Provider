@@ -12,11 +12,14 @@
  *   DELETE /v1/cryptographyProvider/tokens/{tokenUuid}                      (teardown: remove token if created)
  *
  * Usage:
- *   # Functional smoke (defaults: 1 VU, 30 s)
+ *   # Load test — default scenario: 10 VUs, 1 min steady load
  *   k6 run connector-sign.js
  *
+ *   # Smoke test (1 VU, 30 s) — enable with SCENARIO=smoke
+ *   k6 run --env SCENARIO=smoke connector-sign.js
+ *
  *   # Load test with a custom payload
- *   k6 run --env VUS=20 --env DURATION=2m --env DATA_B64=$(base64 -i myfile.bin) connector-sign.js
+ *   k6 run --env DATA_B64=$(base64 -i myfile.bin) connector-sign.js
  *
  *   # Different algorithm
  *   k6 run --env SIG_SCHEME=PKCS1-v1_5 --env DIGEST=SHA-256 connector-sign.js
@@ -25,6 +28,7 @@
  *   k6 run --env TOKEN_NAME=myPerfToken --env KEY_ALIAS=myKey --env KEY_SIZE=4096 connector-sign.js
  *
  * Environment variables:
+ *   SCENARIO     Scenario to run: smoke | load                  (default: load)
  *   BASE_URL     Connector base URL                             (default: http://localhost:8230)
  *   TOKEN_NAME   Name for the ephemeral token instance          (default: k6PerfToken)
  *   KEY_ALIAS    Alias for the ephemeral key pair               (default: k6RsaKey)
@@ -32,37 +36,55 @@
  *   SIG_SCHEME   RSA signature scheme: PSS | PKCS1-v1_5         (default: PSS)
  *   DIGEST       Digest algorithm: SHA-256 | SHA-384 | SHA-512  (default: SHA-384)
  *   DATA_B64     Base64-encoded data to sign                    (default: small test string)
- *   VUS          Number of virtual users                        (default: 1)
- *   DURATION     Test duration                                  (default: 30s)
  */
 
 import http from 'k6/http';
-import { check, fail } from 'k6';
-import { Counter } from 'k6/metrics';
+import {check, fail} from 'k6';
+import {Counter} from 'k6/metrics';
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 
-const BASE_URL    = __ENV.BASE_URL    || 'http://localhost:8230';
-const TOKEN_NAME  = __ENV.TOKEN_NAME  || 'k6PerfToken';
-const KEY_ALIAS   = __ENV.KEY_ALIAS   || 'k6RsaKey';
-const KEY_SIZE    = parseInt(__ENV.KEY_SIZE || '2048', 10);
-const SIG_SCHEME  = __ENV.SIG_SCHEME  || 'PSS';
-const DIGEST      = __ENV.DIGEST      || 'SHA-384';
+const BASE_URL = __ENV.BASE_URL || 'http://localhost:8230';
+const TOKEN_NAME = __ENV.TOKEN_NAME || 'k6PerfToken';
+const KEY_ALIAS = __ENV.KEY_ALIAS || 'k6RsaKey';
+const KEY_SIZE = parseInt(__ENV.KEY_SIZE || '2048', 10);
+const SIG_SCHEME = __ENV.SIG_SCHEME || 'PSS';
+const DIGEST = __ENV.DIGEST || 'SHA-384';
 // Default: base64("connector-sign-k6-test")
-const DATA_B64    = __ENV.DATA_B64    || 'Y29ubmVjdG9yLXNpZ24tazYtdGVzdA==';
+const DATA_B64 = __ENV.DATA_B64 || 'Y29ubmVjdG9yLXNpZ24tazYtdGVzdA==';
+const SCENARIO = __ENV.SCENARIO || 'load';   // smoke | load | stress | soak
 
 // ─── k6 Options ───────────────────────────────────────────────────────────────
 
+const scenarios = {
+    smoke: {
+        executor: 'constant-vus',
+        vus: 1,
+        duration: '30s',
+    },
+
+    load: {
+        executor: 'ramping-vus',
+        startVUs: 0,
+        stages: [
+            {duration: '5s', target: 10},   // ramp-up
+            {duration: '60s', target: 10},   // steady load
+            {duration: '5s', target: 0},   // ramp-down
+        ],
+    },
+};
+
 export const options = {
-    vus:      parseInt(__ENV.VUS      || '1',   10),
-    duration: __ENV.DURATION          || '30s',
+    scenarios: {
+        sign: scenarios[SCENARIO],
+    },
 
     summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)', 'p(99.9)'],
 
     thresholds: {
         http_req_duration: ['p(95)<500', 'p(99)<2000'],
-        http_req_failed:   ['rate<0.01'],
-        checks:            ['rate>0.99'],
+        http_req_failed: ['rate<0.01'],
+        checks: ['rate>0.99'],
     },
 };
 
@@ -73,7 +95,7 @@ const requestCount = new Counter('sign_requests_total');
 // ─── Setup (runs once, result passed to every VU) ─────────────────────────────
 
 export function setup() {
-    const jsonHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    const jsonHeaders = {'Content-Type': 'application/json', 'Accept': 'application/json'};
 
     // 1. Discover token creation attributes.
     // GET /v1/cryptographyProvider/SOFT/attributes returns different attribute sets
@@ -82,7 +104,7 @@ export function setup() {
     //   - Existing tokens    → a data_options selector + a group_loadToken group (with
     //                          a callback) are returned; a separate callback call
     //                          resolves the new-token sub-attributes.
-    const tokenTopAttrsRes = http.get(`${BASE_URL}/v1/cryptographyProvider/SOFT/attributes`, { headers: jsonHeaders });
+    const tokenTopAttrsRes = http.get(`${BASE_URL}/v1/cryptographyProvider/SOFT/attributes`, {headers: jsonHeaders});
     if (tokenTopAttrsRes.status !== 200) {
         fail(`Token attribute discovery failed (${tokenTopAttrsRes.status}): ${tokenTopAttrsRes.body}`);
     }
@@ -100,7 +122,7 @@ export function setup() {
     let tokenNewAttrs = null;
     if (tokenTopAttrs.some(a => a.name === 'data_options')) {
         optionsUuid = attrUuid(tokenTopAttrs, 'data_options', 'string');
-        const tokenNewAttrsRes = http.get(`${BASE_URL}/v1/cryptographyProvider/callbacks/token/new/attributes`, { headers: jsonHeaders });
+        const tokenNewAttrsRes = http.get(`${BASE_URL}/v1/cryptographyProvider/callbacks/token/new/attributes`, {headers: jsonHeaders});
         if (tokenNewAttrsRes.status !== 200) {
             fail(`Token new-attribute callback failed (${tokenNewAttrsRes.status}): ${tokenNewAttrsRes.body}`);
         }
@@ -110,14 +132,14 @@ export function setup() {
     }
 
     const actionUuid = attrUuid(tokenNewAttrs, 'data_createTokenAction', 'string');
-    const nameUuid   = attrUuid(tokenNewAttrs, 'data_newTokenName',      'string');
-    const codeUuid   = attrUuid(tokenNewAttrs, 'data_tokenCode',         'secret');
+    const nameUuid = attrUuid(tokenNewAttrs, 'data_newTokenName', 'string');
+    const codeUuid = attrUuid(tokenNewAttrs, 'data_tokenCode', 'secret');
 
     // 2. Create ephemeral token instance or reuse existing.
     const tokenPassword = 'k6-test-token-secret';
 
     let tokenPreexisted = false;
-    const existingTokensRes = http.get(`${BASE_URL}/v1/cryptographyProvider/tokens`, { headers: jsonHeaders });
+    const existingTokensRes = http.get(`${BASE_URL}/v1/cryptographyProvider/tokens`, {headers: jsonHeaders});
     let tokenUuid = null;
     if (existingTokensRes.status === 200) {
         const existingTokens = existingTokensRes.json();
@@ -135,35 +157,35 @@ export function setup() {
     } else {
         const attributes = [
             {
-                uuid:        actionUuid,
-                name:        'data_createTokenAction',
+                uuid: actionUuid,
+                name: 'data_createTokenAction',
                 contentType: 'string',
-                version:     'v2',
-                content:     [{ reference: 'new', data: 'new' }],
+                version: 'v2',
+                content: [{reference: 'new', data: 'new'}],
             },
             {
-                uuid:        nameUuid,
-                name:        'data_newTokenName',
+                uuid: nameUuid,
+                name: 'data_newTokenName',
                 contentType: 'string',
-                version:     'v2',
-                content:     [{ data: TOKEN_NAME }],
+                version: 'v2',
+                content: [{data: TOKEN_NAME}],
             },
             {
-                uuid:        codeUuid,
-                name:        'data_tokenCode',
+                uuid: codeUuid,
+                name: 'data_tokenCode',
                 contentType: 'secret',
-                version:     'v2',
-                content:     [{ reference: TOKEN_NAME, data: { secret: tokenPassword } }],
+                version: 'v2',
+                content: [{reference: TOKEN_NAME, data: {secret: tokenPassword}}],
             },
         ];
 
         if (optionsUuid) {
             attributes.push({
-                uuid:        optionsUuid,
-                name:        'data_options',
+                uuid: optionsUuid,
+                name: 'data_options',
                 contentType: 'string',
-                version:     'v2',
-                content:     [{ reference: 'new', data: 'Create new Token' }],
+                version: 'v2',
+                content: [{reference: 'new', data: 'Create new Token'}],
             });
         }
 
@@ -174,7 +196,7 @@ export function setup() {
                 kind: 'SOFT',
                 attributes: attributes,
             }),
-            { headers: jsonHeaders },
+            {headers: jsonHeaders},
         );
 
         if (createTokenRes.status !== 200) {
@@ -187,18 +209,18 @@ export function setup() {
     // 3. Discover key-pair creation attributes.
     // GET /v1/cryptographyProvider/tokens/{tokenUuid}/keys/pair/attributes returns:
     //   data_keyAlias (string), data_keyAlgorithm (string), group_keySpec (group).
-    const keyPairAttrDefsRes = http.get(`${BASE_URL}/v1/cryptographyProvider/tokens/${tokenUuid}/keys/pair/attributes`, { headers: jsonHeaders });
+    const keyPairAttrDefsRes = http.get(`${BASE_URL}/v1/cryptographyProvider/tokens/${tokenUuid}/keys/pair/attributes`, {headers: jsonHeaders});
     if (keyPairAttrDefsRes.status !== 200) {
         fail(`Key-pair attribute discovery failed (${keyPairAttrDefsRes.status}): ${keyPairAttrDefsRes.body}`);
     }
     const keyPairAttrDefs = keyPairAttrDefsRes.json();
 
-    const aliasUuid = attrUuid(keyPairAttrDefs, 'data_keyAlias',     'string');
-    const algUuid   = attrUuid(keyPairAttrDefs, 'data_keyAlgorithm', 'string');
+    const aliasUuid = attrUuid(keyPairAttrDefs, 'data_keyAlias', 'string');
+    const algUuid = attrUuid(keyPairAttrDefs, 'data_keyAlgorithm', 'string');
 
     // For RSA: GET /v1/cryptographyProvider/callbacks/keyspec/RSA/attributes
     //   returns data_rsaKeySize (integer).
-    const rsaSpecAttrsRes = http.get(`${BASE_URL}/v1/cryptographyProvider/callbacks/keyspec/RSA/attributes`, { headers: jsonHeaders });
+    const rsaSpecAttrsRes = http.get(`${BASE_URL}/v1/cryptographyProvider/callbacks/keyspec/RSA/attributes`, {headers: jsonHeaders});
     if (rsaSpecAttrsRes.status !== 200) {
         fail(`RSA keyspec attribute callback failed (${rsaSpecAttrsRes.status}): ${rsaSpecAttrsRes.body}`);
     }
@@ -212,29 +234,29 @@ export function setup() {
             tokenProfileAttributes: [],
             createKeyAttributes: [
                 {
-                    uuid:        aliasUuid,
-                    name:        'data_keyAlias',
+                    uuid: aliasUuid,
+                    name: 'data_keyAlias',
                     contentType: 'string',
-                    version:     'v2',
-                    content:     [{ data: KEY_ALIAS }],
+                    version: 'v2',
+                    content: [{data: KEY_ALIAS}],
                 },
                 {
-                    uuid:        algUuid,
-                    name:        'data_keyAlgorithm',
+                    uuid: algUuid,
+                    name: 'data_keyAlgorithm',
                     contentType: 'string',
-                    version:     'v2',
-                    content:     [{ reference: 'RSA', data: 'RSA' }],
+                    version: 'v2',
+                    content: [{reference: 'RSA', data: 'RSA'}],
                 },
                 {
-                    uuid:        sizeUuid,
-                    name:        'data_rsaKeySize',
+                    uuid: sizeUuid,
+                    name: 'data_rsaKeySize',
                     contentType: 'integer',
-                    version:     'v2',
-                    content:     [{ reference: `RSA_${KEY_SIZE}`, data: KEY_SIZE }],
+                    version: 'v2',
+                    content: [{reference: `RSA_${KEY_SIZE}`, data: KEY_SIZE}],
                 },
             ],
         }),
-        { headers: jsonHeaders },
+        {headers: jsonHeaders},
     );
 
     if (createKeyRes.status !== 200) {
@@ -245,9 +267,9 @@ export function setup() {
         fail(`Key pair creation failed (${createKeyRes.status}): ${createKeyRes.body}`);
     }
 
-    const keyPair        = createKeyRes.json();
+    const keyPair = createKeyRes.json();
     const privateKeyUuid = keyPair.privateKeyData.uuid;
-    const publicKeyUuid  = keyPair.publicKeyData.uuid;
+    const publicKeyUuid = keyPair.publicKeyData.uuid;
 
     // 5. Build the sign URL and payload used by every VU.
     const url = `${BASE_URL}/v1/cryptographyProvider/tokens/${tokenUuid}/keys/${privateKeyUuid}/sign`;
@@ -256,22 +278,22 @@ export function setup() {
     const payload = JSON.stringify({
         signatureAttributes: [
             {
-                name:        'data_rsaSigScheme',
+                name: 'data_rsaSigScheme',
                 contentType: 'string',
-                version:     'v2',
-                content:     [{ data: SIG_SCHEME }],
+                version: 'v2',
+                content: [{data: SIG_SCHEME}],
             },
             {
-                name:        'data_sigDigest',
+                name: 'data_sigDigest',
                 contentType: 'string',
-                version:     'v2',
-                content:     [{ data: DIGEST }],
+                version: 'v2',
+                content: [{data: DIGEST}],
             },
         ],
-        data: [{ data: DATA_B64 }],
+        data: [{data: DATA_B64}],
     });
 
-    return { url, payload, tokenUuid, privateKeyUuid, publicKeyUuid, tokenPreexisted };
+    return {url, payload, tokenUuid, privateKeyUuid, publicKeyUuid, tokenPreexisted};
 }
 
 // ─── Default VU function ──────────────────────────────────────────────────────
@@ -280,15 +302,15 @@ export default function (data) {
     const res = http.post(data.url, data.payload, {
         headers: {
             'Content-Type': 'application/json',
-            'Accept':       'application/json',
+            'Accept': 'application/json',
         },
     });
 
     requestCount.add(1);
 
     check(res, {
-        'status is 200':                    (r) => r.status === 200,
-        'response has signatures array':    (r) => {
+        'status is 200': (r) => r.status === 200,
+        'response has signatures array': (r) => {
             try {
                 const body = r.json();
                 return Array.isArray(body.signatures) && body.signatures.length > 0;
@@ -327,8 +349,8 @@ export function teardown(data) {
 // ─── Custom summary ───────────────────────────────────────────────────────────
 
 export function handleSummary(data) {
-    const duration  = data.state.testRunDurationMs / 1000;
-    const total     = data.metrics['http_reqs']?.values?.count   ?? 0;
+    const duration = data.state.testRunDurationMs / 1000;
+    const total = data.metrics['http_reqs']?.values?.count ?? 0;
     const throughput = (total / duration).toFixed(2);
 
     const p95 = (data.metrics['http_req_duration']?.values?.['p(95)'] ?? 0).toFixed(2);

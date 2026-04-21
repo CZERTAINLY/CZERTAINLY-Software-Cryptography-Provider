@@ -295,16 +295,6 @@ public class KeyStoreUtil {
         }
     }
 
-    public static X509Certificate getCertificate(KeyData key) {
-        if (key.getTokenInstance().getCode() == null) throw new TokenInstanceException("Token is not activated.");
-        KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
-        try {
-            return (X509Certificate) keyStore.getCertificate(key.getName());
-        } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
-        }
-    }
-
     /**
      * Returns the private key from cached key material. Use on the crypto operation hot path.
      */
