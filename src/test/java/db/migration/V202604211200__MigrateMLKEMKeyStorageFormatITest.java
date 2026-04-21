@@ -213,6 +213,118 @@ class V202604211200__MigrateMLKEMKeyStorageFormatITest {
         }
     }
 
+    @Test
+    void migrationSkipsTokenWithInvalidPasswordFormat() throws Exception {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(true);
+
+            UUID tokenUuid = UUID.randomUUID();
+            // Not a valid V1 encoded secret — migration must skip this token gracefully.
+            String invalidCode = "this-is-not-a-valid-encrypted-password";
+            byte[] someKeystore = KeyStoreUtil.createNewKeystore("PKCS12", "anypassword");
+            insertTokenInstance(conn, tokenUuid, invalidCode, someKeystore);
+            createdTokens.put(tokenUuid, tokenUuid);
+
+            String dataBefore = queryKeystoreData(conn, tokenUuid);
+
+            V202604211200__MigrateMLKEMKeyStorageFormat migration = new V202604211200__MigrateMLKEMKeyStorageFormat();
+            migration.migrate(new JdbcMigrationContext(conn));
+
+            String dataAfter = queryKeystoreData(conn, tokenUuid);
+            assertEquals(dataBefore, dataAfter,
+                    "Token with undecodable password must be skipped without modifying keystore data");
+        }
+    }
+
+    @Test
+    void migrationSkipsTokenWithCorruptedKeystoreBytes() throws Exception {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(true);
+
+            UUID tokenUuid = UUID.randomUUID();
+            String encryptedPassword = SecretsUtil.encryptAndEncodeSecretString(PASSWORD, SecretEncodingVersion.V1);
+            // Bytes that decode correctly from base64 but are not a PKCS12 keystore.
+            byte[] garbage = "not-a-pkcs12-keystore".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            insertTokenInstance(conn, tokenUuid, encryptedPassword, garbage);
+            createdTokens.put(tokenUuid, tokenUuid);
+
+            String dataBefore = queryKeystoreData(conn, tokenUuid);
+
+            V202604211200__MigrateMLKEMKeyStorageFormat migration = new V202604211200__MigrateMLKEMKeyStorageFormat();
+            migration.migrate(new JdbcMigrationContext(conn));
+
+            String dataAfter = queryKeystoreData(conn, tokenUuid);
+            assertEquals(dataBefore, dataAfter,
+                    "Token with corrupted keystore bytes must be skipped without modifying keystore data");
+        }
+    }
+
+    @Test
+    void migrationSkipsMlkemAliasWhenPublicKeyMissingFromDb() throws Exception {
+        KeyPair mlkemPair = generateMlkemKeyPair();
+        byte[] legacyKeystore = buildLegacyKeystore(mlkemPair, PASSWORD);
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(true);
+
+            UUID tokenUuid = UUID.randomUUID();
+            String encryptedPassword = SecretsUtil.encryptAndEncodeSecretString(PASSWORD, SecretEncodingVersion.V1);
+            insertTokenInstance(conn, tokenUuid, encryptedPassword, legacyKeystore);
+            // Intentionally no key_data row → public key cannot be reconstructed.
+            createdTokens.put(tokenUuid, tokenUuid);
+
+            String dataBefore = queryKeystoreData(conn, tokenUuid);
+
+            V202604211200__MigrateMLKEMKeyStorageFormat migration = new V202604211200__MigrateMLKEMKeyStorageFormat();
+            migration.migrate(new JdbcMigrationContext(conn));
+
+            String dataAfter = queryKeystoreData(conn, tokenUuid);
+            assertEquals(dataBefore, dataAfter,
+                    "ML-KEM alias without a corresponding public key in key_data must be skipped");
+        }
+    }
+
+    @Test
+    void migrationSkipsMlkemAliasWhenPublicKeyJsonLacksValueField() throws Exception {
+        KeyPair mlkemPair = generateMlkemKeyPair();
+        byte[] legacyKeystore = buildLegacyKeystore(mlkemPair, PASSWORD);
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(true);
+
+            UUID tokenUuid = UUID.randomUUID();
+            String encryptedPassword = SecretsUtil.encryptAndEncodeSecretString(PASSWORD, SecretEncodingVersion.V1);
+            insertTokenInstance(conn, tokenUuid, encryptedPassword, legacyKeystore);
+
+            // key_data row is present but the JSON does not contain the expected 'value' field.
+            UUID keyDataUuid = UUID.randomUUID();
+            String sql = "INSERT INTO key_data "
+                    + "(uuid, name, algorithm, type, format, value, length, token_instance_uuid) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setObject(1, keyDataUuid);
+                ps.setString(2, MLKEM_ALIAS);
+                ps.setString(3, KeyAlgorithm.MLKEM.name());
+                ps.setString(4, KeyType.PUBLIC_KEY.name());
+                ps.setString(5, KeyFormat.SPKI.name());
+                ps.setString(6, "{\"other\":\"no-value-field-here\"}");
+                ps.setInt(7, 768);
+                ps.setObject(8, tokenUuid);
+                ps.executeUpdate();
+            }
+            createdTokens.put(tokenUuid, tokenUuid);
+
+            String dataBefore = queryKeystoreData(conn, tokenUuid);
+
+            V202604211200__MigrateMLKEMKeyStorageFormat migration = new V202604211200__MigrateMLKEMKeyStorageFormat();
+            migration.migrate(new JdbcMigrationContext(conn));
+
+            String dataAfter = queryKeystoreData(conn, tokenUuid);
+            assertEquals(dataBefore, dataAfter,
+                    "ML-KEM alias whose key_data JSON is missing the 'value' field must be skipped");
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Helpers — keystore construction
     // -------------------------------------------------------------------------
