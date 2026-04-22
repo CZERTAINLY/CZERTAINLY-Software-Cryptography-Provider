@@ -68,22 +68,7 @@ public class KeyStoreCacheServiceImpl implements KeyStoreCacheService {
         try {
             Enumeration<String> aliases = ks.aliases();
             while (aliases.hasMoreElements()) {
-                String alias = aliases.nextElement();
-
-                try {
-                    Key key = ks.getKey(alias, code.toCharArray());
-                    if (key instanceof PrivateKey pk) {
-                        privateKeys.put(alias, pk);
-                    }
-                    Certificate cert = ks.getCertificate(alias);
-                    if (cert != null) {
-                        publicKeys.put(alias, cert.getPublicKey());
-                    }
-                } catch (UnrecoverableKeyException | NoSuchAlgorithmException e) {
-                    logger.warn("Skipping alias '{}' — cannot recover key: {}", alias, e.getMessage());
-                } catch (KeyStoreException e) {
-                    logger.warn("Skipping alias '{}' — cannot access key material: {}", alias, e.getMessage());
-                }
+                extractAliasKeyMaterial(ks, aliases.nextElement(), code.toCharArray(), privateKeys, publicKeys);
             }
         } catch (KeyStoreException e) {
             throw new IllegalStateException("Cannot enumerate KeyStore aliases", e);
@@ -93,6 +78,25 @@ public class KeyStoreCacheServiceImpl implements KeyStoreCacheService {
                 Collections.unmodifiableMap(privateKeys),
                 Collections.unmodifiableMap(publicKeys)
         );
+    }
+
+    private void extractAliasKeyMaterial(KeyStore ks, String alias, char[] password,
+                                          Map<String, PrivateKey> privateKeys,
+                                          Map<String, PublicKey> publicKeys) {
+        try {
+            Key key = ks.getKey(alias, password);
+            if (key instanceof PrivateKey pk) {
+                privateKeys.put(alias, pk);
+            }
+            Certificate cert = ks.getCertificate(alias);
+            if (cert != null) {
+                publicKeys.put(alias, cert.getPublicKey());
+            }
+        } catch (UnrecoverableKeyException | NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Cannot recover key for alias '" + alias + "'", e);
+        } catch (KeyStoreException e) {
+            throw new IllegalStateException("Cannot access key material for alias '" + alias + "'", e);
+        }
     }
 
     /**

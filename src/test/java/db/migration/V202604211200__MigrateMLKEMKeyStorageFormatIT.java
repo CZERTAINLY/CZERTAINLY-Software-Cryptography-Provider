@@ -343,8 +343,7 @@ class V202604211200__MigrateMLKEMKeyStorageFormatIT {
 
     private static void insertMlkemPublicKeyData(Connection conn, UUID keyDataUuid, UUID tokenInstanceUuid,
                                                  String alias, PublicKey publicKey) throws Exception {
-        // Match the JSON structure produced by RawKeyValue / SpkiKeyValue serialization:
-        // {"value": "<base64-encoded SPKI bytes>"}
+        // Match the JSON structure produced by RawKeyValue / SpkiKeyValue serialization.
         String base64Spki = Base64.getEncoder().encodeToString(publicKey.getEncoded());
         Map<String, String> valueMap = new HashMap<>();
         valueMap.put("value", base64Spki);

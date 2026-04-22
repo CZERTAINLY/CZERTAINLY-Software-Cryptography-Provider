@@ -274,9 +274,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         KeyData key = keyDataRepository.findByUuid(keyUuid)
                 .orElseThrow(() -> new NotFoundException(KeyData.class, keyUuid));
 
-        // Only the private-key entry occupies a KeyStore alias; the paired public key is stored only in the database (as SPKI bytes)
-        // and has no separate alias in the PKCS12 store.  Deleting the private-key alias also removes the associated certificate chain, so no
-        // separate public-key removal from the KeyStore is needed.
+        // The private-key entry occupies a KeyStore alias together with the paired public key (stored as the certificate
+        // chain on that same alias).  The public key is also persisted in the database as SPKI bytes.  Deleting the
+        // private-key alias removes the certificate chain too, so no separate public-key removal from the KeyStore is needed.
         //
         // For PUBLIC_KEY records we skip keystore eviction intentionally: once the DB row is deleted, any subsequent getCachedKeyData()
         // call will miss the keydata cache → hit the DB → throw NotFoundException before the stale CachedKeyMaterial.publicKeys

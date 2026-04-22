@@ -6,6 +6,7 @@ import com.czertainly.api.model.connector.cryptography.operations.*;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureRequestData;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureResponseData;
 import com.czertainly.api.model.connector.cryptography.operations.data.VerificationResponseData;
+import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.exception.CryptographicOperationException;
 import com.czertainly.cp.soft.service.CryptographicOperationsService;
 import com.czertainly.cp.soft.service.KeyDataCacheService;
@@ -35,6 +36,10 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
     @Override
     public SignDataResponseDto signData(UUID uuid, UUID keyUuid, SignDataRequestDto request) throws NotFoundException {
         CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
+
+        if (!uuid.equals(key.tokenInstanceUuid())) {
+            throw new NotFoundException(TokenInstance.class, uuid);
+        }
 
         // check if we are going to sign with private key
         if (key.type() != KeyType.PRIVATE_KEY) {
@@ -69,6 +74,10 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
     @Override
     public VerifyDataResponseDto verifyData(UUID uuid, UUID keyUuid, VerifyDataRequestDto request) throws NotFoundException {
         CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
+
+        if (!uuid.equals(key.tokenInstanceUuid())) {
+            throw new NotFoundException(TokenInstance.class, uuid);
+        }
 
         // check if we are going to verify with public key
         if (key.type() != KeyType.PUBLIC_KEY) {
@@ -121,6 +130,10 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
     public DecryptDataResponseDto decryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
         CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
 
+        if (!uuid.equals(key.tokenInstanceUuid())) {
+            throw new NotFoundException(TokenInstance.class, uuid);
+        }
+
         // check if we are going to decrypt with private key
         if (key.type() != KeyType.PRIVATE_KEY) {
             throw new CryptographicOperationException("Only private keys can be used for decryption.");
@@ -133,6 +146,10 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
     @Override
     public EncryptDataResponseDto encryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
         CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
+
+        if (!uuid.equals(key.tokenInstanceUuid())) {
+            throw new NotFoundException(TokenInstance.class, uuid);
+        }
 
         // check if we are going to encrypt with public key
         if (key.type() != KeyType.PUBLIC_KEY) {

@@ -72,56 +72,44 @@ public class SignatureUtil {
                 */
             }
             case MLDSA -> {
-                signatureAlgorithm = "";
-                boolean usePrehash = false;
-                if (key.type() == KeyType.PRIVATE_KEY) {
-                    usePrehash = ((CustomKeyValue) key.value()).getValues().get("prehash").equals(String.valueOf(true));
-                } else {
-                    SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.value();
-                    BCMLDSAPublicKey bcmldsaPublicKey;
-                    try {
-                        bcmldsaPublicKey = new BCMLDSAPublicKey(
-                                SubjectPublicKeyInfo.getInstance(
-                                        Base64.getDecoder().decode(
-                                                spkiKeyValue.getValue()
-                                        )
-                                ));
-                    } catch (IOException e) {
-                        throw new CryptographicOperationException("Could not create BCMLDSAPublicKey instance from ML-DSA Public Key value: " + spkiKeyValue.getValue());
-                    }
-                    if (bcmldsaPublicKey.getParameterSpec().getName().contains("WITH")) usePrehash = true;
-                }
-                if (usePrehash) signatureAlgorithm += "HASH-";
-                signatureAlgorithm += "ML-DSA";
-
+                signatureAlgorithm = (isMlDsaPrehash(key) ? "HASH-" : "") + "ML-DSA";
                 return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
             }
             case SLHDSA -> {
-                signatureAlgorithm = "";
-                boolean usePrehash = false;
-                if (key.type() == KeyType.PRIVATE_KEY) {
-                    usePrehash = ((CustomKeyValue) key.value()).getValues().get("prehash").equals(String.valueOf(true));
-                } else {
-                    SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.value();
-                    BCSLHDSAPublicKey bcslhdsaPublicKey;
-                    try {
-                        bcslhdsaPublicKey = new BCSLHDSAPublicKey(
-                                SubjectPublicKeyInfo.getInstance(
-                                        Base64.getDecoder().decode(
-                                                spkiKeyValue.getValue()
-                                        )
-                                ));
-                    } catch (IOException e) {
-                        throw new CryptographicOperationException("Could not create BCSLHDSAPublicKey instance from SLH-DSA Public Key value: " + spkiKeyValue.getValue());
-                    }
-                    if (bcslhdsaPublicKey.getParameterSpec().getName().contains("WITH")) usePrehash = true;
-                }
-                if (usePrehash) signatureAlgorithm += "HASH-";
-                signatureAlgorithm += "SLH-DSA";
-
+                signatureAlgorithm = (isSlhDsaPrehash(key) ? "HASH-" : "") + "SLH-DSA";
                 return getInstanceSignature(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
             }
             default -> throw new NotSupportedException("Cryptographic algorithm not supported");
+        }
+    }
+
+    private static boolean isMlDsaPrehash(CachedKeyData key) {
+        if (key.type() == KeyType.PRIVATE_KEY) {
+            return ((CustomKeyValue) key.value()).getValues().get("prehash").equals(String.valueOf(true));
+        }
+        SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.value();
+        try {
+            BCMLDSAPublicKey pk = new BCMLDSAPublicKey(
+                    SubjectPublicKeyInfo.getInstance(Base64.getDecoder().decode(spkiKeyValue.getValue())));
+            return pk.getParameterSpec().getName().contains("WITH");
+        } catch (IOException e) {
+            throw new CryptographicOperationException(
+                    "Could not create BCMLDSAPublicKey instance from ML-DSA Public Key value: " + spkiKeyValue.getValue());
+        }
+    }
+
+    private static boolean isSlhDsaPrehash(CachedKeyData key) {
+        if (key.type() == KeyType.PRIVATE_KEY) {
+            return ((CustomKeyValue) key.value()).getValues().get("prehash").equals(String.valueOf(true));
+        }
+        SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.value();
+        try {
+            BCSLHDSAPublicKey pk = new BCSLHDSAPublicKey(
+                    SubjectPublicKeyInfo.getInstance(Base64.getDecoder().decode(spkiKeyValue.getValue())));
+            return pk.getParameterSpec().getName().contains("WITH");
+        } catch (IOException e) {
+            throw new CryptographicOperationException(
+                    "Could not create BCSLHDSAPublicKey instance from SLH-DSA Public Key value: " + spkiKeyValue.getValue());
         }
     }
 

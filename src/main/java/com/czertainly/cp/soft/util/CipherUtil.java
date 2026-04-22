@@ -6,6 +6,7 @@ import com.czertainly.api.model.client.attribute.RequestAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContentV2;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
+import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
 import com.czertainly.api.model.connector.cryptography.operations.CipherDataRequestDto;
 import com.czertainly.api.model.connector.cryptography.operations.DecryptDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.EncryptDataResponseDto;
@@ -40,24 +41,22 @@ public class CipherUtil {
     private record CipherSpec(String transformation, AlgorithmParameterSpec parameterSpec) {}
 
     public static DecryptDataResponseDto decrypt(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material) {
-        switch (key.algorithm()) {
-            case RSA -> {
-                List<RequestAttribute> attributes = request.getCipherAttributes();
-                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
-                return decryptData(request, key, material, getCipherSpec(rsaEncryptionScheme, request.getCipherAttributes()));
-            }
-            default -> throw new NotSupportedException("Algorithm not supported");
+        if (key.algorithm() == KeyAlgorithm.RSA) {
+            List<RequestAttribute> attributes = request.getCipherAttributes();
+            RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
+            return decryptData(request, key, material, getCipherSpec(rsaEncryptionScheme, request.getCipherAttributes()));
+        } else {
+            throw new NotSupportedException("Algorithm not supported");
         }
     }
 
     public static EncryptDataResponseDto encrypt(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material) {
-        switch (key.algorithm()) {
-            case RSA -> {
-                List<RequestAttribute> attributes = request.getCipherAttributes();
-                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
-                return encryptData(request, key, material, getCipherSpec(rsaEncryptionScheme, request.getCipherAttributes()));
-            }
-            default -> throw new NotSupportedException("Algorithm not supported");
+        if (key.algorithm() == KeyAlgorithm.RSA) {
+            List<RequestAttribute> attributes = request.getCipherAttributes();
+            RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
+            return encryptData(request, key, material, getCipherSpec(rsaEncryptionScheme, request.getCipherAttributes()));
+        } else {
+            throw new NotSupportedException("Algorithm not supported");
         }
     }
 
