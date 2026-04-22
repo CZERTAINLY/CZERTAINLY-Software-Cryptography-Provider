@@ -2,6 +2,7 @@ package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.*;
+import com.czertainly.cp.soft.exception.CryptographicOperationException;
 import com.czertainly.cp.soft.model.CachedKeyData;
 import com.czertainly.cp.soft.model.CachedKeyMaterial;
 import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
@@ -299,7 +300,7 @@ public class KeyStoreUtil {
     public static PrivateKey getPrivateKey(CachedKeyData key, CachedKeyMaterial material) {
         PrivateKey pk = material.privateKeys().get(key.alias());
         if (pk == null) {
-            throw new IllegalStateException(
+            throw new CryptographicOperationException(
                     "No private key for alias '" + key.alias()
                     + "' in cached material for token " + key.tokenInstanceUuid());
         }
@@ -312,7 +313,7 @@ public class KeyStoreUtil {
     public static PublicKey getPublicKey(CachedKeyData key, CachedKeyMaterial material) {
         PublicKey pub = material.publicKeys().get(key.alias());
         if (pub == null) {
-            throw new IllegalStateException(
+            throw new CryptographicOperationException(
                     "No public key for alias '" + key.alias()
                     + "' in cached material for token " + key.tokenInstanceUuid());
         }

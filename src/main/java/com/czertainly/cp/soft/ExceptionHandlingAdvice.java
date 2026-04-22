@@ -3,6 +3,7 @@ package com.czertainly.cp.soft;
 import com.czertainly.api.exception.*;
 import com.czertainly.cp.soft.dto.ApiErrorResponseDto;
 import com.czertainly.cp.soft.dto.ErrorMessageDto;
+import com.czertainly.cp.soft.exception.CryptographicOperationException;
 import com.czertainly.cp.soft.exception.NotSupportedException;
 import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -136,6 +137,19 @@ public class ExceptionHandlingAdvice {
         return ex.getErrors().stream()
                 .map(ValidationError::getErrorDescription)
                 .collect(Collectors.toList());
+    }
+
+    @ExceptionHandler(CryptographicOperationException.class)
+    public ResponseEntity<Object> handleCryptographicOperationException(CryptographicOperationException ex) {
+        ErrorMessageDto errorMessage = new ErrorMessageDto(ex.getMessage(), ex.getClass().getSimpleName(), null);
+        if (log.isDebugEnabled()) {
+            errorMessage.setStacktrace(ExceptionUtils.getStackTrace(ex));
+        }
+        ApiErrorResponseDto apiErrorResponseDto = new ApiErrorResponseDto(702, HttpStatus.BAD_REQUEST, "Cryptographic operation problem", errorMessage);
+        apiErrorResponseDto.setTimestamp(Instant.now().toEpochMilli());
+        log.error(apiErrorResponseDto.getMessage() + ": " + ExceptionUtils.getStackTrace(ex));
+        return new ResponseEntity<>(
+                apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
     }
 
     @ExceptionHandler(TokenInstanceException.class)
