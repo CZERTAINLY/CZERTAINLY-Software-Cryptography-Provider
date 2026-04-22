@@ -28,3 +28,12 @@ secrets:
 
 token:
   deleteOnRemove: ${TOKEN_DELETE_ON_REMOVE:false}
+
+provider:
+  cache:
+    keystore:
+      ttl-seconds: 60
+      max-size: 500
+    keydata:
+      ttl-seconds: 300
+      max-size: 10000

@@ -16,7 +16,8 @@ spring:
     schemas: ${DB_SCHEMA:softcp}
   jpa:
     properties:
-      hibernate.default_schema: ${DB_SCHEMA:softcp}
+      hibernate:
+        default_schema: ${DB_SCHEMA:softcp}
 
 management:
   endpoints:
@@ -35,3 +36,22 @@ secrets:
 
 token:
   deleteOnRemove: ${TOKEN_DELETE_ON_REMOVE:false}
+
+provider:
+  cache:
+    # Caffeine cache for decrypted key material loaded from token-instance keystores.
+    # Each entry holds the raw key bytes for one token instance UUID.
+    keystore:
+      # How long (in seconds) a keystore entry remains valid after it was last written.
+      # After expiry, the next access reloads the keystore from the database.
+      ttl-seconds: 60
+      # Maximum number of token-instance keystores kept in memory simultaneously.
+      max-size: 500
+    # Caffeine cache for CachedKeyData DTOs read from the key_data table.
+    # Each entry corresponds to one key UUID.
+    keydata:
+      # How long (in seconds) a key-data entry remains valid after it was last written.
+      # After expiry, the next access reloads the row from the database.
+      ttl-seconds: 300
+      # Maximum number of key-data entries kept in memory simultaneously.
+      max-size: 10000

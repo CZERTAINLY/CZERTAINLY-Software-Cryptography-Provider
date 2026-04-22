@@ -2,8 +2,8 @@ package com.czertainly.cp.soft.util;
 
 import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.*;
-import com.czertainly.cp.soft.dao.entity.KeyData;
-import com.czertainly.cp.soft.exception.TokenInstanceException;
+import com.czertainly.cp.soft.model.CachedKeyData;
+import com.czertainly.cp.soft.model.CachedKeyMaterial;
 import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
@@ -293,28 +293,30 @@ public class KeyStoreUtil {
         }
     }
 
-    public static PrivateKey getPrivateKey(KeyData key) {
-        try {
-            if (key.getTokenInstance().getCode() == null) throw new TokenInstanceException("Token is not activated.");
-            KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
-            return (PrivateKey) keyStore.getKey(key.getName(), key.getTokenInstance().getCode().toCharArray());
-        } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Algorithm '" + key.getAlgorithm() + "' cannot be used", e);
-        } catch (UnrecoverableKeyException e) {
-            throw new IllegalStateException("Cannot load private key '" + key.getName() + "' from Token '" + key.getTokenInstance().getName() + "'", e);
+    /**
+     * Returns the private key from cached key material. Use on the crypto operation hot path.
+     */
+    public static PrivateKey getPrivateKey(CachedKeyData key, CachedKeyMaterial material) {
+        PrivateKey pk = material.privateKeys().get(key.alias());
+        if (pk == null) {
+            throw new IllegalStateException(
+                    "No private key for alias '" + key.alias()
+                    + "' in cached material for token " + key.tokenInstanceUuid());
         }
+        return pk;
     }
 
-    public static X509Certificate getCertificate(KeyData key) {
-        if (key.getTokenInstance().getCode() == null) throw new TokenInstanceException("Token is not activated.");
-        KeyStore keyStore = loadKeystore(key.getTokenInstance().getData(), key.getTokenInstance().getCode());
-        try {
-            return (X509Certificate) keyStore.getCertificate(key.getName());
-        } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot load Token '" + key.getTokenInstance().getName() + "'", e);
+    /**
+     * Returns the public key from cached key material. Use on the crypto operation hot path.
+     */
+    public static PublicKey getPublicKey(CachedKeyData key, CachedKeyMaterial material) {
+        PublicKey pub = material.publicKeys().get(key.alias());
+        if (pub == null) {
+            throw new IllegalStateException(
+                    "No public key for alias '" + key.alias()
+                    + "' in cached material for token " + key.tokenInstanceUuid());
         }
+        return pub;
     }
 
 }

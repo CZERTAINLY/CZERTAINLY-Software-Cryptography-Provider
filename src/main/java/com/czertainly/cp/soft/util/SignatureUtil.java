@@ -10,9 +10,10 @@ import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.EcdsaKeyAttributes;
 import com.czertainly.cp.soft.attribute.RsaKeyAttributes;
-import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.CryptographicOperationException;
 import com.czertainly.cp.soft.exception.NotSupportedException;
+import com.czertainly.cp.soft.model.CachedKeyData;
+import com.czertainly.cp.soft.model.CachedKeyMaterial;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.mldsa.BCMLDSAPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.slhdsa.BCSLHDSAPublicKey;
@@ -26,19 +27,19 @@ import java.util.List;
 
 public class SignatureUtil {
 
-    public static Signature prepareSignature(KeyData key, List<RequestAttribute> signatureAttributes) {
+    public static Signature prepareSignature(CachedKeyData key, List<RequestAttribute> signatureAttributes) {
         String signatureAlgorithm;
 
-        switch (key.getAlgorithm()) {
+        switch (key.algorithm()) {
             case RSA -> {
                 final RsaSignatureScheme scheme = RsaSignatureScheme.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                RsaKeyAttributes.ATTRIBUTE_DATA_RSA_SIG_SCHEME, signatureAttributes, StringAttributeContentV2.class)
+                                        RsaKeyAttributes.ATTRIBUTE_DATA_RSA_SIG_SCHEME, signatureAttributes, StringAttributeContentV2.class)
                                 .getData()
                 );
                 final DigestAlgorithm digest = DigestAlgorithm.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                RsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContentV2.class)
+                                        RsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContentV2.class)
                                 .getData()
                 );
 
@@ -52,7 +53,7 @@ public class SignatureUtil {
             case ECDSA -> {
                 final DigestAlgorithm digest = DigestAlgorithm.findByCode(
                         AttributeDefinitionUtils.getSingleItemAttributeContentValue(
-                                EcdsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContentV2.class)
+                                        EcdsaKeyAttributes.ATTRIBUTE_DATA_SIG_DIGEST, signatureAttributes, StringAttributeContentV2.class)
                                 .getData()
                 );
 
@@ -73,10 +74,10 @@ public class SignatureUtil {
             case MLDSA -> {
                 signatureAlgorithm = "";
                 boolean usePrehash = false;
-                if (key.getType() == KeyType.PRIVATE_KEY) {
-                    usePrehash = ((CustomKeyValue) key.getValue()).getValues().get("prehash").equals(String.valueOf(true));
+                if (key.type() == KeyType.PRIVATE_KEY) {
+                    usePrehash = ((CustomKeyValue) key.value()).getValues().get("prehash").equals(String.valueOf(true));
                 } else {
-                    SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.getValue();
+                    SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.value();
                     BCMLDSAPublicKey bcmldsaPublicKey;
                     try {
                         bcmldsaPublicKey = new BCMLDSAPublicKey(
@@ -98,10 +99,10 @@ public class SignatureUtil {
             case SLHDSA -> {
                 signatureAlgorithm = "";
                 boolean usePrehash = false;
-                if (key.getType() == KeyType.PRIVATE_KEY) {
-                    usePrehash = ((CustomKeyValue) key.getValue()).getValues().get("prehash").equals(String.valueOf(true));
+                if (key.type() == KeyType.PRIVATE_KEY) {
+                    usePrehash = ((CustomKeyValue) key.value()).getValues().get("prehash").equals(String.valueOf(true));
                 } else {
-                    SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.getValue();
+                    SpkiKeyValue spkiKeyValue = (SpkiKeyValue) key.value();
                     BCSLHDSAPublicKey bcslhdsaPublicKey;
                     try {
                         bcslhdsaPublicKey = new BCSLHDSAPublicKey(
@@ -134,19 +135,19 @@ public class SignatureUtil {
         }
     }
 
-    public static void initSigning(Signature signature, KeyData key) {
+    public static void initSigning(Signature signature, CachedKeyData key, CachedKeyMaterial material) {
         try {
-            signature.initSign(KeyStoreUtil.getPrivateKey(key));
+            signature.initSign(KeyStoreUtil.getPrivateKey(key, material));
         } catch (InvalidKeyException e) {
-            throw new IllegalStateException("Invalid key '"+key.getName()+"'", e);
+            throw new IllegalStateException("Invalid key '" + key.alias() + "'", e);
         }
     }
 
-    public static void initVerification(Signature signature, KeyData key) {
+    public static void initVerification(Signature signature, CachedKeyData key, CachedKeyMaterial material) {
         try {
-            signature.initVerify(KeyStoreUtil.getCertificate(key));
+            signature.initVerify(KeyStoreUtil.getPublicKey(key, material));
         } catch (InvalidKeyException e) {
-            throw new IllegalStateException("Invalid key '" + key.getName() + "'", e);
+            throw new IllegalStateException("Invalid key '" + key.alias() + "'", e);
         }
     }
 

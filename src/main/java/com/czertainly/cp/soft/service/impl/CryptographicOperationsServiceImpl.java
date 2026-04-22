@@ -6,10 +6,12 @@ import com.czertainly.api.model.connector.cryptography.operations.*;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureRequestData;
 import com.czertainly.api.model.connector.cryptography.operations.data.SignatureResponseData;
 import com.czertainly.api.model.connector.cryptography.operations.data.VerificationResponseData;
-import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.CryptographicOperationException;
 import com.czertainly.cp.soft.service.CryptographicOperationsService;
-import com.czertainly.cp.soft.service.KeyManagementService;
+import com.czertainly.cp.soft.service.KeyDataCacheService;
+import com.czertainly.cp.soft.service.KeyStoreCacheService;
+import com.czertainly.cp.soft.model.CachedKeyData;
+import com.czertainly.cp.soft.model.CachedKeyMaterial;
 import com.czertainly.cp.soft.util.CipherUtil;
 import com.czertainly.cp.soft.util.SecureRandomUtil;
 import com.czertainly.cp.soft.util.SignatureUtil;
@@ -27,30 +29,23 @@ import java.util.UUID;
 
 @Service
 public class CryptographicOperationsServiceImpl implements CryptographicOperationsService {
-
-    private KeyManagementService keyManagementService;
-
-    @Autowired
-    public void setKeyManagementService(KeyManagementService keyManagementService) {
-        this.keyManagementService = keyManagementService;
-    }
+    private KeyDataCacheService keyDataCacheService;
+    private KeyStoreCacheService keyStoreCacheService;
 
     @Override
     public SignDataResponseDto signData(UUID uuid, UUID keyUuid, SignDataRequestDto request) throws NotFoundException {
-        // check that the key exists
-        // if the key exists, the token instance should exist too
-        KeyData key = keyManagementService.getKeyEntity(uuid, keyUuid);
+        CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
 
         // check if we are going to sign with private key
-        if (key.getType() != KeyType.PRIVATE_KEY) {
+        if (key.type() != KeyType.PRIVATE_KEY) {
             throw new CryptographicOperationException("Only private keys can be used for signing.");
         }
 
+        CachedKeyMaterial material = keyStoreCacheService.loadKeyMaterial(key.tokenInstanceUuid());
         // initialize signature with the algorithm
         Signature signature = SignatureUtil.prepareSignature(key, request.getSignatureAttributes());
-
         // initialize the signature with the private key
-        SignatureUtil.initSigning(signature, key);
+        SignatureUtil.initSigning(signature, key, material);
 
         // sign the data, it can be a list, so we need to iterate over it
         SignDataResponseDto response = new SignDataResponseDto();
@@ -73,20 +68,18 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
 
     @Override
     public VerifyDataResponseDto verifyData(UUID uuid, UUID keyUuid, VerifyDataRequestDto request) throws NotFoundException {
-        // check that the key exists
-        // if the key exists, the token instance should exist too
-        KeyData key = keyManagementService.getKeyEntity(uuid, keyUuid);
+        CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
 
-        // check if we are going to sign with private key
-        if (key.getType() != KeyType.PUBLIC_KEY) {
+        // check if we are going to verify with public key
+        if (key.type() != KeyType.PUBLIC_KEY) {
             throw new CryptographicOperationException("Only public keys can be used for verification.");
         }
 
+        CachedKeyMaterial material = keyStoreCacheService.loadKeyMaterial(key.tokenInstanceUuid());
         // initialize signature with the algorithm
         Signature signature = SignatureUtil.prepareSignature(key, request.getSignatureAttributes());
-
         // initialize the signature with the private key
-        SignatureUtil.initVerification(signature, key);
+        SignatureUtil.initVerification(signature, key, material);
 
         // verify the data, it can be a list, so we need to iterate over it
         VerifyDataResponseDto response = new VerifyDataResponseDto();
@@ -109,10 +102,6 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
             verifications.add(verificationResponseData);
         }
 
-        request.getSignatures().forEach(data -> {
-
-        });
-
         response.setVerifications(verifications);
         return response;
     }
@@ -130,19 +119,37 @@ public class CryptographicOperationsServiceImpl implements CryptographicOperatio
 
     @Override
     public DecryptDataResponseDto decryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
-        KeyData key = keyManagementService.getKeyEntity(uuid, keyUuid);
-        if (key.getType() != KeyType.PRIVATE_KEY) {
+        CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
+
+        // check if we are going to decrypt with private key
+        if (key.type() != KeyType.PRIVATE_KEY) {
             throw new CryptographicOperationException("Only private keys can be used for decryption.");
         }
-        return CipherUtil.decrypt(request, key);
+
+        CachedKeyMaterial material = keyStoreCacheService.loadKeyMaterial(key.tokenInstanceUuid());
+        return CipherUtil.decrypt(request, key, material);
     }
 
     @Override
     public EncryptDataResponseDto encryptData(UUID uuid, UUID keyUuid, CipherDataRequestDto request) throws NotFoundException {
-        KeyData key = keyManagementService.getKeyEntity(uuid, keyUuid);
-        if (key.getType() != KeyType.PUBLIC_KEY) {
+        CachedKeyData key = keyDataCacheService.getCachedKeyData(keyUuid);
+
+        // check if we are going to encrypt with public key
+        if (key.type() != KeyType.PUBLIC_KEY) {
             throw new CryptographicOperationException("Only public keys can be used for encryption.");
         }
-        return CipherUtil.encrypt(request, key);
+
+        CachedKeyMaterial material = keyStoreCacheService.loadKeyMaterial(key.tokenInstanceUuid());
+        return CipherUtil.encrypt(request, key, material);
+    }
+
+    @Autowired
+    public void setKeyDataCacheService(KeyDataCacheService keyDataCacheService) {
+        this.keyDataCacheService = keyDataCacheService;
+    }
+
+    @Autowired
+    public void setKeyStoreCacheService(KeyStoreCacheService keyStoreCacheService) {
+        this.keyStoreCacheService = keyStoreCacheService;
     }
 }
