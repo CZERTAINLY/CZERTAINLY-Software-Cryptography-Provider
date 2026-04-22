@@ -19,6 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 
 public class X509Util {
+    private static final SecureRandom random = new SecureRandom();
 
     public static X509Certificate generateRsaOrphanX509Certificate(KeyPair keyPair) {;
         return generateOrphanX509Certificate(keyPair, "SHA512WithRSAEncryption", BouncyCastleProvider.PROVIDER_NAME);
@@ -38,9 +39,52 @@ public class X509Util {
         }
     }
 
-    public static X509Certificate generateOrphanX509Certificate(KeyPair keyPair, String signatureAlgorithm, String provider) {
-        SecureRandom random = new SecureRandom();
+    /**
+     * ML-KEM is a KEM, not a signing algorithm, so it cannot self-sign an X.509 certificate. We generate
+     * an orphan certificate signed by an ephemeral EC key that embeds the ML-KEM public key in its SubjectPublicKeyInfo.
+     *
+     * <p>The ephemeral EC key is intentionally unverifiable (the signing key is discarded immediately) and
+     * must NEVER be used as a trust anchor.</p>
+     */
+    public static X509Certificate generateMLKEMOrphanX509Certificate(KeyPair mlkemKeyPair) {
+        try {
+            // ML-KEM cannot sign; generate a short-lived EC key pair just for signing the cert.
+            KeyPairGenerator ecKpg = KeyPairGenerator.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME);
+            ecKpg.initialize(new java.security.spec.ECGenParameterSpec("P-256"));
+            KeyPair signingPair = ecKpg.generateKeyPair();
 
+            X500Name owner = new X500Name("CN=generatedCertificate,O=orphan");
+
+            final Date notBefore = new Date(System.currentTimeMillis() - 86400000L * 365);
+            final Date notAfter  = new Date(System.currentTimeMillis() + 86400000L * 365 * 30);
+
+            // Embed the ML-KEM public key in the certificate's SubjectPublicKeyInfo.
+            X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
+                    owner, new BigInteger(64, random), notBefore, notAfter, owner, mlkemKeyPair.getPublic());
+
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithECDSA")
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                    .build(signingPair.getPrivate());
+
+            X509CertificateHolder certHolder = builder.build(signer);
+            return new JcaX509CertificateConverter()
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                    .getCertificate(certHolder);
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("EC algorithm not found", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("Provider not found", e);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new IllegalStateException("Invalid EC parameters", e);
+        } catch (OperatorCreationException e) {
+            throw new IllegalStateException("Cannot create content signer", e);
+        } catch (CertificateException e) {
+            throw new IllegalStateException("Error building ML-KEM orphan certificate", e);
+        }
+    }
+
+    public static X509Certificate generateOrphanX509Certificate(KeyPair keyPair, String signatureAlgorithm, String provider) {
         X500Name owner = new X500Name("CN=generatedCertificate,O=orphan");
 
         // current time minus 1 year, just in case software clock goes back due to time synchronization
@@ -57,7 +101,7 @@ public class X509Util {
 
             X509CertificateHolder certHolder = builder.build(signer);
             X509Certificate cert = new JcaX509CertificateConverter()
-                    .setProvider(new BouncyCastleProvider())
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
                     .getCertificate(certHolder);
 
             //check so that cert is valid

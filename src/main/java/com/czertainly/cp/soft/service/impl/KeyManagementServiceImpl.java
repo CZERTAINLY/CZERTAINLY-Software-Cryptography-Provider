@@ -101,7 +101,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 publicKey = createAndSaveKeyData(
                         alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.RSA, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
-                        keySize, metadata, tokenInstance.getUuid());
+                        keySize, metadata, tokenInstance);
 
                 // create private key
                 CustomKeyValue customKeyValue = new CustomKeyValue();
@@ -110,7 +110,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 customKeyValue.setValues(customKeyValues);
 
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.RSA,
-                        KeyFormat.CUSTOM, customKeyValue, keySize, metadata, tokenInstance.getUuid());
+                        KeyFormat.CUSTOM, customKeyValue, keySize, metadata, tokenInstance);
             }
             case ECDSA -> {
                 final EcdsaCurveName curveName = EcdsaCurveName.valueOf(
@@ -125,7 +125,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 publicKey = createAndSaveKeyData(
                         alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.ECDSA, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
-                        curveName.getSize()*2, metadata, tokenInstance.getUuid());
+                        curveName.getSize()*2, metadata, tokenInstance);
 
                 // create private key
                 CustomKeyValue customKeyValue = new CustomKeyValue();
@@ -135,7 +135,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 customKeyValue.setValues(customKeyValues);
 
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.ECDSA,
-                        KeyFormat.CUSTOM, customKeyValue, curveName.getSize(), metadata, tokenInstance.getUuid());
+                        KeyFormat.CUSTOM, customKeyValue, curveName.getSize(), metadata, tokenInstance);
 
             }
             case FALCON -> {
@@ -153,7 +153,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 publicKey = createAndSaveKeyData(
                         alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.FALCON, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
-                        falconDegree.getPublicKeySize(), metadata, tokenInstance.getUuid());
+                        falconDegree.getPublicKeySize(), metadata, tokenInstance);
 
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
@@ -162,7 +162,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // prepare private key
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.FALCON,
-                        KeyFormat.CUSTOM, customKeyValue, falconDegree.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+                        KeyFormat.CUSTOM, customKeyValue, falconDegree.getPrivateKeySize(), metadata, tokenInstance);
             }
             case MLDSA -> {
                 final MLDSASecurityCategory level = MLDSASecurityCategory.valueOf(
@@ -182,7 +182,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 publicKey = createAndSaveKeyData(
                         alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLDSA, KeyFormat.SPKI,
                         KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
-                        level.getPublicKeySize(), metadata, tokenInstance.getUuid());
+                        level.getPublicKeySize(), metadata, tokenInstance);
 
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
@@ -192,7 +192,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // prepare private key
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.MLDSA,
-                        KeyFormat.CUSTOM, customKeyValue, level.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+                        KeyFormat.CUSTOM, customKeyValue, level.getPrivateKeySize(), metadata, tokenInstance);
             }
             case SLHDSA -> {
                 final SLHDSAHash hash = SLHDSAHash.valueOf(
@@ -225,7 +225,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                         alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.SLHDSA, KeyFormat.SPKI,
                         //KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
-                        slhDsaSecurityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
+                        slhDsaSecurityCategory.getPublicKeySize(), metadata, tokenInstance);
 
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
@@ -237,7 +237,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // prepare private key
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.SLHDSA,
-                        KeyFormat.CUSTOM, customKeyValue, slhDsaSecurityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+                        KeyFormat.CUSTOM, customKeyValue, slhDsaSecurityCategory.getPrivateKeySize(), metadata, tokenInstance);
             }
             case MLKEM -> {
                 final MLKEMSecurityCategory securityCategory = MLKEMSecurityCategory.valueOf(
@@ -248,7 +248,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 BCMLKEMPublicKey kemPublicKey =  KeyStoreUtil.generateMLKEMKey(keyStore, alias, securityCategory, tokenInstance.getCode());
                 RawKeyValue keyValue = new RawKeyValue(Base64.getEncoder().encodeToString(kemPublicKey.getEncoded()));
-                publicKey = createAndSaveKeyData(alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLKEM, KeyFormat.SPKI, keyValue, securityCategory.getPublicKeySize(), metadata, tokenInstance.getUuid());
+                publicKey = createAndSaveKeyData(alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.MLKEM, KeyFormat.SPKI, keyValue, securityCategory.getPublicKeySize(), metadata, tokenInstance);
 
                 CustomKeyValue customKeyValue = new CustomKeyValue();
                 HashMap<String, String> customKeyValues = new HashMap<>();
@@ -257,7 +257,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // prepare private key
                 privateKey = createAndSaveKeyData(alias, association, KeyType.PRIVATE_KEY, KeyAlgorithm.MLKEM,
-                        KeyFormat.CUSTOM, customKeyValue, securityCategory.getPrivateKeySize(), metadata, tokenInstance.getUuid());
+                        KeyFormat.CUSTOM, customKeyValue, securityCategory.getPrivateKeySize(), metadata, tokenInstance);
 
             }
             default -> throw new IllegalArgumentException("Unsupported algorithm: " + algorithm);
@@ -342,7 +342,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             KeyValue value,
             int length,
             List<MetadataAttribute> metadata,
-            UUID tokenInstanceUuid) {
+            TokenInstance tokenInstance) {
         KeyData keyData = new KeyData();
         keyData.setUuid(UUID.randomUUID());
         keyData.setName(alias);
@@ -353,7 +353,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         keyData.setValue(value);
         keyData.setLength(length);
         keyData.setMetadata(metadata);
-        keyData.setTokenInstanceUuid(tokenInstanceUuid);
+        keyData.setTokenInstance(tokenInstance);
 
         keyDataRepository.save(keyData);
 
