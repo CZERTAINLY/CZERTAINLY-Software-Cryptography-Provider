@@ -147,7 +147,7 @@ public class ExceptionHandlingAdvice {
         }
         ApiErrorResponseDto apiErrorResponseDto = new ApiErrorResponseDto(702, HttpStatus.BAD_REQUEST, "Cryptographic operation problem", errorMessage);
         apiErrorResponseDto.setTimestamp(Instant.now().toEpochMilli());
-        log.error(apiErrorResponseDto.getMessage() + ": " + ExceptionUtils.getStackTrace(ex));
+        log.error("{}: {}", apiErrorResponseDto.getMessage(), ExceptionUtils.getStackTrace(ex));
         return new ResponseEntity<>(
                 apiErrorResponseDto, new HttpHeaders(), apiErrorResponseDto.getStatus());
     }
