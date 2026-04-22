@@ -40,7 +40,7 @@ import java.util.Map;
  *
  * <p><b>What this migration does.</b>
  * <ol>
- *   <li>Selects every active {@code token_instance} row (those with a non-null {@code code}).</li>
+ *   <li>Selects every {@code token_instance} row (active and deactivated).</li>
  *   <li>Decrypts the keystore password and loads the PKCS12 blob.</li>
  *   <li>For every alias that has no associated certificate (old format) and whose recovered key
  *       algorithm starts with {@code "ML-KEM"}, the entry is identified as needing migration.</li>
@@ -51,7 +51,10 @@ import java.util.Map;
  *   <li>The updated PKCS12 blob is base64-encoded and persisted to {@code token_instance.data}.</li>
  * </ol>
  *
- * <p>Tokens whose keystores cannot be loaded (already deactivated by a prior migration) are skipped with a warning.
+ * <p>Deactivated tokens (those with a {@code null} code) cannot be decrypted and are skipped.
+ * A WARN is logged when such a token is found to contain ML-KEM keys, because those keys will be
+ * unrecoverable if the token is reactivated after an upgrade without first re-running the migration.
+ * Tokens whose keystores cannot be loaded for other reasons are also skipped with a warning.
  * Aliases whose public key cannot be reconstructed are also skipped with a warning; the corresponding private key remains
  * inaccessible until the key pair is recreated.
  */
@@ -82,7 +85,7 @@ public class V202604211200__MigrateMLKEMKeyStorageFormat extends BaseJavaMigrati
 
         try (Statement select = context.getConnection().createStatement()) {
             ResultSet tokens = select.executeQuery(
-                    "SELECT uuid, code, data FROM token_instance WHERE code IS NOT NULL");
+                    "SELECT uuid, code, data FROM token_instance");
 
             String updateSql = "UPDATE token_instance SET data = ? WHERE uuid = ?";
             try (PreparedStatement update = context.getConnection().prepareStatement(updateSql)) {
@@ -108,10 +111,24 @@ public class V202604211200__MigrateMLKEMKeyStorageFormat extends BaseJavaMigrati
                                  ResultSet tokens,
                                  Object tokenUuid,
                                  PreparedStatement update) {
+        String code;
+        try {
+            code = tokens.getString("code");
+        } catch (Exception e) {
+            logger.warn("Cannot read code column for token {}: {}", tokenUuid, e.getMessage());
+            return false;
+        }
+        if (code == null) {
+            if (tokenHasMlkemKeys(context, tokenUuid)) {
+                logger.warn("Token {} is deactivated — its keystore cannot be migrated. "
+                        + "If it holds ML-KEM keys, reactivate and re-run migration before upgrading.", tokenUuid);
+            }
+            return false;
+        }
+
         String password;
         try {
-            password = SecretsUtil.decodeAndDecryptSecretString(
-                    tokens.getString("code"), SecretEncodingVersion.V1);
+            password = SecretsUtil.decodeAndDecryptSecretString(code, SecretEncodingVersion.V1);
         } catch (Exception e) {
             logger.warn("Cannot decrypt password for token {}: {}", tokenUuid, e.getMessage());
             return false;
@@ -244,6 +261,19 @@ public class V202604211200__MigrateMLKEMKeyStorageFormat extends BaseJavaMigrati
             logger.warn("Cannot query key_data for token {}: {}", tokenUuid, e.getMessage());
         }
         return result;
+    }
+
+    private boolean tokenHasMlkemKeys(Context context, Object tokenUuid) {
+        String sql = "SELECT 1 FROM key_data WHERE token_instance_uuid = ? AND algorithm = 'MLKEM' LIMIT 1";
+        try (PreparedStatement ps = context.getConnection().prepareStatement(sql)) {
+            ps.setObject(1, tokenUuid, Types.OTHER);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            logger.warn("Cannot check ML-KEM keys for token {}: {}", tokenUuid, e.getMessage());
+            return false;
+        }
     }
 
     /**
