@@ -285,6 +285,51 @@ class V202604211200__MigrateMLKEMKeyStorageFormatITest {
     }
 
     @Test
+    void migrationSkipsDeactivatedTokenThatHasMlkemKeys() throws Exception {
+        KeyPair mlkemPair = generateMlkemKeyPair();
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(true);
+
+            UUID tokenUuid = UUID.randomUUID();
+            // code = null → deactivated token; migration must detect ML-KEM keys and log a warning but not modify data.
+            insertTokenInstance(conn, tokenUuid, null, KeyStoreUtil.createNewKeystore("PKCS12", "any"));
+            insertMlkemPublicKeyData(conn, UUID.randomUUID(), tokenUuid, MLKEM_ALIAS, mlkemPair.getPublic());
+            createdTokens.put(tokenUuid, tokenUuid);
+
+            String dataBefore = queryKeystoreData(conn, tokenUuid);
+
+            V202604211200__MigrateMLKEMKeyStorageFormat migration = new V202604211200__MigrateMLKEMKeyStorageFormat();
+            migration.migrate(new JdbcMigrationContext(conn));
+
+            String dataAfter = queryKeystoreData(conn, tokenUuid);
+            assertEquals(dataBefore, dataAfter,
+                    "Deactivated token (null code) with ML-KEM keys must be skipped without modifying keystore data");
+        }
+    }
+
+    @Test
+    void migrationSkipsDeactivatedTokenWithoutMlkemKeys() throws Exception {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(true);
+
+            UUID tokenUuid = UUID.randomUUID();
+            // code = null → deactivated token with no ML-KEM keys; must be skipped silently.
+            insertTokenInstance(conn, tokenUuid, null, KeyStoreUtil.createNewKeystore("PKCS12", "any"));
+            createdTokens.put(tokenUuid, tokenUuid);
+
+            String dataBefore = queryKeystoreData(conn, tokenUuid);
+
+            V202604211200__MigrateMLKEMKeyStorageFormat migration = new V202604211200__MigrateMLKEMKeyStorageFormat();
+            migration.migrate(new JdbcMigrationContext(conn));
+
+            String dataAfter = queryKeystoreData(conn, tokenUuid);
+            assertEquals(dataBefore, dataAfter,
+                    "Deactivated token (null code) without ML-KEM keys must be skipped without modifying keystore data");
+        }
+    }
+
+    @Test
     void migrationSkipsMlkemAliasWhenPublicKeyJsonLacksValueField() throws Exception {
         KeyPair mlkemPair = generateMlkemKeyPair();
         byte[] legacyKeystore = buildLegacyKeystore(mlkemPair, PASSWORD);
