@@ -3,6 +3,7 @@ package com.czertainly.cp.soft.service.impl;
 import com.czertainly.api.exception.NotFoundException;
 import com.czertainly.api.model.client.attribute.RequestAttribute;
 import com.czertainly.api.model.client.attribute.RequestAttributeV2;
+import com.czertainly.cp.soft.exception.TokenInstanceException;
 import com.czertainly.api.model.common.attribute.common.content.AttributeContentType;
 import com.czertainly.api.model.common.attribute.v2.content.IntegerAttributeContentV2;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
@@ -166,6 +167,72 @@ class CacheInvalidationTest {
 
         // The cache must remain empty for this key (exception was not cached)
         assertCacheMiss(CacheConfig.KEYSTORES_CACHE, nonExistentUuid);
+    }
+
+    // -----------------------------------------------------------------------
+    // evictAfterCommit — outside-transaction path
+    // -----------------------------------------------------------------------
+
+    /**
+     * When {@code evictAfterCommit} is called with no active transaction, it must evict immediately
+     * rather than scheduling a post-commit callback.
+     */
+    @Test
+    void keystoreEvictAfterCommit_outsideTransaction_evictsImmediately() throws NotFoundException {
+        UUID tokenUuid = tokenInstance.getUuid();
+
+        // Warm the cache
+        keyStoreCacheService.loadKeyMaterial(tokenUuid);
+        assertCacheHit(CacheConfig.KEYSTORES_CACHE, tokenUuid);
+
+        // Called directly from a non-transactional test method — takes the else (immediate) branch
+        keyStoreCacheService.evictAfterCommit(tokenUuid);
+
+        assertCacheMiss(CacheConfig.KEYSTORES_CACHE, tokenUuid);
+    }
+
+    /**
+     * Same immediate-eviction guarantee for the keydata cache.
+     */
+    @Test
+    void keydataEvictAfterCommit_outsideTransaction_evictsImmediately() throws NotFoundException {
+        UUID tokenUuid = tokenInstance.getUuid();
+
+        KeyPairDataResponseDto created = keyManagementService.createKeyPair(tokenUuid, buildRsa2048Request("kd-outside-tx"));
+        UUID privateKeyUuid = UUID.fromString(created.getPrivateKeyData().getUuid());
+
+        // Warm the keydata cache
+        keyDataCacheService.getCachedKeyData(privateKeyUuid);
+        assertCacheHit(CacheConfig.KEYDATA_CACHE, privateKeyUuid);
+
+        // Called directly from a non-transactional test method — takes the else (immediate) branch
+        keyDataCacheService.evictAfterCommit(privateKeyUuid);
+
+        assertCacheMiss(CacheConfig.KEYDATA_CACHE, privateKeyUuid);
+    }
+
+    // -----------------------------------------------------------------------
+    // loadKeyMaterial — token not activated
+    // -----------------------------------------------------------------------
+
+    /**
+     * Loading key material for a token whose activation code is null must throw
+     * {@link TokenInstanceException} and must not populate the cache.
+     */
+    @Test
+    void loadKeyMaterial_tokenNotActivated_throwsTokenInstanceException() {
+        TokenInstance inactiveToken = new TokenInstance();
+        inactiveToken.setCode(null);
+        inactiveToken.setData(KeyStoreUtil.createNewKeystore("PKCS12", PASSWORD));
+        tokenInstanceRepository.save(inactiveToken);
+
+        UUID inactiveUuid = inactiveToken.getUuid();
+
+        assertThrows(TokenInstanceException.class,
+                () -> keyStoreCacheService.loadKeyMaterial(inactiveUuid));
+
+        // Exception must not have been cached
+        assertCacheMiss(CacheConfig.KEYSTORES_CACHE, inactiveUuid);
     }
 
     // -----------------------------------------------------------------------
