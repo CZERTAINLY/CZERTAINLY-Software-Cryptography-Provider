@@ -4,6 +4,9 @@ import com.czertainly.api.model.connector.cryptography.key.value.SpkiKeyValue;
 import com.czertainly.cp.soft.collection.EcdsaCurveName;
 import com.czertainly.cp.soft.collection.FalconDegree;
 import com.czertainly.cp.soft.collection.MLKEMSecurityCategory;
+import com.czertainly.cp.soft.exception.CryptographicOperationException;
+import com.czertainly.cp.soft.model.CachedKeyData;
+import com.czertainly.cp.soft.model.CachedKeyMaterial;
 import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
@@ -15,6 +18,9 @@ import org.junit.jupiter.params.provider.EnumSource;
 import java.security.KeyStore;
 import java.security.Security;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -160,5 +166,29 @@ class KeyStoreUtilTest {
         KeyStore ks = KeyStoreUtil.loadKeystore(bytes, PASSWORD);
 
         assertDoesNotThrow(() -> KeyStoreUtil.deleteAliasFromKeyStore(ks, "non-existent"));
+    }
+
+    // -------------------------------------------------------------------------
+    // getPrivateKey / getPublicKey — error paths
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getPrivateKey_missingAlias_throwsCryptographicOperationException() {
+        CachedKeyData key = new CachedKeyData(UUID.randomUUID(), UUID.randomUUID(), "ghost-alias",
+                null, null, null, null, null, 0, List.of());
+        CachedKeyMaterial material = new CachedKeyMaterial(Map.of(), Map.of());
+
+        assertThrows(CryptographicOperationException.class,
+                () -> KeyStoreUtil.getPrivateKey(key, material));
+    }
+
+    @Test
+    void getPublicKey_missingAlias_throwsCryptographicOperationException() {
+        CachedKeyData key = new CachedKeyData(UUID.randomUUID(), UUID.randomUUID(), "ghost-alias",
+                null, null, null, null, null, 0, List.of());
+        CachedKeyMaterial material = new CachedKeyMaterial(Map.of(), Map.of());
+
+        assertThrows(CryptographicOperationException.class,
+                () -> KeyStoreUtil.getPublicKey(key, material));
     }
 }

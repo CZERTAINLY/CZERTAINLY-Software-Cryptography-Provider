@@ -6,6 +6,7 @@ import com.czertainly.api.model.client.attribute.RequestAttribute;
 import com.czertainly.api.model.common.attribute.v2.content.BooleanAttributeContentV2;
 import com.czertainly.api.model.common.attribute.v2.content.StringAttributeContentV2;
 import com.czertainly.api.model.common.enums.cryptography.DigestAlgorithm;
+import com.czertainly.api.model.common.enums.cryptography.KeyAlgorithm;
 import com.czertainly.api.model.connector.cryptography.operations.CipherDataRequestDto;
 import com.czertainly.api.model.connector.cryptography.operations.DecryptDataResponseDto;
 import com.czertainly.api.model.connector.cryptography.operations.EncryptDataResponseDto;
@@ -14,8 +15,9 @@ import com.czertainly.api.model.connector.cryptography.operations.data.CipherRes
 import com.czertainly.api.model.common.enums.cryptography.RsaEncryptionScheme;
 import com.czertainly.core.util.AttributeDefinitionUtils;
 import com.czertainly.cp.soft.attribute.RsaCipherAttributes;
-import com.czertainly.cp.soft.dao.entity.KeyData;
 import com.czertainly.cp.soft.exception.NotSupportedException;
+import com.czertainly.cp.soft.model.CachedKeyData;
+import com.czertainly.cp.soft.model.CachedKeyMaterial;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;
@@ -38,42 +40,40 @@ public class CipherUtil {
      */
     private record CipherSpec(String transformation, AlgorithmParameterSpec parameterSpec) {}
 
-    public static DecryptDataResponseDto decrypt(CipherDataRequestDto request, KeyData key) {
-        switch (key.getAlgorithm()) {
-            case RSA -> {
-                List<RequestAttribute> attributes = request.getCipherAttributes();
-                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
-                return decryptData(request, key, getCipherSpec(rsaEncryptionScheme, request.getCipherAttributes()));
-            }
-            default -> throw new NotSupportedException("Algorithm not supported");
+    public static DecryptDataResponseDto decrypt(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material) {
+        if (key.algorithm() == KeyAlgorithm.RSA) {
+            List<RequestAttribute> attributes = request.getCipherAttributes();
+            RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
+            return decryptData(request, key, material, getCipherSpec(rsaEncryptionScheme, request.getCipherAttributes()));
+        } else {
+            throw new NotSupportedException("Algorithm not supported");
         }
     }
 
-    public static EncryptDataResponseDto encrypt(CipherDataRequestDto request, KeyData key) {
-        switch (key.getAlgorithm()) {
-            case RSA -> {
-                List<RequestAttribute> attributes = request.getCipherAttributes();
-                RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
-                return encryptData(request, key, getCipherSpec(rsaEncryptionScheme, request.getCipherAttributes()));
-            }
-            default -> throw new NotSupportedException("Algorithm not supported");
+    public static EncryptDataResponseDto encrypt(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material) {
+        if (key.algorithm() == KeyAlgorithm.RSA) {
+            List<RequestAttribute> attributes = request.getCipherAttributes();
+            RsaEncryptionScheme rsaEncryptionScheme = RsaEncryptionScheme.findByCode(AttributeDefinitionUtils.getSingleItemAttributeContentValue(RsaCipherAttributes.ATTRIBUTE_DATA_RSA_ENC_SCHEME_NAME, attributes, StringAttributeContentV2.class).getData());
+            return encryptData(request, key, material, getCipherSpec(rsaEncryptionScheme, request.getCipherAttributes()));
+        } else {
+            throw new NotSupportedException("Algorithm not supported");
         }
     }
 
-    private static DecryptDataResponseDto decryptData(CipherDataRequestDto request, KeyData key, CipherSpec cipherSpec) {
+    private static DecryptDataResponseDto decryptData(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material, CipherSpec cipherSpec) {
         DecryptDataResponseDto responseDto = new DecryptDataResponseDto();
-        responseDto.setDecryptedData(doProcess(request.getCipherData(), Cipher.DECRYPT_MODE, cipherSpec, key));
+        responseDto.setDecryptedData(doProcess(request.getCipherData(), Cipher.DECRYPT_MODE, cipherSpec, key, material));
         return responseDto;
     }
 
-    private static EncryptDataResponseDto encryptData(CipherDataRequestDto request, KeyData key, CipherSpec cipherSpec) {
+    private static EncryptDataResponseDto encryptData(CipherDataRequestDto request, CachedKeyData key, CachedKeyMaterial material, CipherSpec cipherSpec) {
         EncryptDataResponseDto responseDto = new EncryptDataResponseDto();
-        responseDto.setEncryptedData(doProcess(request.getCipherData(), Cipher.ENCRYPT_MODE, cipherSpec, key));
+        responseDto.setEncryptedData(doProcess(request.getCipherData(), Cipher.ENCRYPT_MODE, cipherSpec, key, material));
         return responseDto;
     }
 
     private static List<CipherResponseData> doProcess(List<CipherRequestData> cipherData, int mode,
-                                                      CipherSpec cipherSpec, KeyData key) {
+                                                      CipherSpec cipherSpec, CachedKeyData key, CachedKeyMaterial material) {
         Iterator<CipherRequestData> it = cipherData.stream().iterator();
         List<CipherResponseData> responseDataList = new ArrayList<>();
         while (it.hasNext()) {
@@ -82,8 +82,8 @@ public class CipherUtil {
                 Cipher cipher = Cipher.getInstance(cipherSpec.transformation(), BouncyCastleProvider.PROVIDER_NAME);
                 // RSA encryption must use the public key; decryption must use the private key.
                 Key cryptoKey = (mode == Cipher.ENCRYPT_MODE)
-                        ? KeyStoreUtil.getCertificate(key).getPublicKey()
-                        : KeyStoreUtil.getPrivateKey(key);
+                        ? KeyStoreUtil.getPublicKey(key, material)
+                        : KeyStoreUtil.getPrivateKey(key, material);
                 if (cipherSpec.parameterSpec() != null) {
                     cipher.init(mode, cryptoKey, cipherSpec.parameterSpec());
                 } else {

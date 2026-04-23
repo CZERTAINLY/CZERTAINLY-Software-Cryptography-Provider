@@ -22,6 +22,7 @@ import com.czertainly.cp.soft.dao.entity.TokenInstance;
 import com.czertainly.cp.soft.dao.repository.KeyDataRepository;
 import com.czertainly.cp.soft.exception.KeyManagementException;
 import com.czertainly.cp.soft.exception.TokenInstanceException;
+import com.czertainly.cp.soft.service.KeyDataCacheService;
 import com.czertainly.cp.soft.service.KeyManagementService;
 import com.czertainly.cp.soft.service.TokenInstanceService;
 import com.czertainly.cp.soft.util.KeyStoreUtil;
@@ -44,18 +45,8 @@ import java.util.stream.Collectors;
 public class KeyManagementServiceImpl implements KeyManagementService {
 
     private TokenInstanceService tokenInstanceService;
-
     private KeyDataRepository keyDataRepository;
-
-    @Autowired
-    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
-        this.tokenInstanceService = tokenInstanceService;
-    }
-
-    @Autowired
-    public void setKeyDataRepository(KeyDataRepository keyDataRepository) {
-        this.keyDataRepository = keyDataRepository;
-    }
+    private KeyDataCacheService keyDataCacheService;
 
     @Override
     public KeyPairDataResponseDto createKeyPair(UUID uuid, CreateKeyRequestDto request) throws NotFoundException {
@@ -223,7 +214,6 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 // prepare public key
                 publicKey = createAndSaveKeyData(
                         alias, association, KeyType.PUBLIC_KEY, KeyAlgorithm.SLHDSA, KeyFormat.SPKI,
-                        //KeyStoreUtil.spkiKeyValueFromPrivateKey(keyStore, alias, tokenInstance.getCode()),
                         KeyStoreUtil.spkiKeyValueFromKeyStore(keyStore, alias),
                         slhDsaSecurityCategory.getPublicKeySize(), metadata, tokenInstance);
 
@@ -268,6 +258,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         tokenInstance.setData(data);
 
         // save token and return
+        // Note: saveTokenInstance already schedules keystore cache eviction internally
+        // (see TokenInstanceServiceImpl.saveTokenInstance), so no explicit evict call is needed here.
         tokenInstanceService.saveTokenInstance(tokenInstance);
 
         response.setPublicKeyData(publicKey.toKeyDataResponseDto());
@@ -282,7 +274,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         KeyData key = keyDataRepository.findByUuid(keyUuid)
                 .orElseThrow(() -> new NotFoundException(KeyData.class, keyUuid));
 
-        // remove key from the keystore only of it is private key
+        // remove key from the keystore only if it is private key
         // public key is removed automatically when private key is removed, however, we can keep it in the database
         if (key.getType() == KeyType.PRIVATE_KEY) {
             removeKeyFromKeyStore(uuid, key.getName());
@@ -290,6 +282,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         // delete key from the database
         keyDataRepository.delete(key);
+        keyDataCacheService.evictAfterCommit(keyUuid);
     }
 
     private void removeKeyFromKeyStore(UUID tokenInstanceUuid, String alias) throws NotFoundException {
@@ -356,8 +349,23 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         keyData.setTokenInstance(tokenInstance);
 
         keyDataRepository.save(keyData);
+        keyDataCacheService.evictAfterCommit(keyData.getUuid());
 
         return keyData;
     }
 
+    @Autowired
+    public void setTokenInstanceService(TokenInstanceService tokenInstanceService) {
+        this.tokenInstanceService = tokenInstanceService;
+    }
+
+    @Autowired
+    public void setKeyDataRepository(KeyDataRepository keyDataRepository) {
+        this.keyDataRepository = keyDataRepository;
+    }
+
+    @Autowired
+    public void setKeyDataCacheService(KeyDataCacheService keyDataCacheService) {
+        this.keyDataCacheService = keyDataCacheService;
+    }
 }
