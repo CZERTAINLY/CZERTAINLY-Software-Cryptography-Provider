@@ -32,7 +32,7 @@ jobs:
 
       - name: Build (amd64) - local only (no push)
         id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ${{ env.DOCKERFILE }}
@@ -79,7 +79,7 @@ jobs:
 
       - name: Build (arm64) - local only (no push)
         id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ${{ env.DOCKERFILE }}
